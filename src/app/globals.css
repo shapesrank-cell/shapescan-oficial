@@ -33,3 +33,26 @@ body {
          focus:outline-none focus:ring-2 focus:ring-indigo-500
          focus:border-transparent transition-shadow;
 }
+
+/* Animações usadas nas transições do onboarding e resultados */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

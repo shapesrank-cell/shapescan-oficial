@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -16,6 +16,24 @@ export const metadata: Metadata = {
   title: "ShapeScan — Descubra seu biotipo com IA",
   description:
     "Análise corporal personalizada por inteligência artificial. Receba seu biotipo, dieta e plano de treinos em minutos.",
+  applicationName: "ShapeScan",
+  appleWebApp: {
+    capable: true,
+    title: "ShapeScan",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#6366f1", // mesma cor do manifest (cor do app no celular)
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: "cover", // usa toda a tela em iPhones com notch
 };
 
 export default function RootLayout({
