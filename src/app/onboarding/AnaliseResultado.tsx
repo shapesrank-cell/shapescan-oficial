@@ -28,6 +28,7 @@ export function AnaliseResultado({
 }) {
   const [logado, setLogado] = useState(false);
   const [salvo, setSalvo] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
 
   useEffect(() => {
     const salvar = async () => {
@@ -36,12 +37,18 @@ export function AnaliseResultado({
       if (!user) return;
 
       setLogado(true);
-      await supabase.from("analyses").insert({
+      const { error } = await supabase.from("analyses").insert({
         user_id: user.id,
         dados_entrada: dadosEntrada,
         resultado: analise,
       });
-      setSalvo(true);
+
+      if (error) {
+        console.error("Erro ao salvar análise:", error);
+        setErroSalvar(error.message);
+      } else {
+        setSalvo(true);
+      }
     };
     salvar();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,7 +70,11 @@ export function AnaliseResultado({
         {logado ? (
           <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
             <span className="text-sm text-green-700 dark:text-green-400">
-              {salvo ? "✓ Análise salva na sua conta" : "Salvando análise..."}
+              {erroSalvar
+              ? `⚠️ Erro ao salvar: ${erroSalvar}`
+              : salvo
+              ? "✓ Análise salva na sua conta"
+              : "Salvando análise..."}
             </span>
             {salvo && (
               <Link
