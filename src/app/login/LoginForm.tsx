@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { login } from "@/app/auth/actions";
 
-export function LoginForm() {
+export function LoginForm({ redirect }: { redirect?: string }) {
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, startTransition] = useTransition();
 
@@ -17,6 +17,7 @@ export function LoginForm() {
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-4">
+      {redirect && <input type="hidden" name="redirect" value={redirect} />}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-white/70">
           Email

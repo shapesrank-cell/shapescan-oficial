@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { cadastro } from "@/app/auth/actions";
 
-export function CadastroForm() {
+export function CadastroForm({ redirect }: { redirect?: string }) {
   const [erro, setErro] = useState<string | null>(null);
   const [carregando, startTransition] = useTransition();
 
@@ -19,6 +19,7 @@ export function CadastroForm() {
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-4">
+      {redirect && <input type="hidden" name="redirect" value={redirect} />}
       <div className="flex flex-col gap-2">
         <label htmlFor="nome" className="text-sm font-medium text-white/70">
           Nome
