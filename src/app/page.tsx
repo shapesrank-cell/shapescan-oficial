@@ -141,7 +141,7 @@ export default async function Home() {
         </div>
 
         {/* Texto sobreposto — rodapé do hero */}
-        <div className="relative z-10 flex flex-col justify-end min-h-screen px-5 sm:px-10 pb-16 sm:pb-24">
+        <div className="relative z-10 flex flex-col justify-end min-h-screen px-5 sm:px-10 pt-24 pb-16 sm:pb-24">
           <div className="max-w-5xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-400/40 bg-orange-400/10 text-orange-400 text-xs font-bold tracking-widest uppercase mb-6 animate-[fadeIn_0.4s_ease-out]">
               Powered by Google AI
@@ -337,7 +337,7 @@ export default async function Home() {
               </p>
               <Link
                 href="/onboarding"
-                className="inline-flex items-center justify-center h-14 px-12 rounded-full bg-orange-400 text-black font-bold text-lg whitespace-nowrap hover:-translate-y-0.5 hover:bg-orange-300 transition-all shadow-lg shadow-orange-400/20"
+                className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-8 sm:px-12 rounded-full bg-orange-400 text-black font-bold text-lg whitespace-nowrap hover:-translate-y-0.5 hover:bg-orange-300 transition-all shadow-lg shadow-orange-400/20"
               >
                 {user ? "Nova análise" : "Começar agora — é grátis"}
               </Link>
