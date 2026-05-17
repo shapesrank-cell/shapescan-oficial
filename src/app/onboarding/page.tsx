@@ -12,6 +12,9 @@ type FormState = {
   idade: string;
   peso: string;
   altura: string;
+  foto: string; // base64 da foto (sem prefixo data:...)
+  fotoMimeType: string; // ex: "image/jpeg"
+  fotoPreview: string; // data URL para preview na tela
   nivelAtividade: "sedentario" | "leve" | "moderado" | "intenso" | "";
   objetivo: "emagrecer" | "ganhar_massa" | "definir" | "saude_geral" | "";
 };
@@ -22,11 +25,14 @@ const FORM_INICIAL: FormState = {
   idade: "",
   peso: "",
   altura: "",
+  foto: "",
+  fotoMimeType: "",
+  fotoPreview: "",
   nivelAtividade: "",
   objetivo: "",
 };
 
-const TOTAL_PASSOS = 6;
+const TOTAL_PASSOS = 7;
 
 export default function OnboardingPage() {
   const [passo, setPasso] = useState(1);
@@ -62,8 +68,10 @@ export default function OnboardingPage() {
         return null;
       }
       case 5:
-        return form.nivelAtividade === "" ? "Selecione uma opção" : null;
+        return null; // Foto é opcional — sempre válido
       case 6:
+        return form.nivelAtividade === "" ? "Selecione uma opção" : null;
+      case 7:
         return form.objetivo === "" ? "Selecione uma opção" : null;
       default:
         return null;
@@ -106,6 +114,10 @@ export default function OnboardingPage() {
           altura: Number(form.altura),
           nivelAtividade: form.nivelAtividade,
           objetivo: objetivoFinal,
+          ...(form.foto && {
+            foto: form.foto,
+            fotoMimeType: form.fotoMimeType,
+          }),
         }),
       });
 
@@ -134,6 +146,7 @@ export default function OnboardingPage() {
         analise={analise}
         nome={form.nome}
         onReset={resetar}
+        dadosEntrada={form}
       />
     );
   }
@@ -214,6 +227,21 @@ export default function OnboardingPage() {
             />
           )}
           {passo === 5 && (
+            <PassoFoto
+              fotoPreview={form.fotoPreview}
+              onFoto={(base64, mimeType, preview) => {
+                update("foto", base64);
+                update("fotoMimeType", mimeType);
+                update("fotoPreview", preview);
+              }}
+              onRemover={() => {
+                update("foto", "");
+                update("fotoMimeType", "");
+                update("fotoPreview", "");
+              }}
+            />
+          )}
+          {passo === 6 && (
             <PassoAtividade
               valor={form.nivelAtividade}
               onChange={(v) => {
@@ -222,7 +250,7 @@ export default function OnboardingPage() {
               }}
             />
           )}
-          {passo === 6 && (
+          {passo === 7 && (
             <PassoObjetivo
               valor={form.objetivo}
               onChange={(v) => {
@@ -235,14 +263,18 @@ export default function OnboardingPage() {
         </div>
 
         {/* Botão Continuar (só aparece quando precisa input livre) */}
-        {[1, 3, 4].includes(passo) && (
+        {[1, 3, 4, 5].includes(passo) && (
           <div className="mt-8 flex flex-col gap-2">
             <button
               onClick={avancar}
               disabled={!passoValido()}
               className="w-full h-14 rounded-full bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Continuar
+              {passo === 5
+                ? form.foto
+                  ? "Continuar com foto"
+                  : "Continuar sem foto"
+                : "Continuar"}
             </button>
             {/* Mostra dica em cinza quando preenchimento incompleto */}
             {erroPasso && (
@@ -562,6 +594,137 @@ function PassoObjetivo({
           />
         ))}
       </div>
+    </>
+  );
+}
+
+/**
+ * Redimensiona imagem no navegador para max 800px de lado maior,
+ * converte para JPEG 70% — reduz ~3MB de foto para ~100-300KB.
+ */
+async function redimensionarImagem(
+  file: File
+): Promise<{ base64: string; mimeType: string; preview: string }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let w = img.width;
+        let h = img.height;
+
+        if (w > MAX || h > MAX) {
+          if (w > h) {
+            h = Math.round((h * MAX) / w);
+            w = MAX;
+          } else {
+            w = Math.round((w * MAX) / h);
+            h = MAX;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+        // Remove o prefixo "data:image/jpeg;base64," para o Gemini
+        const base64 = dataUrl.split(",")[1];
+
+        resolve({
+          base64,
+          mimeType: "image/jpeg",
+          preview: dataUrl, // Mantém o prefixo para exibir na tela
+        });
+      };
+      img.onerror = reject;
+      img.src = reader.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function PassoFoto({
+  fotoPreview,
+  onFoto,
+  onRemover,
+}: {
+  fotoPreview: string;
+  onFoto: (base64: string, mimeType: string, preview: string) => void;
+  onRemover: () => void;
+}) {
+  const [processando, setProcessando] = useState(false);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setProcessando(true);
+    try {
+      const { base64, mimeType, preview } = await redimensionarImagem(file);
+      onFoto(base64, mimeType, preview);
+    } catch {
+      // Silencia erro se imagem inválida
+    } finally {
+      setProcessando(false);
+    }
+  }
+
+  return (
+    <>
+      <PassoTitulo
+        emoji="📸"
+        titulo="Quer enviar uma foto?"
+        subtitulo="Opcional. A IA usa para refinar a análise visual do seu biotipo. Sua foto não é armazenada."
+      />
+
+      {fotoPreview ? (
+        <div className="flex flex-col items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={fotoPreview}
+            alt="Preview da foto enviada"
+            className="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-2xl border-2 border-indigo-500 shadow-lg shadow-indigo-500/20"
+          />
+          <button
+            type="button"
+            onClick={onRemover}
+            className="text-sm text-red-500 dark:text-red-400 hover:underline"
+          >
+            Remover foto
+          </button>
+        </div>
+      ) : (
+        <label className="flex flex-col items-center gap-3 p-8 sm:p-10 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors cursor-pointer">
+          <div className="text-4xl sm:text-5xl">
+            {processando ? "⏳" : "📷"}
+          </div>
+          <p className="text-sm sm:text-base font-medium text-zinc-700 dark:text-zinc-300">
+            {processando
+              ? "Processando..."
+              : "Toque para tirar foto ou escolher da galeria"}
+          </p>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            JPG, PNG — máx. 10MB
+          </p>
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFile}
+            className="hidden"
+            disabled={processando}
+          />
+        </label>
+      )}
+
+      <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+        Se preferir, pule este passo — a análise funciona sem foto.
+      </p>
     </>
   );
 }

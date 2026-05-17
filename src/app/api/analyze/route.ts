@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       "altura",
       "nivelAtividade",
       "objetivo",
+      // "foto" é OPCIONAL — não está aqui de propósito
     ];
     for (const campo of camposObrigatorios) {
       if (

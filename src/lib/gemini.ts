@@ -25,6 +25,8 @@ export type DadosUsuario = {
   altura: number; // cm
   nivelAtividade: "sedentario" | "leve" | "moderado" | "intenso";
   objetivo: "emagrecer" | "ganhar_massa" | "definir" | "saude_geral";
+  foto?: string; // base64 da foto (sem prefixo data:image/...)
+  fotoMimeType?: string; // ex: "image/jpeg"
 };
 
 // Formato da resposta que a IA vai gerar.
@@ -61,7 +63,9 @@ REGRAS:
 - Para o objetivo "emagrecer", crie déficit de ~500 kcal. Para "ganhar_massa", superávit de ~300 kcal.
 - Distribuição de macros deve somar coerentemente as calorias (proteína 4 kcal/g, carbo 4 kcal/g, gordura 9 kcal/g).
 - SEMPRE inclua o avisoImportante lembrando que isto é uma sugestão de IA e não substitui acompanhamento profissional.
-- Seja específico nos exercícios e alimentos sugeridos (4 a 6 itens em cada lista).`;
+- Seja específico nos exercícios e alimentos sugeridos (4 a 6 itens em cada lista).
+- Se o usuário enviar uma foto, analise visualmente a composição corporal (proporção tronco/ombros/cintura, aparência de gordura corporal, postura, etc.) para REFINAR sua avaliação de biotipo. A foto é complementar — os dados manuais continuam sendo a base principal.
+- NUNCA faça comentários negativos sobre aparência. Seja respeitoso e motivador.`;
 
 /**
  * Gera análise completa de biotipo para os dados informados.
@@ -70,14 +74,13 @@ REGRAS:
 export async function gerarAnaliseBiotipo(
   dados: DadosUsuario
 ): Promise<AnaliseBiotipo> {
-  const resposta = await gemini.models.generateContent({
-    model: SHAPESCAN_MODEL,
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: `Analise os seguintes dados e gere a análise completa:
+  // Monta as partes da mensagem (texto + foto opcional)
+  const parts: Array<
+    | { text: string }
+    | { inlineData: { mimeType: string; data: string } }
+  > = [
+    {
+      text: `Analise os seguintes dados e gere a análise completa:
 
 Nome: ${dados.nome}
 Sexo: ${dados.sexo}
@@ -85,9 +88,26 @@ Idade: ${dados.idade} anos
 Peso: ${dados.peso} kg
 Altura: ${dados.altura} cm
 Nível de atividade: ${dados.nivelAtividade}
-Objetivo: ${dados.objetivo}`,
-          },
-        ],
+Objetivo: ${dados.objetivo}${dados.foto ? "\n\nO usuário também enviou uma foto para refinar a análise visual do biotipo." : ""}`,
+    },
+  ];
+
+  // Se tem foto, adiciona como parte visual (Gemini Vision)
+  if (dados.foto && dados.fotoMimeType) {
+    parts.push({
+      inlineData: {
+        mimeType: dados.fotoMimeType,
+        data: dados.foto,
+      },
+    });
+  }
+
+  const resposta = await gemini.models.generateContent({
+    model: SHAPESCAN_MODEL,
+    contents: [
+      {
+        role: "user",
+        parts,
       },
     ],
     config: {
