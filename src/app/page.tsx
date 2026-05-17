@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:py-20">
       <main className="w-full max-w-3xl flex flex-col items-center text-center gap-8 sm:gap-12">
         {/* Logo / Brand */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 animate-[fadeIn_0.5s_ease-out]">
           <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
             <span className="text-white font-bold text-xl sm:text-2xl">S</span>
           </div>
@@ -15,7 +21,7 @@ export default function Home() {
         </div>
 
         {/* Headline */}
-        <div className="flex flex-col gap-4 sm:gap-6 items-center">
+        <div className="flex flex-col gap-4 sm:gap-6 items-center animate-[fadeIn_0.6s_ease-out]">
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 leading-tight max-w-2xl">
             Descubra seu{" "}
             <span className="bg-gradient-to-r from-indigo-500 to-purple-600 bg-clip-text text-transparent">
@@ -30,27 +36,27 @@ export default function Home() {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto animate-[fadeIn_0.7s_ease-out]">
           <Link
             href="/onboarding"
-            className="inline-flex items-center justify-center h-12 sm:h-14 px-8 rounded-full bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity"
+            className="inline-flex items-center justify-center h-12 sm:h-14 px-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity shadow-lg shadow-indigo-500/25"
           >
-            Começar agora
+            {user ? "Nova análise" : "Começar agora"}
           </Link>
           <Link
-            href="/login"
+            href={user ? "/dashboard" : "/login"}
             className="inline-flex items-center justify-center h-12 sm:h-14 px-8 rounded-full border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-50 font-semibold text-base sm:text-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
           >
-            Já tenho conta
+            {user ? "Meu dashboard" : "Já tenho conta"}
           </Link>
         </div>
 
         {/* Features grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full mt-8 sm:mt-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 w-full mt-8 sm:mt-12 animate-[fadeIn_0.8s_ease-out]">
           <Feature
             icon="📊"
             title="Análise por IA"
-            description="Descubra seu biotipo com base nos seus dados"
+            description="Descubra seu biotipo com base nos seus dados e foto"
           />
           <Feature
             icon="🥗"
@@ -83,7 +89,7 @@ function Feature({
   description: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 p-4 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+    <div className="flex flex-col items-center gap-2 p-4 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-900 hover:shadow-md transition-all">
       <div className="text-3xl sm:text-4xl">{icon}</div>
       <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 text-sm sm:text-base">
         {title}

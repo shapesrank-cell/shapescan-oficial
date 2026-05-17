@@ -153,7 +153,7 @@ export default function OnboardingPage() {
 
   // Mostra tela de loading durante o envio
   if (enviando) {
-    return <AnaliseCarregando />;
+    return <AnaliseCarregando temFoto={!!form.foto} />;
   }
 
   return (
