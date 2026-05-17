@@ -117,22 +117,23 @@ export default async function DashboardPage() {
                   }
                 );
                 return (
-                  <li
-                    key={analise.id}
-                    className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 flex items-center justify-between"
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-50">
-                        {resultado?.biotipo || "Análise"}
+                  <li key={analise.id}>
+                    <Link
+                      href={`/dashboard/analise/${analise.id}`}
+                      className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 flex items-center justify-between hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all group"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-50 capitalize">
+                          {resultado?.biotipo || "Análise"}
+                        </span>
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                          {data}
+                        </span>
+                      </div>
+                      <span className="text-sm text-zinc-400 dark:text-zinc-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">
+                        Ver →
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {data}
-                      </span>
-                    </div>
-                    {/* Espaço reservado pra rota de detalhes futuramente */}
-                    <span className="text-xs text-zinc-400 dark:text-zinc-500">
-                      em breve →
-                    </span>
+                    </Link>
                   </li>
                 );
               })}
