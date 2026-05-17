@@ -51,7 +51,6 @@ export function AnaliseResultado({
         setSalvo(true);
       }
 
-      // Atualiza o nome no perfil (sempre que fizer análise logado)
       if (dadosEntrada.nome) {
         await supabase
           .from("profiles")
@@ -64,13 +63,13 @@ export function AnaliseResultado({
   }, []);
 
   return (
-    <div className="flex flex-1 flex-col items-center px-4 py-8 sm:py-12 animate-[fadeIn_0.4s_ease-out]">
+    <div className="flex flex-1 flex-col items-center px-4 py-8 sm:py-12 bg-[#111111] animate-[fadeIn_0.4s_ease-out]">
       <div className="w-full max-w-3xl flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <button
             onClick={onReset}
-            className="text-sm text-zinc-600 dark:text-zinc-400 hover:underline"
+            className="text-sm text-white/50 hover:text-white/80 transition-colors"
           >
             ← Nova análise
           </button>
@@ -78,38 +77,37 @@ export function AnaliseResultado({
 
         {/* Banner de salvo / não logado */}
         {logado ? (
-          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
-            <span className="text-sm text-green-700 dark:text-green-400">
+          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.12]">
+            <span className="text-sm text-white/60">
               {erroSalvar
-                ? `⚠️ Erro ao salvar: ${erroSalvar}`
+                ? `Erro ao salvar: ${erroSalvar}`
                 : salvo
-                ? "✓ Análise salva na sua conta"
+                ? "Análise salva na sua conta"
                 : "Salvando análise..."}
             </span>
             {salvo && (
               <Link
                 href="/dashboard"
-                className="text-sm font-semibold text-green-700 dark:text-green-400 hover:underline whitespace-nowrap"
+                className="text-sm font-semibold text-orange-400 hover:text-orange-300 transition-colors whitespace-nowrap"
               >
                 Ver no dashboard →
               </Link>
             )}
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
-            <span className="text-sm text-zinc-600 dark:text-zinc-400">
-              💾 Crie uma conta para salvar esta análise
+          <div className="flex items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-white/[0.05] border border-white/[0.12]">
+            <span className="text-sm text-white/50">
+              Crie uma conta para salvar esta análise
             </span>
             <Link
               href="/cadastro"
-              className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+              className="text-sm font-semibold text-orange-400 hover:text-orange-300 transition-colors whitespace-nowrap"
             >
               Cadastrar grátis →
             </Link>
           </div>
         )}
 
-        {/* Conteúdo visual da análise — compartilhado com /dashboard/analise/[id] */}
         <AnaliseView analise={analise} nome={nome} />
       </div>
     </div>

@@ -30,20 +30,20 @@ export function AnaliseCarregando({ temFoto = false }: { temFoto?: boolean }) {
   }, [mensagens.length]);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 bg-[#111111]">
       <div className="flex flex-col items-center gap-8 max-w-md text-center">
         {/* Logo animada */}
         <div className="relative w-24 h-24 sm:w-32 sm:h-32">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 animate-pulse" />
+          <div className="absolute inset-0 rounded-3xl bg-orange-400 animate-pulse" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-4xl sm:text-5xl font-bold text-white">S</span>
+            <span className="text-4xl sm:text-5xl font-bold text-black">S</span>
           </div>
-          <div className="absolute -inset-3 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 blur-xl opacity-25 animate-pulse" />
+          <div className="absolute -inset-3 rounded-3xl bg-orange-400 blur-xl opacity-20 animate-pulse" />
         </div>
 
         {/* Título */}
         <div className="flex flex-col gap-1">
-          <p className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50">
+          <p className="text-xl sm:text-2xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
             {temFoto ? "Analisando com IA + foto" : "Gerando sua análise"}
           </p>
 
@@ -51,7 +51,7 @@ export function AnaliseCarregando({ temFoto = false }: { temFoto?: boolean }) {
           <div className="h-7 flex items-center justify-center">
             <p
               key={indiceMensagem}
-              className="text-sm sm:text-base text-zinc-500 dark:text-zinc-400 animate-[fadeIn_0.5s_ease-out]"
+              className="text-sm sm:text-base text-white/50 animate-[fadeIn_0.5s_ease-out]"
             >
               {mensagens[indiceMensagem]}
             </p>
@@ -59,8 +59,8 @@ export function AnaliseCarregando({ temFoto = false }: { temFoto?: boolean }) {
         </div>
 
         {/* Barra de progresso animada */}
-        <div className="w-full max-w-xs bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full animate-[progress_9s_ease-out_forwards]" />
+        <div className="w-full max-w-xs bg-white/[0.08] rounded-full h-1.5 overflow-hidden">
+          <div className="h-full bg-orange-400 rounded-full animate-[progress_9s_ease-out_forwards]" />
         </div>
 
         {/* Dots */}
@@ -70,8 +70,8 @@ export function AnaliseCarregando({ temFoto = false }: { temFoto?: boolean }) {
               key={i}
               className={`h-1.5 rounded-full transition-all duration-500 ${
                 i === indiceMensagem
-                  ? "w-8 bg-indigo-500"
-                  : "w-1.5 bg-zinc-300 dark:bg-zinc-700"
+                  ? "w-8 bg-orange-400"
+                  : "w-1.5 bg-white/20"
               }`}
             />
           ))}

@@ -20,80 +20,53 @@ export function CadastroForm() {
   return (
     <form action={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <label
-          htmlFor="nome"
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
+        <label htmlFor="nome" className="text-sm font-medium text-white/70">
           Nome
         </label>
         <input
-          id="nome"
-          name="nome"
-          type="text"
-          required
-          autoComplete="name"
+          id="nome" name="nome" type="text" required autoComplete="name"
           placeholder="Como você se chama"
-          className="h-12 px-4 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          className="input"
         />
       </div>
 
       <div className="flex flex-col gap-2">
-        <label
-          htmlFor="email"
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
+        <label htmlFor="email" className="text-sm font-medium text-white/70">
           Email
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          autoComplete="email"
+          id="email" name="email" type="email" required autoComplete="email"
           placeholder="seu@email.com"
-          className="h-12 px-4 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          className="input"
         />
       </div>
 
       <div className="flex flex-col gap-2">
-        <label
-          htmlFor="senha"
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
-        >
+        <label htmlFor="senha" className="text-sm font-medium text-white/70">
           Senha
         </label>
         <input
-          id="senha"
-          name="senha"
-          type="password"
-          required
-          minLength={6}
-          autoComplete="new-password"
-          placeholder="Mínimo 6 caracteres"
-          className="h-12 px-4 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow"
+          id="senha" name="senha" type="password" required minLength={6}
+          autoComplete="new-password" placeholder="Mínimo 6 caracteres"
+          className="input"
         />
       </div>
 
       {erro && (
-        <div
-          role="alert"
-          className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-2xl px-4 py-3"
-        >
+        <div role="alert" className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3">
           {erro}
         </div>
       )}
 
       <button
-        type="submit"
-        disabled={carregando}
-        className="h-12 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600 text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+        type="submit" disabled={carregando}
+        className="h-12 rounded-full bg-orange-400 text-black font-semibold hover:bg-orange-300 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {carregando ? "Criando conta..." : "Criar conta grátis"}
       </button>
 
-      <p className="text-xs text-center text-zinc-500 dark:text-zinc-400">
-        Ao cadastrar, você concorda com os Termos de Uso e Política de
-        Privacidade.
+      <p className="text-xs text-center text-white/30">
+        Ao cadastrar, você concorda com os Termos de Uso e Política de Privacidade.
       </p>
     </form>
   );

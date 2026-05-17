@@ -12,9 +12,9 @@ type FormState = {
   idade: string;
   peso: string;
   altura: string;
-  foto: string; // base64 da foto (sem prefixo data:...)
-  fotoMimeType: string; // ex: "image/jpeg"
-  fotoPreview: string; // data URL para preview na tela
+  foto: string;
+  fotoMimeType: string;
+  fotoPreview: string;
   nivelAtividade: "sedentario" | "leve" | "moderado" | "intenso" | "";
   objetivo: "emagrecer" | "ganhar_massa" | "definir" | "saude_geral" | "";
 };
@@ -45,8 +45,6 @@ export default function OnboardingPage() {
     setForm((f) => ({ ...f, [campo]: valor }));
   }
 
-  // Retorna null se o passo está válido, ou uma mensagem de erro amigável.
-  // Permitir que o usuário avance assim que preencher algo razoável.
   function erroDoPasso(): string | null {
     switch (passo) {
       case 1:
@@ -68,7 +66,7 @@ export default function OnboardingPage() {
         return null;
       }
       case 5:
-        return null; // Foto é opcional — sempre válido
+        return null;
       case 6:
         return form.nivelAtividade === "" ? "Selecione uma opção" : null;
       case 7:
@@ -98,8 +96,6 @@ export default function OnboardingPage() {
     setEnviando(true);
     setErro(null);
 
-    // Usa o valor passado explicitamente (vindo do clique no card) ou o do estado.
-    // Isso evita race condition: clicar no card e disparar enviar() antes do React commit.
     const objetivoFinal = objetivoForcado || form.objetivo;
 
     try {
@@ -139,7 +135,6 @@ export default function OnboardingPage() {
     setErro(null);
   }
 
-  // Mostra o resultado se já tem análise gerada
   if (analise) {
     return (
       <AnaliseResultado
@@ -151,13 +146,12 @@ export default function OnboardingPage() {
     );
   }
 
-  // Mostra tela de loading durante o envio
   if (enviando) {
     return <AnaliseCarregando temFoto={!!form.foto} />;
   }
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-6 sm:py-10">
+    <div className="flex flex-1 flex-col px-4 py-6 sm:py-10 bg-[#111111]">
       <div className="w-full max-w-xl mx-auto flex flex-col flex-1">
         {/* Header com voltar + progresso */}
         <div className="mb-6 sm:mb-10">
@@ -165,27 +159,27 @@ export default function OnboardingPage() {
             {passo > 1 ? (
               <button
                 onClick={voltar}
-                className="text-sm text-zinc-600 dark:text-zinc-400 hover:underline flex items-center gap-1"
+                className="text-sm text-white/50 hover:text-white/80 transition-colors flex items-center gap-1"
               >
                 ← Voltar
               </button>
             ) : (
               <Link
                 href="/"
-                className="text-sm text-zinc-600 dark:text-zinc-400 hover:underline"
+                className="text-sm text-white/50 hover:text-white/80 transition-colors"
               >
                 ← Início
               </Link>
             )}
-            <span className="text-xs sm:text-sm font-medium text-zinc-500 dark:text-zinc-500">
+            <span className="text-xs sm:text-sm font-medium text-white/30">
               {passo} de {TOTAL_PASSOS}
             </span>
           </div>
 
           {/* Barra de progresso */}
-          <div className="h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div className="h-1 bg-white/[0.08] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500 ease-out"
+              className="h-full bg-orange-400 transition-all duration-500 ease-out"
               style={{ width: `${(passo / TOTAL_PASSOS) * 100}%` }}
             />
           </div>
@@ -255,20 +249,19 @@ export default function OnboardingPage() {
               valor={form.objetivo}
               onChange={(v) => {
                 update("objetivo", v);
-                // último passo: dispara a análise direto com o valor escolhido
                 if (v !== "") setTimeout(() => enviar(v), 250);
               }}
             />
           )}
         </div>
 
-        {/* Botão Continuar (só aparece quando precisa input livre) */}
+        {/* Botão Continuar */}
         {[1, 3, 4, 5].includes(passo) && (
           <div className="mt-8 flex flex-col gap-2">
             <button
               onClick={avancar}
               disabled={!passoValido()}
-              className="w-full h-14 rounded-full bg-zinc-900 dark:bg-zinc-50 text-zinc-50 dark:text-zinc-900 font-semibold text-base sm:text-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full h-14 rounded-full bg-orange-400 text-black font-semibold text-base sm:text-lg hover:bg-orange-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               {passo === 5
                 ? form.foto
@@ -276,9 +269,8 @@ export default function OnboardingPage() {
                   : "Continuar sem foto"
                 : "Continuar"}
             </button>
-            {/* Mostra dica em cinza quando preenchimento incompleto */}
             {erroPasso && (
-              <p className="text-center text-xs sm:text-sm text-zinc-500 dark:text-zinc-500 animate-[fadeIn_0.2s_ease-out]">
+              <p className="text-center text-xs sm:text-sm text-white/30 animate-[fadeIn_0.2s_ease-out]">
                 {erroPasso}
               </p>
             )}
@@ -286,8 +278,8 @@ export default function OnboardingPage() {
         )}
 
         {erro && (
-          <div className="mt-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900">
-            <p className="text-sm text-red-900 dark:text-red-100">
+          <div className="mt-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30">
+            <p className="text-sm text-red-400">
               <strong>Erro:</strong> {erro}
             </p>
           </div>
@@ -302,22 +294,19 @@ export default function OnboardingPage() {
    ============================================================ */
 
 function PassoTitulo({
-  emoji,
   titulo,
   subtitulo,
 }: {
-  emoji: string;
   titulo: string;
   subtitulo?: string;
 }) {
   return (
     <div className="flex flex-col items-center sm:items-start text-center sm:text-left mb-6 sm:mb-8">
-      <div className="text-4xl sm:text-5xl mb-4">{emoji}</div>
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 leading-tight">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-[family-name:var(--font-bebas)] tracking-wide text-white leading-tight">
         {titulo}
       </h1>
       {subtitulo && (
-        <p className="mt-2 text-sm sm:text-base text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm sm:text-base text-white/50">
           {subtitulo}
         </p>
       )}
@@ -337,7 +326,6 @@ function PassoNome({
   return (
     <>
       <PassoTitulo
-        emoji="👋"
         titulo="Bem-vindo ao ShapeScan!"
         subtitulo="Pra começar, como podemos te chamar?"
       />
@@ -363,16 +351,15 @@ function PassoSexo({
   valor: FormState["sexo"];
   onChange: (v: FormState["sexo"]) => void;
 }) {
-  const opcoes: { id: FormState["sexo"]; label: string; emoji: string }[] = [
-    { id: "masculino", label: "Masculino", emoji: "👨" },
-    { id: "feminino", label: "Feminino", emoji: "👩" },
-    { id: "outro", label: "Outro / Prefiro não dizer", emoji: "🧑" },
+  const opcoes: { id: FormState["sexo"]; label: string; desc: string }[] = [
+    { id: "masculino", label: "Masculino", desc: "Corpo biológico masculino" },
+    { id: "feminino", label: "Feminino", desc: "Corpo biológico feminino" },
+    { id: "outro", label: "Outro / Prefiro não dizer", desc: "Será considerado na análise" },
   ];
 
   return (
     <>
       <PassoTitulo
-        emoji="👤"
         titulo="Qual seu sexo biológico?"
         subtitulo="Influencia no cálculo das calorias e necessidades."
       />
@@ -382,8 +369,8 @@ function PassoSexo({
             key={op.id}
             selecionado={valor === op.id}
             onClick={() => onChange(op.id)}
-            emoji={op.emoji}
             titulo={op.label}
+            descricao={op.desc}
           />
         ))}
       </div>
@@ -400,7 +387,7 @@ function PassoIdade({
 }) {
   return (
     <>
-      <PassoTitulo emoji="🎂" titulo="Quantos anos você tem?" />
+      <PassoTitulo titulo="Quantos anos você tem?" />
       <div className="flex items-center justify-center my-6">
         <input
           type="number"
@@ -410,10 +397,10 @@ function PassoIdade({
           value={valor}
           onChange={(e) => onChange(e.target.value)}
           placeholder="0"
-          className="w-48 h-32 text-center text-6xl sm:text-7xl font-bold bg-transparent border-b-4 border-zinc-300 dark:border-zinc-700 focus:border-indigo-500 focus:outline-none text-zinc-900 dark:text-zinc-50 transition-colors"
+          className="w-48 h-32 text-center text-6xl sm:text-7xl font-bold bg-transparent border-b-2 border-white/20 focus:border-orange-400 focus:outline-none text-white transition-colors"
         />
       </div>
-      <p className="text-center text-sm text-zinc-500 dark:text-zinc-500">
+      <p className="text-center text-sm text-white/30">
         anos
       </p>
     </>
@@ -434,13 +421,12 @@ function PassoMedidas({
   return (
     <>
       <PassoTitulo
-        emoji="📏"
         titulo="Suas medidas atuais"
         subtitulo="Pode estimar se não souber exato — depois você atualiza."
       />
       <div className="flex flex-col gap-5">
         <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2 block">
+          <label className="text-sm font-medium text-white/60 mb-2 block">
             Peso atual (kg)
           </label>
           <input
@@ -456,7 +442,7 @@ function PassoMedidas({
           />
         </div>
         <div>
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2 block">
+          <label className="text-sm font-medium text-white/60 mb-2 block">
             Altura (cm)
           </label>
           <input
@@ -485,38 +471,16 @@ function PassoAtividade({
     id: FormState["nivelAtividade"];
     label: string;
     desc: string;
-    emoji: string;
   }[] = [
-    {
-      id: "sedentario",
-      label: "Sedentário",
-      desc: "Não pratico exercícios",
-      emoji: "🛋️",
-    },
-    {
-      id: "leve",
-      label: "Leve",
-      desc: "1 a 2 vezes por semana",
-      emoji: "🚶",
-    },
-    {
-      id: "moderado",
-      label: "Moderado",
-      desc: "3 a 4 vezes por semana",
-      emoji: "🏃",
-    },
-    {
-      id: "intenso",
-      label: "Intenso",
-      desc: "5 ou mais vezes por semana",
-      emoji: "🔥",
-    },
+    { id: "sedentario", label: "Sedentário", desc: "Não pratico exercícios" },
+    { id: "leve", label: "Leve", desc: "1 a 2 vezes por semana" },
+    { id: "moderado", label: "Moderado", desc: "3 a 4 vezes por semana" },
+    { id: "intenso", label: "Intenso", desc: "5 ou mais vezes por semana" },
   ];
 
   return (
     <>
       <PassoTitulo
-        emoji="🏃"
         titulo="Com que frequência você se exercita?"
         subtitulo="Considere academia, esporte, caminhada — qualquer atividade física."
       />
@@ -526,7 +490,6 @@ function PassoAtividade({
             key={op.id}
             selecionado={valor === op.id}
             onClick={() => onChange(op.id)}
-            emoji={op.emoji}
             titulo={op.label}
             descricao={op.desc}
           />
@@ -547,38 +510,16 @@ function PassoObjetivo({
     id: FormState["objetivo"];
     label: string;
     desc: string;
-    emoji: string;
   }[] = [
-    {
-      id: "emagrecer",
-      label: "Emagrecer",
-      desc: "Perder gordura corporal",
-      emoji: "⚖️",
-    },
-    {
-      id: "ganhar_massa",
-      label: "Ganhar massa",
-      desc: "Aumentar músculos",
-      emoji: "💪",
-    },
-    {
-      id: "definir",
-      label: "Definir",
-      desc: "Marcar o corpo, reduzir gordura mantendo músculo",
-      emoji: "🎯",
-    },
-    {
-      id: "saude_geral",
-      label: "Saúde geral",
-      desc: "Bem-estar, disposição, longevidade",
-      emoji: "❤️",
-    },
+    { id: "emagrecer", label: "Emagrecer", desc: "Perder gordura corporal" },
+    { id: "ganhar_massa", label: "Ganhar massa", desc: "Aumentar músculos" },
+    { id: "definir", label: "Definir", desc: "Marcar o corpo, reduzir gordura mantendo músculo" },
+    { id: "saude_geral", label: "Saúde geral", desc: "Bem-estar, disposição, longevidade" },
   ];
 
   return (
     <>
       <PassoTitulo
-        emoji="🎯"
         titulo="Qual seu objetivo principal?"
         subtitulo="Vamos personalizar tudo em torno disso."
       />
@@ -588,7 +529,6 @@ function PassoObjetivo({
             key={op.id}
             selecionado={valor === op.id}
             onClick={() => onChange(op.id)}
-            emoji={op.emoji}
             titulo={op.label}
             descricao={op.desc}
           />
@@ -598,10 +538,6 @@ function PassoObjetivo({
   );
 }
 
-/**
- * Redimensiona imagem no navegador para max 800px de lado maior,
- * converte para JPEG 70% — reduz ~3MB de foto para ~100-300KB.
- */
 async function redimensionarImagem(
   file: File
 ): Promise<{ base64: string; mimeType: string; preview: string }> {
@@ -631,13 +567,12 @@ async function redimensionarImagem(
         ctx.drawImage(img, 0, 0, w, h);
 
         const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-        // Remove o prefixo "data:image/jpeg;base64," para o Gemini
         const base64 = dataUrl.split(",")[1];
 
         resolve({
           base64,
           mimeType: "image/jpeg",
-          preview: dataUrl, // Mantém o prefixo para exibir na tela
+          preview: dataUrl,
         });
       };
       img.onerror = reject;
@@ -677,7 +612,6 @@ function PassoFoto({
   return (
     <>
       <PassoTitulo
-        emoji="📸"
         titulo="Quer enviar uma foto?"
         subtitulo="Opcional. A IA usa para refinar a análise visual do seu biotipo. Sua foto não é armazenada."
       />
@@ -688,27 +622,30 @@ function PassoFoto({
           <img
             src={fotoPreview}
             alt="Preview da foto enviada"
-            className="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-2xl border-2 border-indigo-500 shadow-lg shadow-indigo-500/20"
+            className="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-2xl border-2 border-orange-400/50 shadow-lg shadow-orange-400/10"
           />
           <button
             type="button"
             onClick={onRemover}
-            className="text-sm text-red-500 dark:text-red-400 hover:underline"
+            className="text-sm text-red-400 hover:text-red-300 transition-colors"
           >
             Remover foto
           </button>
         </div>
       ) : (
-        <label className="flex flex-col items-center gap-3 p-8 sm:p-10 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-indigo-400 dark:hover:border-indigo-600 transition-colors cursor-pointer">
-          <div className="text-4xl sm:text-5xl">
-            {processando ? "⏳" : "📷"}
+        <label className="flex flex-col items-center gap-3 p-8 sm:p-10 rounded-2xl border-2 border-dashed border-white/[0.15] bg-white/[0.04] hover:border-orange-400/40 hover:bg-white/[0.06] transition-colors cursor-pointer">
+          <div className="w-14 h-14 rounded-xl bg-white/[0.08] flex items-center justify-center text-white/40">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+              <circle cx="12" cy="13" r="3"/>
+            </svg>
           </div>
-          <p className="text-sm sm:text-base font-medium text-zinc-700 dark:text-zinc-300">
+          <p className="text-sm sm:text-base font-medium text-white/60">
             {processando
               ? "Processando..."
               : "Toque para tirar foto ou escolher da galeria"}
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-white/30">
             JPG, PNG — máx. 10MB
           </p>
           <input
@@ -722,7 +659,7 @@ function PassoFoto({
         </label>
       )}
 
-      <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 mt-2">
+      <p className="text-center text-xs text-white/30 mt-2">
         Se preferir, pule este passo — a análise funciona sem foto.
       </p>
     </>
@@ -730,19 +667,17 @@ function PassoFoto({
 }
 
 /* ============================================================
-   Componente reutilizável: card de seleção (botão grande)
+   Componente reutilizável: card de seleção
    ============================================================ */
 
 function CardSelecao({
   selecionado,
   onClick,
-  emoji,
   titulo,
   descricao,
 }: {
   selecionado: boolean;
   onClick: () => void;
-  emoji: string;
   titulo: string;
   descricao?: string;
 }) {
@@ -752,32 +687,29 @@ function CardSelecao({
       onClick={onClick}
       className={`flex items-center gap-4 p-4 sm:p-5 rounded-2xl border-2 text-left transition-all duration-200 active:scale-[0.98] ${
         selecionado
-          ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 shadow-md shadow-indigo-500/10"
-          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
+          ? "border-orange-400 bg-orange-400/[0.08]"
+          : "border-white/[0.10] bg-white/[0.04] hover:border-white/[0.20] hover:bg-white/[0.07]"
       }`}
     >
-      <div className="text-3xl sm:text-4xl">{emoji}</div>
       <div className="flex-1">
-        <p
-          className={`font-semibold text-base sm:text-lg ${
-            selecionado
-              ? "text-indigo-900 dark:text-indigo-100"
-              : "text-zinc-900 dark:text-zinc-50"
-          }`}
-        >
+        <p className={`font-semibold text-base sm:text-lg ${selecionado ? "text-orange-400" : "text-white"}`}>
           {titulo}
         </p>
         {descricao && (
-          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-white/40 mt-0.5">
             {descricao}
           </p>
         )}
       </div>
-      {selecionado && (
-        <div className="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm flex-shrink-0">
-          ✓
-        </div>
-      )}
+      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+        selecionado ? "border-orange-400 bg-orange-400" : "border-white/20"
+      }`}>
+        {selecionado && (
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2 5l2.5 2.5L8 3" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+      </div>
     </button>
   );
 }

@@ -1,12 +1,5 @@
 import type { AnaliseBiotipo } from "@/lib/gemini";
 
-/**
- * Componente visual da análise — só renderiza, sem lógica de salvar/buscar.
- *
- * Reutilizado em:
- * - AnaliseResultado.tsx (recém-gerada no onboarding, com banner de "salvo")
- * - dashboard/analise/[id]/page.tsx (visualizando análise salva no histórico)
- */
 export function AnaliseView({
   analise,
   nome,
@@ -17,11 +10,11 @@ export function AnaliseView({
   return (
     <>
       {/* Biotipo principal */}
-      <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-500/20">
-        <p className="text-sm sm:text-base opacity-90 mb-1">
+      <div className="bg-orange-400 rounded-3xl p-6 sm:p-8">
+        <p className="text-sm sm:text-base text-black/60 mb-1">
           Análise de {nome}
         </p>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold capitalize mb-3">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-[family-name:var(--font-bebas)] tracking-wide text-black capitalize mb-3">
           Você é{" "}
           {analise.biotipo === "ectomorfo"
             ? "ectomorfo"
@@ -31,29 +24,29 @@ export function AnaliseView({
             ? "endomorfo"
             : "biotipo misto"}
         </h1>
-        <p className="text-sm sm:text-base opacity-95 leading-relaxed">
+        <p className="text-sm sm:text-base text-black/80 leading-relaxed">
           {analise.resumoBiotipo}
         </p>
       </div>
 
       {/* Pontos fortes e desafios */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card titulo="💪 Pontos fortes">
+        <Card titulo="Pontos fortes">
           <ul className="flex flex-col gap-2">
             {analise.pontosFortes.map((p, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-green-600 dark:text-green-400">•</span>
-                <span>{p}</span>
+                <span className="text-orange-400">•</span>
+                <span className="text-white/80">{p}</span>
               </li>
             ))}
           </ul>
         </Card>
-        <Card titulo="🎯 Desafios">
+        <Card titulo="Desafios">
           <ul className="flex flex-col gap-2">
             {analise.desafios.map((d, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-amber-600 dark:text-amber-400">•</span>
-                <span>{d}</span>
+                <span className="text-orange-400/60">•</span>
+                <span className="text-white/80">{d}</span>
               </li>
             ))}
           </ul>
@@ -61,7 +54,7 @@ export function AnaliseView({
       </div>
 
       {/* Dieta */}
-      <Card titulo="🥗 Sua dieta personalizada">
+      <Card titulo="Sua dieta personalizada">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           <Stat
             label="Calorias/dia"
@@ -85,14 +78,14 @@ export function AnaliseView({
           />
         </div>
         <div>
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+          <p className="text-sm font-medium text-white/50 mb-2">
             Sugestões alimentares:
           </p>
           <ul className="flex flex-col gap-2">
             {analise.dieta.sugestoesAlimentares.map((s, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-indigo-600 dark:text-indigo-400">•</span>
-                <span>{s}</span>
+                <span className="text-orange-400">•</span>
+                <span className="text-white/80">{s}</span>
               </li>
             ))}
           </ul>
@@ -100,7 +93,7 @@ export function AnaliseView({
       </Card>
 
       {/* Treino */}
-      <Card titulo="💪 Seu plano de treino">
+      <Card titulo="Seu plano de treino">
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Stat
             label="Frequência"
@@ -110,14 +103,14 @@ export function AnaliseView({
           <Stat label="Foco" valor={analise.treino.focoPrincipal} />
         </div>
         <div>
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+          <p className="text-sm font-medium text-white/50 mb-2">
             Exercícios recomendados:
           </p>
           <ul className="flex flex-col gap-2">
             {analise.treino.exerciciosRecomendados.map((e, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-purple-600 dark:text-purple-400">•</span>
-                <span>{e}</span>
+                <span className="text-orange-400">•</span>
+                <span className="text-white/80">{e}</span>
               </li>
             ))}
           </ul>
@@ -125,9 +118,9 @@ export function AnaliseView({
       </Card>
 
       {/* Aviso legal */}
-      <div className="p-4 sm:p-6 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-        <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-          ⚠️ <strong>Importante:</strong> {analise.avisoImportante}
+      <div className="p-4 sm:p-6 rounded-2xl bg-white/[0.05] border border-white/[0.08]">
+        <p className="text-xs sm:text-sm text-white/40">
+          <strong className="text-white/60">Importante:</strong> {analise.avisoImportante}
         </p>
       </div>
     </>
@@ -142,8 +135,8 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-5 sm:p-6 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-      <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
+    <div className="bg-white/[0.05] border border-white/[0.10] backdrop-blur rounded-2xl p-5 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white mb-3">
         {titulo}
       </h2>
       {children}
@@ -161,12 +154,12 @@ function Stat({
   sufixo?: string;
 }) {
   return (
-    <div className="bg-zinc-50 dark:bg-zinc-800 rounded-xl p-3">
-      <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{label}</p>
-      <p className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-50 capitalize">
+    <div className="bg-white/[0.05] rounded-xl p-3">
+      <p className="text-xs text-white/40 mb-1">{label}</p>
+      <p className="text-base sm:text-lg font-bold text-white capitalize">
         {valor}{" "}
         {sufixo && (
-          <span className="text-xs font-normal text-zinc-500">{sufixo}</span>
+          <span className="text-xs font-normal text-white/40">{sufixo}</span>
         )}
       </p>
     </div>
