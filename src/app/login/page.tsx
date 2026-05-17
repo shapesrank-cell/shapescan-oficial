@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 
-export default function LoginPage() {
+export default async function LoginPage(props: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect } = await props.searchParams;
+  const cadastroHref = redirect ? `/cadastro?redirect=${encodeURIComponent(redirect)}` : "/cadastro";
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 bg-[#111111]">
       <div className="w-full max-w-md flex flex-col gap-8">
@@ -26,12 +31,12 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <LoginForm />
+          <LoginForm redirect={redirect} />
 
           <p className="text-center text-sm text-white/50">
             Não tem conta?{" "}
             <Link
-              href="/cadastro"
+              href={cadastroHref}
               className="font-semibold text-orange-400 hover:text-orange-300 transition-colors"
             >
               Cadastre-se grátis

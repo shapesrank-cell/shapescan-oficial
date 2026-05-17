@@ -11,7 +11,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Rotas que exigem login. Adicione novas rotas protegidas aqui.
-const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises"];
+const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises", "/onboarding", "/perfil", "/configuracoes"];
 
 // Rotas de auth — se o usuário JÁ está logado, redireciona pro dashboard
 const ROTAS_AUTH = ["/login", "/cadastro"];

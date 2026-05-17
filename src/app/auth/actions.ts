@@ -24,6 +24,7 @@ export type AuthResult =
 export async function login(formData: FormData): Promise<AuthResult> {
   const email = (formData.get("email") as string)?.trim();
   const senha = formData.get("senha") as string;
+  const redirectTo = (formData.get("redirect") as string) || "/dashboard";
 
   if (!email || !senha) {
     return { erro: "Preencha email e senha." };
@@ -47,7 +48,7 @@ export async function login(formData: FormData): Promise<AuthResult> {
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(redirectTo);
 }
 
 /**
@@ -57,6 +58,7 @@ export async function cadastro(formData: FormData): Promise<AuthResult> {
   const email = (formData.get("email") as string)?.trim();
   const senha = formData.get("senha") as string;
   const nome = (formData.get("nome") as string)?.trim();
+  const redirectTo = (formData.get("redirect") as string) || "/dashboard";
 
   if (!email || !senha || !nome) {
     return { erro: "Preencha todos os campos." };
@@ -83,7 +85,7 @@ export async function cadastro(formData: FormData): Promise<AuthResult> {
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(redirectTo);
 }
 
 /**
