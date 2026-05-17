@@ -8,11 +8,11 @@ import {
   Zap,
   Gift,
   CheckCircle,
-  Dumbbell,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import ParticleCanvas from "./ParticleCanvas";
 import ScrollReveal from "./ScrollReveal";
+import ResultadoCardAnimado from "./ResultadoCardAnimado";
 
 const steps = [
   {
@@ -135,46 +135,9 @@ export default async function Home() {
         {/* Orbs decorativos */}
         <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-orange-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-        {/* Card flutuante — preview de resultado */}
-        <div className="absolute top-28 right-5 sm:right-10 lg:right-20 z-20 animate-[fadeIn_0.8s_ease-out]">
-          <div className="w-64 sm:w-72 p-5 sm:p-6 rounded-2xl bg-white/[0.12] backdrop-blur-2xl border border-white/25 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-400/20 border border-orange-400/30 flex items-center justify-center shrink-0">
-                <Dumbbell size={18} className="text-orange-400" />
-              </div>
-              <div>
-                <p className="text-white text-sm font-bold leading-none">Análise concluída</p>
-                <p className="text-zinc-400 text-xs mt-1">em 1 min 43 seg</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <p className="text-zinc-500 text-[11px] uppercase tracking-wider mb-1">Biotipo identificado</p>
-                <p className="text-white font-black text-xl">Mesomorfo</p>
-              </div>
-              <div className="flex gap-6">
-                <div>
-                  <p className="text-zinc-500 text-[11px] uppercase tracking-wider mb-1">IMC</p>
-                  <p className="text-white font-black text-lg">22.4</p>
-                </div>
-                <div>
-                  <p className="text-zinc-500 text-[11px] uppercase tracking-wider mb-1">Objetivo</p>
-                  <p className="text-white font-black text-lg">Hipertrofia</p>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-orange-400 text-sm font-bold">Plano pronto</p>
-                  <span className="text-orange-400 text-sm font-bold">94%</span>
-                </div>
-                <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div className="h-full w-[94%] rounded-full bg-gradient-to-r from-orange-500 to-orange-300" />
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Card flutuante — só desktop (lg+) */}
+        <div className="hidden lg:block absolute top-28 right-20 z-20 w-72 animate-[fadeIn_0.8s_ease-out]">
+          <ResultadoCardAnimado />
         </div>
 
         {/* Texto sobreposto — rodapé do hero */}
@@ -223,6 +186,14 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── CARD ANIMADO — só mobile/tablet (< lg) ── */}
+      <div className="lg:hidden relative z-10 px-5 sm:px-10 py-8 -mt-4">
+        <div className="max-w-xs mx-auto">
+          <p className="text-white/40 text-xs uppercase tracking-widest text-center mb-3 font-bold">Exemplo de análise</p>
+          <ResultadoCardAnimado />
+        </div>
+      </div>
 
       {/* ── POR QUE FUNCIONA ── */}
       <section className="relative z-10 py-28 sm:py-36 px-5 sm:px-10 overflow-hidden">
