@@ -50,6 +50,14 @@ export function AnaliseResultado({
       } else {
         setSalvo(true);
       }
+
+      // Atualiza o nome no perfil (sempre que fizer análise logado)
+      if (dadosEntrada.nome) {
+        await supabase
+          .from("profiles")
+          .update({ nome: dadosEntrada.nome })
+          .eq("id", user.id);
+      }
     };
     salvar();
   // eslint-disable-next-line react-hooks/exhaustive-deps
