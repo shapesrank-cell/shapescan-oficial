@@ -84,6 +84,9 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // CTAs principais: se logado vai pro onboarding direto, senão vai pro cadastro com redirect
+  const ctaAnalise = user ? "/onboarding" : "/cadastro?redirect=/onboarding";
+
   return (
     <div className="flex-1 bg-[#111111] relative overflow-x-hidden">
       <ParticleCanvas />
@@ -110,10 +113,10 @@ export default async function Home() {
 
           {/* CTA */}
           <Link
-            href={user ? "/dashboard" : "/onboarding"}
+            href={user ? "/dashboard" : ctaAnalise}
             className="inline-flex items-center justify-center h-9 px-5 rounded-full bg-orange-400 text-black font-bold text-sm hover:bg-orange-300 transition-all whitespace-nowrap"
           >
-            {user ? "Meu dashboard" : "Analisar grátis"}
+            {user ? "Meu dashboard" : "Cadastrar grátis"}
           </Link>
         </div>
       </header>
@@ -159,13 +162,13 @@ export default async function Home() {
 
             <div className="flex flex-col sm:flex-row gap-3 animate-[fadeIn_0.7s_ease-out]">
               <Link
-                href="/onboarding"
+                href={ctaAnalise}
                 className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-orange-400 text-black font-bold text-lg hover:-translate-y-0.5 hover:bg-orange-300 transition-all shadow-lg shadow-orange-400/25"
               >
-                {user ? "Nova análise" : "Fazer minha análise grátis"}
+                {user ? "Nova análise" : "Criar conta e analisar grátis"}
               </Link>
               <Link
-                href={user ? "/dashboard" : "/login"}
+                href={user ? "/dashboard" : "/login?redirect=/onboarding"}
                 className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/25 text-white font-semibold text-lg hover:bg-white/10 hover:border-white/40 transition-all"
               >
                 {user ? "Meu dashboard" : "Já tenho conta"}
@@ -336,10 +339,10 @@ export default async function Home() {
                 Gratuito. Sem cartão. Resultado em 2 minutos.
               </p>
               <Link
-                href="/onboarding"
+                href={ctaAnalise}
                 className="inline-flex w-full sm:w-auto items-center justify-center h-14 px-8 sm:px-12 rounded-full bg-orange-400 text-black font-bold text-lg whitespace-nowrap hover:-translate-y-0.5 hover:bg-orange-300 transition-all shadow-lg shadow-orange-400/20"
               >
-                {user ? "Nova análise" : "Começar agora — é grátis"}
+                {user ? "Nova análise" : "Cadastrar e começar"}
               </Link>
             </div>
           </ScrollReveal>
