@@ -11,7 +11,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // Rotas que exigem login. Adicione novas rotas protegidas aqui.
-const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises", "/onboarding", "/perfil", "/configuracoes"];
+const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises", "/onboarding", "/perfil", "/configuracoes", "/admin"];
+
+// Rotas que exigem role 'super_admin'
+const ROTAS_ADMIN = ["/admin"];
 
 // Rotas de auth — se o usuário JÁ está logado, redireciona pro dashboard
 const ROTAS_AUTH = ["/login", "/cadastro"];
@@ -65,6 +68,22 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
+  }
+
+  // Rota de admin: verifica se o usuário tem role 'super_admin'
+  const ehRotaAdmin = ROTAS_ADMIN.some((rota) => pathname.startsWith(rota));
+  if (user && ehRotaAdmin) {
+    const { data: perfil } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (perfil?.role !== "super_admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;
