@@ -9,12 +9,17 @@
  */
 import { GoogleGenAI, Type } from "@google/genai";
 
-export const gemini = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
-
 // Modelo padrão do ShapeScan. Flash é rápido e gratuito até certo limite.
 export const SHAPESCAN_MODEL = "gemini-2.5-flash";
+
+/**
+ * Cria uma instância do cliente Gemini.
+ * Se apiKey for fornecida (vinda do banco via admin), usa ela.
+ * Caso contrário, usa a variável de ambiente GEMINI_API_KEY.
+ */
+function criarClienteGemini(apiKey?: string) {
+  return new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY });
+}
 
 // Tipos dos dados que o usuário envia no onboarding.
 export type DadosUsuario = {
@@ -70,10 +75,16 @@ REGRAS:
 /**
  * Gera análise completa de biotipo para os dados informados.
  * Retorna um objeto JSON tipado e validado pela própria Gemini.
+ *
+ * @param dados    Dados do usuário vindos do onboarding
+ * @param apiKey   (Opcional) Chave de API vinda do banco (admin). Usa GEMINI_API_KEY do env se omitido.
  */
 export async function gerarAnaliseBiotipo(
-  dados: DadosUsuario
+  dados: DadosUsuario,
+  apiKey?: string
 ): Promise<AnaliseBiotipo> {
+  const gemini = criarClienteGemini(apiKey);
+
   // Monta as partes da mensagem (texto + foto opcional)
   const parts: Array<
     | { text: string }

@@ -6,6 +6,7 @@
  */
 import { NextResponse } from "next/server";
 import { gerarAnaliseBiotipo, type DadosUsuario } from "@/lib/gemini";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +37,24 @@ export async function POST(request: Request) {
     }
 
     const dados = body as DadosUsuario;
-    const analise = await gerarAnaliseBiotipo(dados);
+
+    // Busca a chave de API do banco (admin pode trocar sem precisar de novo deploy)
+    let apiKeyDoBanco: string | undefined;
+    try {
+      const admin = createAdminClient();
+      const { data: setting } = await admin
+        .from("app_settings")
+        .select("value")
+        .eq("key", "gemini_api_key")
+        .single();
+      if (setting?.value && setting.value.length > 4) {
+        apiKeyDoBanco = setting.value;
+      }
+    } catch {
+      // Se falhar (ex: SUPABASE_SERVICE_ROLE_KEY não configurada), usa env var
+    }
+
+    const analise = await gerarAnaliseBiotipo(dados, apiKeyDoBanco);
 
     return NextResponse.json({ analise });
   } catch (err) {
