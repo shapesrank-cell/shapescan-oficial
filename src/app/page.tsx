@@ -73,8 +73,10 @@ export default async function Home() {
     // Sem service role key ainda — usa fallback honesto
   }
 
-  // CTAs principais: se logado vai pro onboarding direto, senão vai pro cadastro com redirect
-  const ctaAnalise = user ? "/onboarding" : "/cadastro?redirect=/onboarding";
+  // CTAs principais:
+  // - Não logado → cadastro (depois redireciona pra /onboarding)
+  // - Logado → /analise/nova (que redireciona pra /onboarding se perfil incompleto)
+  const ctaAnalise = user ? "/analise/nova" : "/cadastro?redirect=/onboarding";
 
   return (
     <div className="flex-1 bg-[#111111] relative overflow-x-hidden">

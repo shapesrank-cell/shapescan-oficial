@@ -41,7 +41,7 @@ export default async function CompararPage() {
             <p className="font-medium text-white/60">Você precisa de pelo menos 2 análises</p>
             <p className="text-sm text-white/30">Faça mais uma análise pra começar a comparar evolução.</p>
             <Link
-              href="/onboarding"
+              href="/analise/nova"
               className="mt-3 inline-flex items-center justify-center h-11 px-5 rounded-full bg-orange-400 text-black font-semibold text-sm hover:bg-orange-300 transition-all"
             >
               Fazer análise →

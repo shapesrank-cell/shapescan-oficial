@@ -12,7 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSuperAdmin } from "@/lib/admin";
 
 // Rotas que exigem login. Adicione novas rotas protegidas aqui.
-const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises", "/onboarding", "/perfil", "/configuracoes", "/admin"];
+const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises", "/onboarding", "/analise", "/perfil", "/configuracoes", "/admin"];
 
 // Rotas que exigem role 'super_admin'
 const ROTAS_ADMIN = ["/admin"];

@@ -26,7 +26,7 @@ export default function NotFound() {
             Voltar ao início
           </Link>
           <Link
-            href="/onboarding"
+            href="/analise/nova"
             className="inline-flex items-center justify-center h-12 px-6 rounded-full border border-white/20 text-white font-semibold hover:bg-white/[0.08] transition-colors"
           >
             Fazer análise
