@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LayoutDashboard, Users, Settings, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { isSuperAdmin } from "@/lib/admin";
 
 const NAV_LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -25,7 +26,7 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single();
 
-  if (perfil?.role !== "super_admin") redirect("/dashboard");
+  if (!isSuperAdmin(user.email, perfil?.role)) redirect("/dashboard");
 
   return (
     <div className="flex flex-col min-h-screen bg-[#111111]">

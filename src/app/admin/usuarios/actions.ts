@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isSuperAdmin } from "@/lib/admin";
 
 type RoleValido = "user" | "workspace_admin" | "super_admin";
 
@@ -18,7 +19,7 @@ export async function alterarRole(userId: string, novoRole: RoleValido) {
     .eq("id", user.id)
     .single();
 
-  if (perfil?.role !== "super_admin") return { erro: "Sem permissão" };
+  if (!isSuperAdmin(user.email, perfil?.role)) return { erro: "Sem permissão" };
 
   // Não permite remover o próprio super_admin status
   if (userId === user.id && novoRole !== "super_admin") {
