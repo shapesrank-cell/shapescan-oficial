@@ -9,6 +9,7 @@
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isSuperAdmin } from "@/lib/admin";
 
 // Rotas que exigem login. Adicione novas rotas protegidas aqui.
 const ROTAS_PROTEGIDAS = ["/dashboard", "/minhas-analises", "/onboarding", "/perfil", "/configuracoes", "/admin"];
@@ -70,7 +71,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Rota de admin: verifica se o usuário tem role 'super_admin'
+  // Rota de admin: aceita se email está no allowlist OU role = 'super_admin'
   const ehRotaAdmin = ROTAS_ADMIN.some((rota) => pathname.startsWith(rota));
   if (user && ehRotaAdmin) {
     const { data: perfil } = await supabase
@@ -79,7 +80,7 @@ export async function proxy(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (perfil?.role !== "super_admin") {
+    if (!isSuperAdmin(user.email, perfil?.role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/dashboard";
       return NextResponse.redirect(url);
