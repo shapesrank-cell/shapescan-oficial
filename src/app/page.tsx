@@ -8,8 +8,12 @@ import {
   Zap,
   Gift,
   CheckCircle,
+  Users,
+  Activity,
+  ShieldCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import ParticleCanvas from "./ParticleCanvas";
 import ScrollReveal from "./ScrollReveal";
 import ResultadoCardAnimado from "./ResultadoCardAnimado";
@@ -48,41 +52,26 @@ const differentials = [
   "Resultado em menos de 2 minutos, sem custo algum",
 ];
 
-const testimonials = [
-  {
-    photo:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80",
-    name: "Carlos M.",
-    age: "31 anos",
-    biotype: "Ectomorfo identificado",
-    quote:
-      "Sempre treinei sem resultado. O ShapeScan mostrou que eu comia de menos pro meu biotipo. Em 2 meses, ganhei 4kg de massa.",
-  },
-  {
-    photo:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80",
-    name: "Juliana R.",
-    age: "26 anos",
-    biotype: "Endomorfa identificada",
-    quote:
-      "Descobri que meu corpo responde melhor a força do que cardio. Perdi 6kg em 3 meses sem passar fome.",
-  },
-  {
-    photo:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=80&h=80&q=80",
-    name: "Rafael S.",
-    age: "35 anos",
-    biotype: "Mesomorfo identificado",
-    quote:
-      "Já paguei nutricionista e o ShapeScan foi igualmente personalizado. Voltei a evoluir depois de meses estagnado.",
-  },
-];
-
 export default async function Home() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Stats reais do banco — substituem os testimonials falsos
+  let totalUsuarios = 0;
+  let totalAnalises = 0;
+  try {
+    const admin = createAdminClient();
+    const [{ count: u }, { count: a }] = await Promise.all([
+      admin.from("profiles").select("*", { count: "exact", head: true }),
+      admin.from("analyses").select("*", { count: "exact", head: true }),
+    ]);
+    totalUsuarios = u ?? 0;
+    totalAnalises = a ?? 0;
+  } catch {
+    // Sem service role key ainda — usa fallback honesto
+  }
 
   // CTAs principais: se logado vai pro onboarding direto, senão vai pro cadastro com redirect
   const ctaAnalise = user ? "/onboarding" : "/cadastro?redirect=/onboarding";
@@ -279,7 +268,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── RESULTADOS ── */}
+      {/* ── NÚMEROS REAIS + GARANTIAS ── */}
       <section id="resultados" className="relative z-10 py-28 sm:py-36 px-5 sm:px-10 overflow-hidden">
         {/* Orb decorativo */}
         <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-orange-500/8 rounded-full blur-[120px] pointer-events-none" />
@@ -287,42 +276,57 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto">
           <ScrollReveal direction="up" className="text-center mb-16">
             <span className="text-orange-400 text-xs font-bold uppercase tracking-[0.2em]">
-              Resultados reais
+              Em números
             </span>
             <h2 className="font-[family-name:var(--font-bebas)] text-7xl sm:text-8xl text-white uppercase leading-[0.88] mt-3">
-              Quem usou,
+              Honestidade
               <br />
-              transformou
+              em primeiro lugar
             </h2>
+            <p className="text-zinc-400 text-base sm:text-lg max-w-2xl mx-auto mt-6">
+              Sem depoimentos inventados, sem celebridades pagas. Apenas dados
+              reais do que está acontecendo agora no ShapeScan.
+            </p>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {testimonials.map((t, i) => (
-              <ScrollReveal key={i} direction="up" delay={i * 100}>
-                <div className="h-full flex flex-col gap-5 p-7 sm:p-8 rounded-2xl bg-white/[0.08] border border-white/[0.15] backdrop-blur-2xl hover:border-orange-400/25 hover:bg-white/[0.11] transition-all shadow-lg shadow-black/20">
-                  <div className="text-orange-400 text-xl tracking-tight">★★★★★</div>
-                  <p className="text-zinc-300 text-base leading-relaxed flex-1">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3 pt-4 border-t border-white/[0.08]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={t.photo}
-                      alt={t.name}
-                      width={48}
-                      height={48}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-white/10"
-                    />
-                    <div>
-                      <p className="font-bold text-white text-base">
-                        {t.name}, {t.age}
-                      </p>
-                      <p className="text-sm text-orange-400 font-semibold">{t.biotype}</p>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
+          {/* Stats reais */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-16">
+            <StatCard
+              icon={<Users size={22} />}
+              valor={totalUsuarios > 0 ? String(totalUsuarios) : "—"}
+              label="Pessoas cadastradas"
+            />
+            <StatCard
+              icon={<Activity size={22} />}
+              valor={totalAnalises > 0 ? String(totalAnalises) : "—"}
+              label="Análises geradas"
+              highlight
+            />
+            <StatCard
+              icon={<ShieldCheck size={22} />}
+              valor="100%"
+              label="Gratuito, sem cartão"
+            />
+          </div>
+
+          {/* Garantias / promessas reais */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <PromessaCard
+              titulo="Sua foto não é armazenada"
+              descricao="Quando você envia foto, ela é processada pela IA e descartada. Só o resultado fica salvo na sua conta."
+            />
+            <PromessaCard
+              titulo="Seus dados são seus"
+              descricao="LGPD garantida: baixe tudo em JSON ou delete sua conta a qualquer momento, em 1 clique."
+            />
+            <PromessaCard
+              titulo="Não substitui profissional"
+              descricao="A IA é ótima para descobrir padrões, mas decisões sobre treino, dieta e saúde sempre envolvem nutricionista, médico ou educador físico."
+            />
+            <PromessaCard
+              titulo="Sem propaganda enganosa"
+              descricao="Não prometemos &lsquo;perder 10kg em 30 dias&rsquo; nem vendemos suplemento mágico. Conhecimento honesto, ferramenta gratuita."
+            />
           </div>
         </div>
       </section>
@@ -350,11 +354,81 @@ export default async function Home() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="relative z-10 py-8 px-5 border-t border-white/[0.06]">
-        <p className="text-center text-sm text-zinc-600">
-          © 2025 ShapeScan. Todos os direitos reservados. · Não substitui acompanhamento profissional de saúde.
-        </p>
+      <footer className="relative z-10 py-10 px-5 border-t border-white/[0.06]">
+        <div className="max-w-6xl mx-auto flex flex-col gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+            <Link href="/termos" className="text-zinc-500 hover:text-orange-400 transition-colors">
+              Termos de Uso
+            </Link>
+            <span className="text-zinc-700">·</span>
+            <Link href="/privacidade" className="text-zinc-500 hover:text-orange-400 transition-colors">
+              Política de Privacidade
+            </Link>
+            <span className="text-zinc-700">·</span>
+            <a href="mailto:contato@shapescan.app" className="text-zinc-500 hover:text-orange-400 transition-colors">
+              Contato
+            </a>
+          </div>
+          <p className="text-center text-xs text-zinc-600 max-w-2xl mx-auto leading-relaxed">
+            © 2026 ShapeScan. As análises geradas são informativas e não substituem
+            acompanhamento profissional de médico, nutricionista ou educador físico.
+          </p>
+        </div>
       </footer>
+    </div>
+  );
+}
+
+function StatCard({
+  icon,
+  valor,
+  label,
+  highlight,
+}: {
+  icon: React.ReactNode;
+  valor: string;
+  label: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={`flex flex-col items-center gap-3 p-8 rounded-2xl border backdrop-blur-2xl shadow-lg shadow-black/20 ${
+        highlight
+          ? "bg-orange-400/[0.08] border-orange-400/30"
+          : "bg-white/[0.06] border-white/[0.12]"
+      }`}
+    >
+      <div className={highlight ? "text-orange-400" : "text-white/40"}>{icon}</div>
+      <div className="flex flex-col items-center">
+        <span
+          className={`text-5xl sm:text-6xl font-[family-name:var(--font-bebas)] tracking-wide ${
+            highlight ? "text-orange-400" : "text-white"
+          }`}
+        >
+          {valor}
+        </span>
+        <span className="text-xs sm:text-sm text-zinc-400 uppercase tracking-wider font-medium text-center mt-1">
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function PromessaCard({
+  titulo,
+  descricao,
+}: {
+  titulo: string;
+  descricao: string;
+}) {
+  return (
+    <div className="flex gap-4 p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+      <CheckCircle size={20} className="text-orange-400 mt-0.5 shrink-0" />
+      <div className="flex flex-col gap-1.5">
+        <h3 className="font-bold text-white text-base">{titulo}</h3>
+        <p className="text-sm text-zinc-400 leading-relaxed">{descricao}</p>
+      </div>
     </div>
   );
 }

@@ -3,9 +3,6 @@ import type { MetadataRoute } from "next";
 /**
  * Manifest do PWA — define como o ShapeScan se comporta quando instalado
  * como app no celular (Android ou iOS).
- *
- * Quando o usuário acessa o site pelo celular, o navegador lê este arquivo
- * e oferece a opção "Instalar app" ou "Adicionar à tela inicial".
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -14,10 +11,10 @@ export default function manifest(): MetadataRoute.Manifest {
     description:
       "Descubra seu biotipo e receba dieta e treino personalizados por IA.",
     start_url: "/",
-    display: "standalone", // abre em tela cheia, sem barra do navegador
+    display: "standalone",
     orientation: "portrait",
-    background_color: "#fafafa", // cor da splash screen
-    theme_color: "#6366f1", // cor da barra superior (indigo-500)
+    background_color: "#111111", // mesma cor do app (dark)
+    theme_color: "#fb923c", // orange-400 — identidade ShapeScan
     lang: "pt-BR",
     categories: ["health", "fitness", "lifestyle"],
     icons: [

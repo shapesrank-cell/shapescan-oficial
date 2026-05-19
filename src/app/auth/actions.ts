@@ -55,21 +55,32 @@ export async function login(formData: FormData): Promise<AuthResult> {
  * Cadastra novo usuário com email + senha + nome.
  */
 export async function cadastro(formData: FormData): Promise<AuthResult> {
-  const email = (formData.get("email") as string)?.trim();
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
   const senha = formData.get("senha") as string;
   const nome = (formData.get("nome") as string)?.trim();
+  const aceitouTermos = formData.get("aceitou_termos") === "true";
   const redirectTo = (formData.get("redirect") as string) || "/dashboard";
 
   if (!email || !senha || !nome) {
     return { erro: "Preencha todos os campos." };
   }
 
-  if (senha.length < 6) {
-    return { erro: "A senha precisa ter ao menos 6 caracteres." };
+  if (senha.length < 8) {
+    return { erro: "A senha precisa ter ao menos 8 caracteres." };
+  }
+
+  if (!aceitouTermos) {
+    return { erro: "Aceite os Termos de Uso para continuar." };
+  }
+
+  // Validação básica de formato de email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { erro: "Email inválido." };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password: senha,
     options: {
@@ -82,6 +93,18 @@ export async function cadastro(formData: FormData): Promise<AuthResult> {
       return { erro: "Este email já tem cadastro. Faça login." };
     }
     return { erro: "Erro ao cadastrar. Tente novamente." };
+  }
+
+  // Registra aceite dos termos no perfil
+  if (data.user) {
+    try {
+      await supabase
+        .from("profiles")
+        .update({ termos_aceitos_em: new Date().toISOString() })
+        .eq("id", data.user.id);
+    } catch {
+      // Não bloqueia o cadastro se falhar — termos foram aceitos no front
+    }
   }
 
   revalidatePath("/", "layout");

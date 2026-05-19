@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Lock, AlertTriangle } from "lucide-react";
+import { Lock, AlertTriangle, Shield } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { FormMudarSenha, BotaoDeletarConta } from "./ConfiguracoesForms";
+import { ExportarDadosBotao } from "./ExportarDadosBotao";
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   return (
     <div className="flex flex-1 flex-col px-4 py-8 sm:py-12 bg-[#111111] animate-[fadeIn_0.4s_ease-out]">
       <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
-
         <Link
           href="/dashboard"
           className="text-sm text-white/50 hover:text-white/80 transition-colors self-start"
@@ -25,7 +27,7 @@ export default async function ConfiguracoesPage() {
             <span className="text-orange-400">Config</span>urações
           </h1>
           <p className="text-sm sm:text-base text-white/50">
-            Gerencie sua conta e segurança
+            Gerencie sua conta, segurança e privacidade
           </p>
         </div>
 
@@ -37,10 +39,47 @@ export default async function ConfiguracoesPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Mudar senha</h2>
-              <p className="text-xs text-white/40">Atualize sua senha de acesso</p>
+              <p className="text-xs text-white/40">
+                Atualize sua senha de acesso
+              </p>
             </div>
           </div>
           <FormMudarSenha />
+        </section>
+
+        {/* Privacidade & LGPD */}
+        <section className="bg-white/[0.05] border border-white/[0.10] rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-orange-400/10 border border-orange-400/20 flex items-center justify-center text-orange-400">
+              <Shield size={18} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                Privacidade & seus dados
+              </h2>
+              <p className="text-xs text-white/40">
+                Direitos garantidos pela LGPD
+              </p>
+            </div>
+          </div>
+          <p className="text-sm text-white/60">
+            Você pode baixar uma cópia completa de todos os dados que armazenamos
+            sobre você (perfil + análises) em formato JSON.
+          </p>
+          <ExportarDadosBotao />
+          <p className="text-xs text-white/40">
+            Veja também:{" "}
+            <Link
+              href="/privacidade"
+              className="text-orange-400 hover:underline"
+            >
+              Política de Privacidade
+            </Link>{" "}
+            ·{" "}
+            <Link href="/termos" className="text-orange-400 hover:underline">
+              Termos de Uso
+            </Link>
+          </p>
         </section>
 
         {/* Zona de perigo — deletar conta */}
@@ -55,12 +94,12 @@ export default async function ConfiguracoesPage() {
             </div>
           </div>
           <p className="text-sm text-white/60">
-            Deletar sua conta remove permanentemente todos os seus dados, incluindo
-            histórico de análises, perfil e configurações. Não dá pra desfazer.
+            Deletar sua conta remove permanentemente todos os seus dados,
+            incluindo histórico de análises, perfil e configurações. Não dá pra
+            desfazer.
           </p>
           <BotaoDeletarConta />
         </section>
-
       </div>
     </div>
   );

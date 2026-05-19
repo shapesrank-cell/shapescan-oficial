@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Bebas_Neue } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,6 +20,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://shapescan-oficial.vercel.app"),
   title: "ShapeScan — Descubra seu biotipo com IA",
   description:
     "Análise corporal personalizada por inteligência artificial. Receba seu biotipo, dieta e plano de treinos em minutos.",
@@ -26,20 +28,39 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "ShapeScan",
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
   },
   formatDetection: {
     telephone: false,
   },
+  openGraph: {
+    title: "ShapeScan — Descubra seu biotipo com IA",
+    description:
+      "Análise corporal personalizada por IA. Biotipo, dieta e treino em 2 minutos, de graça.",
+    url: "https://shapescan-oficial.vercel.app",
+    siteName: "ShapeScan",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ShapeScan — Descubra seu biotipo com IA",
+    description:
+      "Análise corporal personalizada por IA. Biotipo, dieta e treino em 2 minutos.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#6366f1", // mesma cor do manifest (cor do app no celular)
+  themeColor: "#fb923c", // orange-400 — combinando com identidade
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  viewportFit: "cover", // usa toda a tela em iPhones com notch
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -54,6 +75,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#111111]">
         {children}
+        <Analytics />
       </body>
     </html>
   );
