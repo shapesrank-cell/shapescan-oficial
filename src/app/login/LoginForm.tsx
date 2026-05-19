@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { login } from "@/app/auth/actions";
 
 export function LoginForm({ redirect }: { redirect?: string }) {
@@ -30,9 +31,17 @@ export function LoginForm({ redirect }: { redirect?: string }) {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="senha" className="text-sm font-medium text-white/70">
-          Senha
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="senha" className="text-sm font-medium text-white/70">
+            Senha
+          </label>
+          <Link
+            href="/esqueci-senha"
+            className="text-xs text-orange-400 hover:text-orange-300 transition-colors"
+          >
+            Esqueceu a senha?
+          </Link>
+        </div>
         <input
           id="senha" name="senha" type="password" required autoComplete="current-password"
           placeholder="••••••••"
