@@ -10,6 +10,7 @@
  */
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -109,6 +110,36 @@ export async function cadastro(formData: FormData): Promise<AuthResult> {
 
   revalidatePath("/", "layout");
   redirect(redirectTo);
+}
+
+/**
+ * Envia email de redefinição de senha via Supabase.
+ */
+export async function esqueceuSenha(formData: FormData): Promise<{ erro?: string; sucesso?: boolean }> {
+  const email = (formData.get("email") as string)?.trim().toLowerCase();
+
+  if (!email) {
+    return { erro: "Preencha o email." };
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { erro: "Email inválido." };
+  }
+
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") || "https://shapescan-oficial.vercel.app";
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/redefinir-senha`,
+  });
+
+  if (error) {
+    console.error("Erro ao enviar email de reset:", error);
+    return { erro: "Erro ao enviar email. Tente novamente." };
+  }
+
+  return { sucesso: true };
 }
 
 /**
