@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-// Tamanho do ícone (192x192 é o padrão Android para PWAs)
 export const size = {
   width: 192,
   height: 192,
@@ -8,8 +7,7 @@ export const size = {
 export const contentType = "image/png";
 
 /**
- * Ícone do app gerado a partir de código — mesma identidade da logo "S"
- * com gradiente roxo/índigo, igual a tela de boas-vindas.
+ * Ícone do app gerado dinamicamente — identidade laranja ShapeScan.
  */
 export default function Icon() {
   return new ImageResponse(
@@ -21,10 +19,9 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background:
-            "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
+          background: "#fb923c", // orange-400
           borderRadius: 40,
-          color: "white",
+          color: "#0a0a0a",
           fontSize: 140,
           fontWeight: 900,
           fontFamily: "system-ui, -apple-system, sans-serif",

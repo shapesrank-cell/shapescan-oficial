@@ -9,10 +9,10 @@ export const contentType = "image/png";
 
 /**
  * Ícone do app quando instalado em iPhone / iPad.
- * Mesma identidade visual: gradiente + letra S.
+ * Identidade laranja ShapeScan.
  *
- * Diferente do Android: o iOS NÃO aplica máscara automática, então o
- * ícone deve preencher 100% do quadrado (sem padding interno).
+ * iOS NÃO aplica máscara automática, então o ícone deve preencher
+ * 100% do quadrado (sem padding interno).
  */
 export default function AppleIcon() {
   return new ImageResponse(
@@ -24,9 +24,8 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background:
-            "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
-          color: "white",
+          background: "#fb923c", // orange-400
+          color: "#0a0a0a",
           fontSize: 130,
           fontWeight: 900,
           fontFamily: "system-ui, -apple-system, sans-serif",

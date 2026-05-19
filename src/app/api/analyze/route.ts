@@ -1,68 +1,255 @@
 /**
  * POST /api/analyze
  *
- * Recebe os dados do formulário de onboarding e retorna a análise de biotipo
- * gerada pela IA (Gemini).
+ * Versão hardening:
+ * - Exige autenticação (401 se não logado)
+ * - Rate limit: 10/hora por usuário (429 se excedeu)
+ * - Valida tamanho da foto (máx 5MB base64)
+ * - Valida campos numéricos contra ranges seguros
+ * - Salva no banco SERVER-SIDE com provider_ia rastreado
+ * - Loga erros no error_log
+ * - Retorna { id, analise } pra navegação direta ao resultado
  */
 import { NextResponse } from "next/server";
 import { gerarAnaliseBiotipo, type DadosUsuario } from "@/lib/gemini";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { logError } from "@/lib/errorLog";
+
+// Limites
+const MAX_FOTO_BASE64 = 5 * 1024 * 1024; // 5MB base64 ≈ 3.75MB binário
+const RATE_LIMIT_ANALISES_HORA = 10;
+const RATE_LIMIT_ANALISES_DIA = 30;
+
+// Tipo provider IA (preparado pra Claude futuro)
+type ProviderIA = "gemini" | "claude";
 
 export async function POST(request: Request) {
-  try {
-    const body = (await request.json()) as Partial<DadosUsuario>;
+  // 1. AUTH: precisa estar logado
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    // Validação mínima dos campos obrigatórios.
-    const camposObrigatorios: (keyof DadosUsuario)[] = [
-      "nome",
-      "sexo",
-      "idade",
-      "peso",
-      "altura",
-      "nivelAtividade",
-      "objetivo",
-      // "foto" é OPCIONAL — não está aqui de propósito
-    ];
-    for (const campo of camposObrigatorios) {
-      if (
-        body[campo] === undefined ||
-        body[campo] === null ||
-        body[campo] === ""
-      ) {
-        return NextResponse.json(
-          { erro: `Campo obrigatório faltando: ${campo}` },
-          { status: 400 }
-        );
-      }
-    }
-
-    const dados = body as DadosUsuario;
-
-    // Busca a chave de API do banco (admin pode trocar sem precisar de novo deploy)
-    let apiKeyDoBanco: string | undefined;
-    try {
-      const admin = createAdminClient();
-      const { data: setting } = await admin
-        .from("app_settings")
-        .select("value")
-        .eq("key", "gemini_api_key")
-        .single();
-      if (setting?.value && setting.value.length > 4) {
-        apiKeyDoBanco = setting.value;
-      }
-    } catch {
-      // Se falhar (ex: SUPABASE_SERVICE_ROLE_KEY não configurada), usa env var
-    }
-
-    const analise = await gerarAnaliseBiotipo(dados, apiKeyDoBanco);
-
-    return NextResponse.json({ analise });
-  } catch (err) {
-    console.error("[/api/analyze] erro:", err);
-    const mensagem = err instanceof Error ? err.message : "Erro desconhecido";
+  if (!user) {
     return NextResponse.json(
-      { erro: `Falha ao gerar análise: ${mensagem}` },
-      { status: 500 }
+      { erro: "Você precisa estar logado pra gerar uma análise." },
+      { status: 401 }
     );
   }
+
+  // 2. RATE LIMIT (por hora e por dia)
+  const limitHora = await checkRateLimit({
+    identifier: user.id,
+    action: "analyze",
+    limit: RATE_LIMIT_ANALISES_HORA,
+    windowMinutes: 60,
+  });
+  if (!limitHora.allowed) {
+    return NextResponse.json(
+      {
+        erro: `Limite de ${RATE_LIMIT_ANALISES_HORA} análises por hora atingido. Tente novamente em 1 hora.`,
+      },
+      { status: 429 }
+    );
+  }
+
+  const limitDia = await checkRateLimit({
+    identifier: user.id,
+    action: "analyze.day",
+    limit: RATE_LIMIT_ANALISES_DIA,
+    windowMinutes: 60 * 24,
+  });
+  if (!limitDia.allowed) {
+    return NextResponse.json(
+      {
+        erro: `Limite diário de ${RATE_LIMIT_ANALISES_DIA} análises atingido. Tente novamente amanhã.`,
+      },
+      { status: 429 }
+    );
+  }
+
+  // 3. PARSE + VALIDAÇÃO
+  let body: Partial<DadosUsuario>;
+  try {
+    body = (await request.json()) as Partial<DadosUsuario>;
+  } catch {
+    return NextResponse.json(
+      { erro: "JSON inválido no body da requisição." },
+      { status: 400 }
+    );
+  }
+
+  // Campos obrigatórios
+  const obrigatorios: (keyof DadosUsuario)[] = [
+    "nome",
+    "sexo",
+    "idade",
+    "peso",
+    "altura",
+    "nivelAtividade",
+    "objetivo",
+  ];
+  for (const campo of obrigatorios) {
+    if (body[campo] === undefined || body[campo] === null || body[campo] === "") {
+      return NextResponse.json(
+        { erro: `Campo obrigatório faltando: ${campo}` },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Validação de tipos e ranges
+  const idade = Number(body.idade);
+  const peso = Number(body.peso);
+  const altura = Number(body.altura);
+
+  if (!Number.isFinite(idade) || idade < 10 || idade > 110) {
+    return NextResponse.json({ erro: "Idade inválida (10-110)." }, { status: 400 });
+  }
+  if (!Number.isFinite(peso) || peso < 20 || peso > 400) {
+    return NextResponse.json({ erro: "Peso inválido (20-400 kg)." }, { status: 400 });
+  }
+  if (!Number.isFinite(altura) || altura < 80 || altura > 250) {
+    return NextResponse.json({ erro: "Altura inválida (80-250 cm)." }, { status: 400 });
+  }
+
+  const sexosValidos = ["masculino", "feminino", "outro"];
+  if (!sexosValidos.includes(body.sexo as string)) {
+    return NextResponse.json({ erro: "Sexo inválido." }, { status: 400 });
+  }
+
+  const niveisValidos = ["sedentario", "leve", "moderado", "intenso"];
+  if (!niveisValidos.includes(body.nivelAtividade as string)) {
+    return NextResponse.json({ erro: "Nível de atividade inválido." }, { status: 400 });
+  }
+
+  const objetivosValidos = ["emagrecer", "ganhar_massa", "definir", "saude_geral"];
+  if (!objetivosValidos.includes(body.objetivo as string)) {
+    return NextResponse.json({ erro: "Objetivo inválido." }, { status: 400 });
+  }
+
+  // Limite de tamanho da foto (DoS protection)
+  if (body.foto && body.foto.length > MAX_FOTO_BASE64) {
+    return NextResponse.json(
+      {
+        erro: `Foto muito grande. Máximo ${Math.round(
+          MAX_FOTO_BASE64 / 1024 / 1024
+        )}MB.`,
+      },
+      { status: 413 }
+    );
+  }
+
+  // Validação de mimeType da foto (whitelist)
+  if (body.foto) {
+    const mimesValidos = ["image/jpeg", "image/png", "image/webp"];
+    if (!body.fotoMimeType || !mimesValidos.includes(body.fotoMimeType)) {
+      return NextResponse.json(
+        { erro: "Formato de foto inválido. Use JPEG, PNG ou WebP." },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Limite de tamanho do nome
+  const nome = (body.nome as string).slice(0, 100).trim();
+  if (!nome) {
+    return NextResponse.json({ erro: "Nome inválido." }, { status: 400 });
+  }
+
+  const dados: DadosUsuario = {
+    nome,
+    sexo: body.sexo as DadosUsuario["sexo"],
+    idade,
+    peso,
+    altura,
+    nivelAtividade: body.nivelAtividade as DadosUsuario["nivelAtividade"],
+    objetivo: body.objetivo as DadosUsuario["objetivo"],
+    ...(body.foto && body.fotoMimeType
+      ? { foto: body.foto, fotoMimeType: body.fotoMimeType }
+      : {}),
+  };
+
+  // 4. BUSCA API KEY (banco tem prioridade sobre env)
+  let apiKeyDoBanco: string | undefined;
+  try {
+    const admin = createAdminClient();
+    const { data: setting } = await admin
+      .from("app_settings")
+      .select("value")
+      .eq("key", "gemini_api_key")
+      .single();
+    if (setting?.value && setting.value.length > 4) {
+      apiKeyDoBanco = setting.value;
+    }
+  } catch {
+    // Usa env como fallback
+  }
+
+  // Decide provider (preparado pra Claude). Por enquanto sempre gemini.
+  const provider: ProviderIA = "gemini";
+
+  // 5. CHAMA IA
+  let analise;
+  try {
+    analise = await gerarAnaliseBiotipo(dados, apiKeyDoBanco);
+  } catch (err) {
+    const e = err as Error;
+    await logError({
+      origem: "/api/analyze",
+      mensagem: `Falha na chamada Gemini: ${e.message}`,
+      stack: e.stack,
+      userId: user.id,
+      userEmail: user.email,
+      metadata: { etapa: "gemini" },
+    });
+    return NextResponse.json(
+      { erro: "A IA falhou ao gerar a análise. Tente novamente em alguns segundos." },
+      { status: 502 }
+    );
+  }
+
+  // 6. SALVA NO BANCO (server-side, dados validados, provider rastreado)
+  // Remove a foto base64 do que vai pro banco (economiza espaço, foto era só pra IA)
+  const dadosParaSalvar = { ...dados } as Partial<DadosUsuario>;
+  delete dadosParaSalvar.foto;
+  delete dadosParaSalvar.fotoMimeType;
+
+  let analiseId: string | null = null;
+  try {
+    const { data, error } = await supabase
+      .from("analyses")
+      .insert({
+        user_id: user.id,
+        dados_entrada: dadosParaSalvar,
+        resultado: analise,
+        provider_ia: provider,
+      })
+      .select("id")
+      .single();
+
+    if (error) throw error;
+    analiseId = data.id;
+
+    // Atualiza nome do perfil se mudou
+    if (nome) {
+      await supabase.from("profiles").update({ nome }).eq("id", user.id);
+    }
+  } catch (err) {
+    const e = err as Error;
+    await logError({
+      origem: "/api/analyze",
+      mensagem: `Falha ao salvar análise: ${e.message}`,
+      stack: e.stack,
+      userId: user.id,
+      userEmail: user.email,
+      metadata: { etapa: "db_insert" },
+    });
+    // Mesmo se salvar falhou, retorna a análise pro usuário (não perde o trabalho)
+    return NextResponse.json({ analise, id: null, alerta: "Análise gerada mas não foi salva. Tente repetir mais tarde." });
+  }
+
+  return NextResponse.json({ analise, id: analiseId });
 }

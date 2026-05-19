@@ -40,6 +40,8 @@ export default function OnboardingPage() {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [analise, setAnalise] = useState<AnaliseBiotipo | null>(null);
+  const [analiseId, setAnaliseId] = useState<string | null>(null);
+  const [alerta, setAlerta] = useState<string | undefined>(undefined);
 
   function update<K extends keyof FormState>(campo: K, valor: FormState[K]) {
     setForm((f) => ({ ...f, [campo]: valor }));
@@ -121,6 +123,8 @@ export default function OnboardingPage() {
       if (!resposta.ok) throw new Error(dados.erro || "Erro desconhecido");
 
       setAnalise(dados.analise as AnaliseBiotipo);
+      setAnaliseId(dados.id ?? null);
+      setAlerta(dados.alerta);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro inesperado");
     } finally {
@@ -130,6 +134,8 @@ export default function OnboardingPage() {
 
   function resetar() {
     setAnalise(null);
+    setAnaliseId(null);
+    setAlerta(undefined);
     setForm(FORM_INICIAL);
     setPasso(1);
     setErro(null);
@@ -141,7 +147,8 @@ export default function OnboardingPage() {
         analise={analise}
         nome={form.nome}
         onReset={resetar}
-        dadosEntrada={form}
+        analiseId={analiseId}
+        alerta={alerta}
       />
     );
   }
