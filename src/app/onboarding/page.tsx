@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import type { AnaliseBiotipo } from "@/lib/gemini";
-import { AnaliseResultado } from "./AnaliseResultado";
-import { AnaliseCarregando } from "./AnaliseCarregando";
+import { salvarPerfilOnboarding } from "./actions";
 
 type FormState = {
   nome: string;
@@ -12,9 +10,6 @@ type FormState = {
   idade: string;
   peso: string;
   altura: string;
-  foto: string;
-  fotoMimeType: string;
-  fotoPreview: string;
   nivelAtividade: "sedentario" | "leve" | "moderado" | "intenso" | "";
   objetivo: "emagrecer" | "ganhar_massa" | "definir" | "saude_geral" | "";
 };
@@ -25,23 +20,17 @@ const FORM_INICIAL: FormState = {
   idade: "",
   peso: "",
   altura: "",
-  foto: "",
-  fotoMimeType: "",
-  fotoPreview: "",
   nivelAtividade: "",
   objetivo: "",
 };
 
-const TOTAL_PASSOS = 7;
+const TOTAL_PASSOS = 6;
 
 export default function OnboardingPage() {
   const [passo, setPasso] = useState(1);
   const [form, setForm] = useState<FormState>(FORM_INICIAL);
-  const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [analise, setAnalise] = useState<AnaliseBiotipo | null>(null);
-  const [analiseId, setAnaliseId] = useState<string | null>(null);
-  const [alerta, setAlerta] = useState<string | undefined>(undefined);
+  const [salvando, startTransition] = useTransition();
 
   function update<K extends keyof FormState>(campo: K, valor: FormState[K]) {
     setForm((f) => ({ ...f, [campo]: valor }));
@@ -64,14 +53,13 @@ export default function OnboardingPage() {
         const altura = Number(form.altura);
         if (!form.peso || peso <= 0) return "Digite seu peso em kg";
         if (!form.altura || altura <= 0) return "Digite sua altura em cm";
-        if (altura < 50) return "Altura parece estar em metros — use cm (ex: 175)";
+        if (altura < 50)
+          return "Altura parece estar em metros — use cm (ex: 175)";
         return null;
       }
       case 5:
-        return null;
-      case 6:
         return form.nivelAtividade === "" ? "Selecione uma opção" : null;
-      case 7:
+      case 6:
         return form.objetivo === "" ? "Selecione uma opção" : null;
       default:
         return null;
@@ -95,66 +83,34 @@ export default function OnboardingPage() {
   }
 
   async function enviar(objetivoForcado?: FormState["objetivo"]) {
-    setEnviando(true);
     setErro(null);
-
     const objetivoFinal = objetivoForcado || form.objetivo;
 
-    try {
-      const resposta = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: form.nome,
-          sexo: form.sexo,
-          idade: Number(form.idade),
-          peso: Number(form.peso),
-          altura: Number(form.altura),
-          nivelAtividade: form.nivelAtividade,
-          objetivo: objetivoFinal,
-          ...(form.foto && {
-            foto: form.foto,
-            fotoMimeType: form.fotoMimeType,
-          }),
-        }),
+    startTransition(async () => {
+      const r = await salvarPerfilOnboarding({
+        nome: form.nome,
+        sexo: form.sexo as "masculino" | "feminino" | "outro",
+        idade: Number(form.idade),
+        peso: Number(form.peso),
+        altura: Number(form.altura),
+        nivel_atividade: form.nivelAtividade as
+          | "sedentario"
+          | "leve"
+          | "moderado"
+          | "intenso",
+        objetivo: objetivoFinal as
+          | "emagrecer"
+          | "ganhar_massa"
+          | "definir"
+          | "saude_geral",
       });
-
-      const dados = await resposta.json();
-      if (!resposta.ok) throw new Error(dados.erro || "Erro desconhecido");
-
-      setAnalise(dados.analise as AnaliseBiotipo);
-      setAnaliseId(dados.id ?? null);
-      setAlerta(dados.alerta);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro inesperado");
-    } finally {
-      setEnviando(false);
-    }
+      if (r?.erro) setErro(r.erro);
+      // Em caso de sucesso, action redireciona pra /dashboard
+    });
   }
 
-  function resetar() {
-    setAnalise(null);
-    setAnaliseId(null);
-    setAlerta(undefined);
-    setForm(FORM_INICIAL);
-    setPasso(1);
-    setErro(null);
-  }
-
-  if (analise) {
-    return (
-      <AnaliseResultado
-        analise={analise}
-        nome={form.nome}
-        onReset={resetar}
-        analiseId={analiseId}
-        alerta={alerta}
-      />
-    );
-  }
-
-  if (enviando) {
-    return <AnaliseCarregando temFoto={!!form.foto} />;
+  if (salvando) {
+    return <SalvandoPerfil />;
   }
 
   return (
@@ -209,7 +165,10 @@ export default function OnboardingPage() {
               valor={form.sexo}
               onChange={(v) => {
                 update("sexo", v);
-                setTimeout(() => setPasso((p) => Math.min(p + 1, TOTAL_PASSOS)), 250);
+                setTimeout(
+                  () => setPasso((p) => Math.min(p + 1, TOTAL_PASSOS)),
+                  250
+                );
               }}
             />
           )}
@@ -228,30 +187,18 @@ export default function OnboardingPage() {
             />
           )}
           {passo === 5 && (
-            <PassoFoto
-              fotoPreview={form.fotoPreview}
-              onFoto={(base64, mimeType, preview) => {
-                update("foto", base64);
-                update("fotoMimeType", mimeType);
-                update("fotoPreview", preview);
-              }}
-              onRemover={() => {
-                update("foto", "");
-                update("fotoMimeType", "");
-                update("fotoPreview", "");
-              }}
-            />
-          )}
-          {passo === 6 && (
             <PassoAtividade
               valor={form.nivelAtividade}
               onChange={(v) => {
                 update("nivelAtividade", v);
-                setTimeout(() => setPasso((p) => Math.min(p + 1, TOTAL_PASSOS)), 250);
+                setTimeout(
+                  () => setPasso((p) => Math.min(p + 1, TOTAL_PASSOS)),
+                  250
+                );
               }}
             />
           )}
-          {passo === 7 && (
+          {passo === 6 && (
             <PassoObjetivo
               valor={form.objetivo}
               onChange={(v) => {
@@ -262,19 +209,15 @@ export default function OnboardingPage() {
           )}
         </div>
 
-        {/* Botão Continuar */}
-        {[1, 3, 4, 5].includes(passo) && (
+        {/* Botão Continuar — só nos passos com input livre (1, 3, 4) */}
+        {[1, 3, 4].includes(passo) && (
           <div className="mt-8 flex flex-col gap-2">
             <button
               onClick={avancar}
               disabled={!passoValido()}
               className="w-full h-14 rounded-full bg-orange-400 text-black font-semibold text-base sm:text-lg hover:bg-orange-300 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              {passo === 5
-                ? form.foto
-                  ? "Continuar com foto"
-                  : "Continuar sem foto"
-                : "Continuar"}
+              Continuar
             </button>
             {erroPasso && (
               <p className="text-center text-xs sm:text-sm text-white/30 animate-[fadeIn_0.2s_ease-out]">
@@ -297,6 +240,33 @@ export default function OnboardingPage() {
 }
 
 /* ============================================================
+   Tela de "salvando perfil" — substitui o antigo AnaliseCarregando
+   ============================================================ */
+
+function SalvandoPerfil() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 bg-[#111111]">
+      <div className="flex flex-col items-center gap-6 max-w-md text-center">
+        <div className="relative w-20 h-20">
+          <div className="absolute inset-0 rounded-3xl bg-orange-400 animate-pulse" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-3xl font-bold text-black">S</span>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
+            Salvando seu perfil
+          </p>
+          <p className="text-sm text-white/50">
+            Levando você para o dashboard...
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
    Passos individuais
    ============================================================ */
 
@@ -313,9 +283,7 @@ function PassoTitulo({
         {titulo}
       </h1>
       {subtitulo && (
-        <p className="mt-2 text-sm sm:text-base text-white/50">
-          {subtitulo}
-        </p>
+        <p className="mt-2 text-sm sm:text-base text-white/50">{subtitulo}</p>
       )}
     </div>
   );
@@ -361,7 +329,11 @@ function PassoSexo({
   const opcoes: { id: FormState["sexo"]; label: string; desc: string }[] = [
     { id: "masculino", label: "Masculino", desc: "Corpo biológico masculino" },
     { id: "feminino", label: "Feminino", desc: "Corpo biológico feminino" },
-    { id: "outro", label: "Outro / Prefiro não dizer", desc: "Será considerado na análise" },
+    {
+      id: "outro",
+      label: "Outro / Prefiro não dizer",
+      desc: "Será considerado na análise",
+    },
   ];
 
   return (
@@ -407,9 +379,7 @@ function PassoIdade({
           className="w-48 h-32 text-center text-6xl sm:text-7xl font-bold bg-transparent border-b-2 border-white/20 focus:border-orange-400 focus:outline-none text-white transition-colors"
         />
       </div>
-      <p className="text-center text-sm text-white/30">
-        anos
-      </p>
+      <p className="text-center text-sm text-white/30">anos</p>
     </>
   );
 }
@@ -520,15 +490,23 @@ function PassoObjetivo({
   }[] = [
     { id: "emagrecer", label: "Emagrecer", desc: "Perder gordura corporal" },
     { id: "ganhar_massa", label: "Ganhar massa", desc: "Aumentar músculos" },
-    { id: "definir", label: "Definir", desc: "Marcar o corpo, reduzir gordura mantendo músculo" },
-    { id: "saude_geral", label: "Saúde geral", desc: "Bem-estar, disposição, longevidade" },
+    {
+      id: "definir",
+      label: "Definir",
+      desc: "Marcar o corpo, reduzir gordura mantendo músculo",
+    },
+    {
+      id: "saude_geral",
+      label: "Saúde geral",
+      desc: "Bem-estar, disposição, longevidade",
+    },
   ];
 
   return (
     <>
       <PassoTitulo
         titulo="Qual seu objetivo principal?"
-        subtitulo="Vamos personalizar tudo em torno disso."
+        subtitulo="Você vai poder mudar depois nas configurações."
       />
       <div className="flex flex-col gap-3">
         {opcoes.map((op) => (
@@ -541,134 +519,6 @@ function PassoObjetivo({
           />
         ))}
       </div>
-    </>
-  );
-}
-
-async function redimensionarImagem(
-  file: File
-): Promise<{ base64: string; mimeType: string; preview: string }> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const MAX = 800;
-        let w = img.width;
-        let h = img.height;
-
-        if (w > MAX || h > MAX) {
-          if (w > h) {
-            h = Math.round((h * MAX) / w);
-            w = MAX;
-          } else {
-            w = Math.round((w * MAX) / h);
-            h = MAX;
-          }
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0, w, h);
-
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-        const base64 = dataUrl.split(",")[1];
-
-        resolve({
-          base64,
-          mimeType: "image/jpeg",
-          preview: dataUrl,
-        });
-      };
-      img.onerror = reject;
-      img.src = reader.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function PassoFoto({
-  fotoPreview,
-  onFoto,
-  onRemover,
-}: {
-  fotoPreview: string;
-  onFoto: (base64: string, mimeType: string, preview: string) => void;
-  onRemover: () => void;
-}) {
-  const [processando, setProcessando] = useState(false);
-
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setProcessando(true);
-    try {
-      const { base64, mimeType, preview } = await redimensionarImagem(file);
-      onFoto(base64, mimeType, preview);
-    } catch {
-      // Silencia erro se imagem inválida
-    } finally {
-      setProcessando(false);
-    }
-  }
-
-  return (
-    <>
-      <PassoTitulo
-        titulo="Quer enviar uma foto?"
-        subtitulo="Opcional. A IA usa para refinar a análise visual do seu biotipo. Sua foto não é armazenada."
-      />
-
-      {fotoPreview ? (
-        <div className="flex flex-col items-center gap-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={fotoPreview}
-            alt="Preview da foto enviada"
-            className="w-48 h-48 sm:w-56 sm:h-56 object-cover rounded-2xl border-2 border-orange-400/50 shadow-lg shadow-orange-400/10"
-          />
-          <button
-            type="button"
-            onClick={onRemover}
-            className="text-sm text-red-400 hover:text-red-300 transition-colors"
-          >
-            Remover foto
-          </button>
-        </div>
-      ) : (
-        <label className="flex flex-col items-center gap-3 p-8 sm:p-10 rounded-2xl border-2 border-dashed border-white/[0.15] bg-white/[0.04] hover:border-orange-400/40 hover:bg-white/[0.06] transition-colors cursor-pointer">
-          <div className="w-14 h-14 rounded-xl bg-white/[0.08] flex items-center justify-center text-white/40">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-              <circle cx="12" cy="13" r="3"/>
-            </svg>
-          </div>
-          <p className="text-sm sm:text-base font-medium text-white/60">
-            {processando
-              ? "Processando..."
-              : "Toque para tirar foto ou escolher da galeria"}
-          </p>
-          <p className="text-xs text-white/30">
-            JPG, PNG — máx. 10MB
-          </p>
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleFile}
-            className="hidden"
-            disabled={processando}
-          />
-        </label>
-      )}
-
-      <p className="text-center text-xs text-white/30 mt-2">
-        Se preferir, pule este passo — a análise funciona sem foto.
-      </p>
     </>
   );
 }
@@ -699,21 +549,31 @@ function CardSelecao({
       }`}
     >
       <div className="flex-1">
-        <p className={`font-semibold text-base sm:text-lg ${selecionado ? "text-orange-400" : "text-white"}`}>
+        <p
+          className={`font-semibold text-base sm:text-lg ${
+            selecionado ? "text-orange-400" : "text-white"
+          }`}
+        >
           {titulo}
         </p>
         {descricao && (
-          <p className="text-xs sm:text-sm text-white/40 mt-0.5">
-            {descricao}
-          </p>
+          <p className="text-xs sm:text-sm text-white/40 mt-0.5">{descricao}</p>
         )}
       </div>
-      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-        selecionado ? "border-orange-400 bg-orange-400" : "border-white/20"
-      }`}>
+      <div
+        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+          selecionado ? "border-orange-400 bg-orange-400" : "border-white/20"
+        }`}
+      >
         {selecionado && (
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-            <path d="M2 5l2.5 2.5L8 3" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path
+              d="M2 5l2.5 2.5L8 3"
+              stroke="black"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         )}
       </div>

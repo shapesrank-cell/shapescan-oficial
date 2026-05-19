@@ -136,7 +136,7 @@ export default async function DashboardPage() {
               </p>
             </div>
             <Link
-              href="/onboarding"
+              href="/analise/nova"
               className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-black text-white font-semibold text-sm sm:text-base hover:bg-zinc-900 active:scale-95 transition-all whitespace-nowrap"
             >
               {totalAnalises === 0 ? "Começar análise →" : "Nova análise →"}

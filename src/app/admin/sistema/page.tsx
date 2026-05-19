@@ -101,7 +101,7 @@ export default async function AdminSistemaPage() {
         </div>
         <p className="text-[10px] text-white/30">
           Para testar conectividade real, faça uma análise via{" "}
-          <a href="/onboarding" className="text-orange-400 hover:underline">
+          <a href="/analise/nova" className="text-orange-400 hover:underline">
             onboarding
           </a>
           .
