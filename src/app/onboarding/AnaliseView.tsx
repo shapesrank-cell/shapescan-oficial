@@ -10,7 +10,7 @@ export function AnaliseView({
   return (
     <>
       {/* Biotipo principal */}
-      <div className="bg-orange-400 rounded-3xl p-6 sm:p-8">
+      <div className="print-biotipo-card bg-orange-400 rounded-3xl p-6 sm:p-8">
         <p className="text-sm sm:text-base text-black/60 mb-1">
           Análise de {nome}
         </p>
@@ -35,7 +35,7 @@ export function AnaliseView({
           <ul className="flex flex-col gap-2">
             {analise.pontosFortes.map((p, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-orange-400">•</span>
+                <span className="print-bullet text-orange-400">•</span>
                 <span className="text-white/80">{p}</span>
               </li>
             ))}
@@ -45,7 +45,7 @@ export function AnaliseView({
           <ul className="flex flex-col gap-2">
             {analise.desafios.map((d, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-orange-400/60">•</span>
+                <span className="print-bullet text-orange-400/60">•</span>
                 <span className="text-white/80">{d}</span>
               </li>
             ))}
@@ -84,7 +84,7 @@ export function AnaliseView({
           <ul className="flex flex-col gap-2">
             {analise.dieta.sugestoesAlimentares.map((s, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-orange-400">•</span>
+                <span className="print-bullet text-orange-400">•</span>
                 <span className="text-white/80">{s}</span>
               </li>
             ))}
@@ -109,7 +109,7 @@ export function AnaliseView({
           <ul className="flex flex-col gap-2">
             {analise.treino.exerciciosRecomendados.map((e, i) => (
               <li key={i} className="flex gap-2 text-sm sm:text-base">
-                <span className="text-orange-400">•</span>
+                <span className="print-bullet text-orange-400">•</span>
                 <span className="text-white/80">{e}</span>
               </li>
             ))}
@@ -118,7 +118,7 @@ export function AnaliseView({
       </Card>
 
       {/* Aviso legal */}
-      <div className="p-4 sm:p-6 rounded-2xl bg-white/[0.05] border border-white/[0.08]">
+      <div className="print-aviso p-4 sm:p-6 rounded-2xl bg-white/[0.05] border border-white/[0.08]">
         <p className="text-xs sm:text-sm text-white/40">
           <strong className="text-white/60">Importante:</strong> {analise.avisoImportante}
         </p>
@@ -135,7 +135,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white/[0.05] border border-white/[0.10] backdrop-blur rounded-2xl p-5 sm:p-6">
+    <div className="print-card bg-white/[0.05] border border-white/[0.10] backdrop-blur rounded-2xl p-5 sm:p-6">
       <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white mb-3">
         {titulo}
       </h2>
@@ -154,7 +154,7 @@ function Stat({
   sufixo?: string;
 }) {
   return (
-    <div className="bg-white/[0.05] rounded-xl p-3">
+    <div className="print-stat bg-white/[0.05] rounded-xl p-3">
       <p className="text-xs text-white/40 mb-1">{label}</p>
       <p className="text-base sm:text-lg font-bold text-white capitalize">
         {valor}{" "}
