@@ -62,6 +62,61 @@ body {
   to { width: 95% }
 }
 
+/* ─── PDF / Impressão ────────────────────────────────────────────────────── */
+@media print {
+  /* Esconde navegação e botões */
+  .no-print { display: none !important; }
+
+  /* Fundo branco, texto escuro */
+  body, html { background: #ffffff !important; color: #111111 !important; }
+
+  /* Remove sombras e backgrounds semitransparentes — vira branco */
+  [class*="bg-white/"],
+  [class*="bg-orange-"] { background-color: transparent !important; }
+
+  /* Card de biotipo: laranja → laranja sólido com texto escuro */
+  .print-biotipo-card {
+    background-color: #fb923c !important;
+    color: #000000 !important;
+    border-radius: 1rem;
+    padding: 1.5rem;
+  }
+  .print-biotipo-card * { color: #000000 !important; }
+
+  /* Cards internos: borda sutil no papel */
+  .print-card {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    background: #ffffff !important;
+    break-inside: avoid;
+  }
+  .print-card * { color: #111111 !important; }
+
+  /* Stats (calorias, macros, etc.) */
+  .print-stat {
+    border: 1px solid #f3f4f6 !important;
+    background: #f9fafb !important;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+  }
+  .print-stat * { color: #111111 !important; }
+
+  /* Bullets laranja */
+  .print-bullet { color: #ea580c !important; }
+
+  /* Aviso legal */
+  .print-aviso {
+    border: 1px solid #e5e7eb !important;
+    background: #f9fafb !important;
+    border-radius: 0.5rem;
+  }
+  .print-aviso * { color: #6b7280 !important; }
+
+  /* Página sem margens excessivas */
+  @page { margin: 1.5cm; }
+}
+
 /* Scroll-reveal bidirecional via ScrollReveal.tsx */
 .sr-base  { transition: opacity 0.65s ease, transform 0.65s ease; }
 .sr-up    { opacity: 0; transform: translateY(50px); }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AnaliseView } from "@/app/onboarding/AnaliseView";
+import { BotaoSalvarPDF } from "./BotaoSalvarPDF";
 import type { AnaliseBiotipo } from "@/lib/gemini";
 
 /**
@@ -41,16 +42,19 @@ export default async function AnaliseDetalhePage(props: {
   return (
     <div className="flex flex-1 flex-col items-center px-4 py-8 sm:py-12 bg-[#111111]">
       <div className="w-full max-w-3xl flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+        <div className="no-print flex items-center justify-between">
           <Link
             href="/dashboard"
             className="text-sm text-white/50 hover:text-white/80 transition-colors"
           >
             ← Voltar ao dashboard
           </Link>
-          <span className="text-xs text-white/30">
-            Análise de {data}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-white/30">
+              Análise de {data}
+            </span>
+            <BotaoSalvarPDF />
+          </div>
         </div>
 
         <AnaliseView analise={resultado} nome={nome} />
