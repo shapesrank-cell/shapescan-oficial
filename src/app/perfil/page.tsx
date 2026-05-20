@@ -11,7 +11,7 @@ export default async function PerfilPage() {
 
   const { data: perfil } = await supabase
     .from("profiles")
-    .select("nome, criado_em")
+    .select("nome, sexo, idade, peso, altura, nivel_atividade, objetivo, criado_em")
     .eq("id", user.id)
     .single();
 
@@ -61,7 +61,15 @@ export default async function PerfilPage() {
         {/* Formulário de edição */}
         <div className="bg-white/[0.05] border border-white/[0.10] rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
           <h2 className="text-lg font-[family-name:var(--font-bebas)] tracking-wide text-white">Informações pessoais</h2>
-          <PerfilForm nomeInicial={nomeInicial} />
+          <PerfilForm
+            nome={nomeInicial}
+            sexo={perfil?.sexo ?? null}
+            idade={perfil?.idade ?? null}
+            peso={perfil?.peso ?? null}
+            altura={perfil?.altura ?? null}
+            nivelAtividade={perfil?.nivel_atividade ?? null}
+            objetivo={perfil?.objetivo ?? null}
+          />
         </div>
 
         {/* Infos da conta */}
