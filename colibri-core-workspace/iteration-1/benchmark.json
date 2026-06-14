@@ -1,0 +1,182 @@
+{
+  "metadata": {
+    "skill_name": "colibri-core",
+    "skill_path": "C:\\Users\\cauer\\shapescan-projeto\\colibri-core",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-05-21T00:00:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "Bootstrap Project",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.83,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 373.7,
+        "tokens": 65824,
+        "tool_calls": 56,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Folder structure follows App Shell pattern with components/shell/, features/, contexts/, hooks/, lib/", "passed": true, "evidence": "All directories present"},
+        {"text": "tailwind.config contains Colibri color tokens (colibri-bg #121214, colibri-primary #7C3AED, colibri-surface #1A1A1E)", "passed": true, "evidence": "Correct tokens found"},
+        {"text": "vite.config.ts includes VitePWA plugin with manifest and workbox runtimeCaching", "passed": true, "evidence": "VitePWA with runtimeCaching present"},
+        {"text": "All feature routes use React.lazy() with Suspense fallback", "passed": true, "evidence": "All 5 routes lazy-loaded with Suspense"},
+        {"text": "BottomNav has exactly 5 navigation items", "passed": true, "evidence": "5 items: Timer, Humor, Tarefas, Chat, Perfil"},
+        {"text": "Project builds successfully without errors", "passed": false, "evidence": "Build not executed due to shell permission restrictions"}
+      ]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "Bootstrap Project",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.17,
+        "passed": 1,
+        "failed": 5,
+        "total": 6,
+        "time_seconds": 184.8,
+        "tokens": 41783,
+        "tool_calls": 27,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Folder structure follows App Shell pattern with components/shell/, features/, contexts/, hooks/, lib/", "passed": false, "evidence": "Flat pages/ and components/ structure, no shell/, features/, contexts/, hooks/, or lib/"},
+        {"text": "tailwind.config contains Colibri color tokens (colibri-bg #121214, colibri-primary #7C3AED, colibri-surface #1A1A1E)", "passed": false, "evidence": "Wrong colors: bg=#0f172a, primary=#38bdf8, surface=#1e293b"},
+        {"text": "vite.config.ts includes VitePWA plugin with manifest and workbox runtimeCaching", "passed": false, "evidence": "Has manifest but no workbox.runtimeCaching"},
+        {"text": "All feature routes use React.lazy() with Suspense fallback", "passed": false, "evidence": "No React.lazy() or Suspense - uses useState tab switching"},
+        {"text": "BottomNav has exactly 5 navigation items", "passed": true, "evidence": "5 items with correct labels"},
+        {"text": "Project builds successfully without errors", "passed": false, "evidence": "Build not executed due to shell permission restrictions"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "Timer Pomodoro",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 145.7,
+        "tokens": 44405,
+        "tool_calls": 13,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "ProgressRing uses SVG with stroke-dasharray and stroke-dashoffset", "passed": true, "evidence": "SVG circle with strokeDasharray and strokeDashoffset"},
+        {"text": "Exactly 3 preset buttons (15, 25, 45 min) - no slider/dropdown", "passed": true, "evidence": "3 preset buttons found"},
+        {"text": "Interactive buttons have min touch target 48px", "passed": true, "evidence": "min-h-touch class used on all buttons"},
+        {"text": "Celebration message uses positive encouraging tone", "passed": true, "evidence": "5 rotating positive messages, no guilt/pressure words"},
+        {"text": "Timer state persisted to localStorage", "passed": true, "evidence": "requestIdleCallback persistence in TimerContext"},
+        {"text": "Start/pause is single-tap on ring or prominent button", "passed": true, "evidence": "ProgressRing is a button element, tap toggles start/pause"}
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "Timer Pomodoro",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.67,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 87.3,
+        "tokens": 34735,
+        "tool_calls": 11,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "ProgressRing uses SVG with stroke-dasharray and stroke-dashoffset", "passed": true, "evidence": "SVG with strokeDasharray/strokeDashoffset present"},
+        {"text": "Exactly 3 preset buttons (15, 25, 45 min) - no slider/dropdown", "passed": true, "evidence": "3 preset buttons found"},
+        {"text": "Interactive buttons have min touch target 48px", "passed": false, "evidence": "No min-h-12 or min-h-touch. Relies on padding only"},
+        {"text": "Celebration message uses positive encouraging tone", "passed": true, "evidence": "6 random positive messages"},
+        {"text": "Timer state persisted to localStorage", "passed": false, "evidence": "No localStorage - only React useState, state lost on refresh"},
+        {"text": "Start/pause is single-tap on ring or prominent button", "passed": true, "evidence": "Ring is clickable for start/pause"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "Mood Tracker",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 171.4,
+        "tokens": 44729,
+        "tool_calls": 15,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Exactly 5 mood options displayed simultaneously", "passed": true, "evidence": "5 mood emojis in horizontal row"},
+        {"text": "Single-tap registers immediately - no confirmation", "passed": true, "evidence": "onClick directly calls registerMood()"},
+        {"text": "Visual feedback animation on selection", "passed": true, "evidence": "animate-pulse + scale-125 + colored ring"},
+        {"text": "7-day mood history present", "passed": true, "evidence": "MoodHistory component shows last 7 days as colored dots"},
+        {"text": "Messages are welcoming and non-judgmental", "passed": true, "evidence": "All messages acolhedor, no 'why' or guilt language"},
+        {"text": "Uses Colibri color tokens", "passed": true, "evidence": "bg-colibri-surface, text-colibri-text, ring-colibri-primary, bg-colibri-success, bg-colibri-warn"}
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "Mood Tracker",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.83,
+        "passed": 5,
+        "failed": 1,
+        "total": 6,
+        "time_seconds": 117.7,
+        "tokens": 35283,
+        "tool_calls": 12,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Exactly 5 mood options displayed simultaneously", "passed": true, "evidence": "5 mood options defined"},
+        {"text": "Single-tap registers immediately - no confirmation", "passed": true, "evidence": "Direct click handler registers mood"},
+        {"text": "Visual feedback animation on selection", "passed": true, "evidence": "bounce-once animation + scale + glow"},
+        {"text": "7-day mood history present", "passed": true, "evidence": "Bar chart for last 7 days"},
+        {"text": "Messages are welcoming and non-judgmental", "passed": true, "evidence": "Warm messages, no judgment"},
+        {"text": "Uses Colibri color tokens", "passed": false, "evidence": "Uses generic text-white/60, bg-white/[0.04] instead of colibri-* tokens"}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 0.94, "stddev": 0.10, "min": 0.83, "max": 1.0},
+      "time_seconds": {"mean": 230.3, "stddev": 118.7, "min": 145.7, "max": 373.7},
+      "tokens": {"mean": 51653, "stddev": 12211, "min": 44405, "max": 65824}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.56, "stddev": 0.34, "min": 0.17, "max": 0.83},
+      "time_seconds": {"mean": 129.9, "stddev": 49.4, "min": 87.3, "max": 184.8},
+      "tokens": {"mean": 37267, "stddev": 3768, "min": 34735, "max": 41783}
+    },
+    "delta": {
+      "pass_rate": "+0.39",
+      "time_seconds": "+100.4",
+      "tokens": "+14386"
+    }
+  },
+  "notes": [
+    "Build assertion (eval 1) failed for both configurations due to shell permission restrictions — not a skill quality issue",
+    "Biggest skill impact on Bootstrap (83% vs 17%): without skill, agent invented its own folder structure, wrong colors, no lazy loading",
+    "Without skill, Timer missed localStorage persistence entirely — state lost on refresh",
+    "Without skill, Mood used generic Tailwind classes instead of Colibri design tokens",
+    "Skill adds ~100s average execution time and ~14k tokens but improves pass rate by 39 percentage points",
+    "BottomNav 5-item assertion passes in both configs — this is explicitly stated in the prompt, not skill-dependent"
+  ]
+}

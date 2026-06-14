@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Colibri - Encontre o seu ritmo, gentilmente.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#384b3f",
+                        "on-surface": "#1b1c1c",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#5e5f5b",
+                        "on-secondary-fixed-variant": "#464744",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f2f0f0",
+                        "on-tertiary-container": "#516958",
+                        "surface-container-highest": "#e4e2e2",
+                        "inverse-primary": "#b6ccbb",
+                        "outline-variant": "#c3c8c2",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#b2cdb9",
+                        "surface-variant": "#e4e2e2",
+                        "on-secondary-fixed": "#1b1c19",
+                        "primary": "#4f6356",
+                        "primary-fixed": "#d2e8d7",
+                        "tertiary-fixed": "#cee9d4",
+                        "on-primary-fixed": "#0d1f15",
+                        "outline": "#737873",
+                        "secondary-fixed": "#e3e3de",
+                        "inverse-surface": "#303030",
+                        "on-secondary-container": "#646561",
+                        "surface-container": "#efeded",
+                        "surface-tint": "#4f6356",
+                        "tertiary-container": "#cce8d3",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#c7c7c2",
+                        "primary-container": "#d1e7d6",
+                        "on-tertiary-fixed-variant": "#344c3d",
+                        "surface": "#fbf9f8",
+                        "surface-container-low": "#f5f3f3",
+                        "error": "#ba1a1a",
+                        "background": "#fbf9f8",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "on-surface-variant": "#434843",
+                        "surface-bright": "#fbf9f8",
+                        "primary-fixed-dim": "#b6ccbb",
+                        "on-primary-container": "#55685b",
+                        "on-tertiary-fixed": "#082013",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dbd9d9",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#e3e3de",
+                        "tertiary": "#4b6453"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-mobile": "24px",
+                        "stack-gap-sm": "12px",
+                        "stack-gap-md": "24px",
+                        "container-padding-desktop": "64px",
+                        "stack-gap-lg": "48px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-md": ["Atkinson Hyperlegible Next"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "body-md": ["Atkinson Hyperlegible Next"],
+                        "body-lg": ["Atkinson Hyperlegible Next"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-xl": ["40px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["18px", {"lineHeight": "28px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "body-lg": ["20px", {"lineHeight": "32px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f8;
+            color: #1b1c1c;
+            overflow-x: hidden;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Floating background shapes */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .colibri-float {
+            animation: colibri-hover 4s infinite ease-in-out;
+        }
+
+        @keyframes colibri-hover {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .soft-shadow {
+            box-shadow: 0 10px 40px rgba(209, 231, 214, 0.3);
+        }
+
+        .bento-card {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(209, 231, 214, 0.5);
+        }
+
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="font-body-md">
+<!-- Background Orbs -->
+<div class="orb w-[500px] h-[500px] bg-primary-container top-[-100px] left-[-100px]"></div>
+<div class="orb w-[400px] h-[400px] bg-tertiary-container bottom-[-50px] right-[-50px]" style="animation-delay: -5s;"></div>
+<div class="orb w-[300px] h-[300px] bg-secondary-fixed top-[40%] left-[20%]" style="animation-delay: -10s;"></div>
+<!-- Top Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-nav bg-surface/80 dark:bg-surface-dim/80">
+<div class="flex justify-between items-center max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop h-20">
+<div class="flex items-center gap-2">
+<span class="font-headline-lg text-headline-lg font-semibold text-primary dark:text-primary-fixed-dim tracking-tight">Colibri</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim pb-1 font-label-md text-label-md" href="#">Features</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md" href="#">Science</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md" href="#">Community</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md" href="#">About</a>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-full font-label-md text-label-md hover:opacity-80 active:scale-95 transition-all duration-200 shadow-md">
+                Try for free
+            </button>
+</div>
+</nav>
+<main class="pt-32">
+<!-- Hero Section -->
+<section class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop flex flex-col md:flex-row items-center justify-between min-h-[70vh] gap-stack-gap-lg">
+<div class="flex-1 text-center md:text-left space-y-stack-gap-md">
+<div class="inline-flex items-center gap-2 bg-primary-container/40 text-primary px-4 py-2 rounded-full font-label-md text-label-md mb-4">
+<span class="material-symbols-outlined text-[20px]">colors_spark</span>
+<span>Gentle focus for neurodivergent minds</span>
+</div>
+<h1 class="font-headline-xl text-[48px] md:text-[64px] leading-tight text-on-surface">
+                    Encontre o seu ritmo, gentilmente.
+                </h1>
+<p class="font-body-lg text-body-lg text-secondary max-w-lg mx-auto md:mx-0">
+                    A gentle ADHD companion for routine and focus. Designed to soothe sensory overload while helping you stay on track.
+                </p>
+<div class="pt-4">
+<button class="bg-primary-container text-on-primary-container px-10 py-5 rounded-full font-headline-lg text-[20px] hover:shadow-lg active:scale-95 transition-all duration-300 flex items-center gap-3 mx-auto md:mx-0">
+                        Começar minha jornada leve
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="flex-1 flex justify-center items-center relative">
+<div class="colibri-float relative z-10">
+<img alt="Colibri Icon" class="w-48 h-48 md:w-64 md:h-64 drop-shadow-2xl" src="data:image/png;base64,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"/>
+</div>
+<!-- Decorative background elements behind icon -->
+<div class="absolute w-72 h-72 bg-primary-container/20 rounded-full blur-3xl"></div>
+</div>
+</section>
+<!-- Bento Grid Feature Section -->
+<section class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-lg fade-in-section">
+<div class="text-center mb-stack-gap-lg">
+<h2 class="font-headline-xl text-headline-xl text-on-surface mb-4">Focus without the noise.</h2>
+<p class="font-body-md text-body-md text-secondary max-w-2xl mx-auto">We've stripped away the chaos of traditional productivity tools to create a space that feels like a deep breath.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+<!-- Main App Mockup Card -->
+<div class="md:col-span-8 bg-white rounded-lg p-8 bento-card soft-shadow flex flex-col justify-between overflow-hidden relative">
+<div>
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-label-md font-label-md">Interface</span>
+<h3 class="font-headline-lg text-headline-lg mt-4 mb-2">The Visual Calm Dashboard</h3>
+<p class="text-secondary max-w-md">No red badges. No urgent pings. Just your day, visualized in soft gradients and gentle blocks.</p>
+</div>
+<div class="mt-8 transform translate-y-12 rotate-2">
+<div class="bg-surface-container rounded-lg p-6 shadow-xl border border-outline-variant/30 min-h-[300px]">
+<div class="flex gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-primary-container"></div>
+<div class="space-y-2 flex-1">
+<div class="h-4 bg-outline-variant/30 rounded-full w-1/3"></div>
+<div class="h-3 bg-outline-variant/20 rounded-full w-1/2"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="h-20 bg-white rounded-lg p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed"></div>
+<div class="h-4 bg-outline-variant/20 rounded-full w-32"></div>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="h-20 bg-white/60 rounded-lg p-4 flex items-center justify-between border-dashed border-2 border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed"></div>
+<div class="h-4 bg-outline-variant/20 rounded-full w-24"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Cards -->
+<div class="md:col-span-4 space-y-6">
+<div class="bg-primary-container rounded-lg p-8 bento-card h-[288px] flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-5xl text-primary mb-4" style="font-variation-settings: 'FILL' 1;">timer</span>
+<h4 class="font-headline-lg text-headline-lg text-on-primary-container mb-2">Micro-Flows</h4>
+<p class="text-on-primary-container/80 text-body-md">Bite-sized focus sessions that respect your energy levels.</p>
+</div>
+<div class="bg-secondary-fixed rounded-lg p-8 bento-card h-[288px] flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-5xl text-secondary mb-4">psychology</span>
+<h4 class="font-headline-lg text-headline-lg text-on-secondary-fixed mb-2">Neuro-Science</h4>
+<p class="text-on-secondary-fixed/80 text-body-md">Built on cognitive principles that support dopamine regulation.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials Section -->
+<section class="bg-surface-container-low py-stack-gap-lg mt-stack-gap-lg">
+<div class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop">
+<div class="text-center mb-12">
+<h2 class="font-headline-xl text-headline-xl text-on-surface">Authentic Testimonials</h2>
+<p class="text-secondary font-body-md mt-2">Voices from our neurodivergent community.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Testimonial 1 -->
+<div class="bg-white p-8 rounded-lg soft-shadow flex flex-col justify-between">
+<p class="italic text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                            "Finally, a tool that doesn't make me feel guilty for having a 'low-capacity' day. The interface is like a digital hug."
+                        </p>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A portrait of a smiling young woman with warm lighting and a soft-focus background, embodying a sense of calm and relief. She has curly brown hair and is wearing a cream-colored sweater. The photography style is modern and high-key, aligning with a professional light-mode aesthetic. The mood is peaceful and authentic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt-FWS7OMDbkCcQgcvMg-xomAtH_arxFquNvBtco6UxGHyqdYrKZkJ9wKHPJU0njVJE9yHdMuATkEKVnFIdZXm8rsZZeGJsSwcXhiUswvLVRZgn9euYLdNpHVjiuPTtoJmunfPEF_aJYCUFcv7AN8496BtCq40-KzlsM3DAKGArIS0aOEBXxdFIUtMj3-Ba0sFNyri1-bNRvHICzbdHbCBLiQEGN7BXFhERldWc-yaj-lub4fJUSOsbBroWwwvDzHdiBetwUUxm3VW"/>
+<div>
+<p class="font-bold text-on-surface">Mariana S.</p>
+<p class="text-label-md text-secondary">UX Designer</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="bg-white p-8 rounded-lg soft-shadow flex flex-col justify-between scale-105 z-10">
+<p class="italic text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                            "Colibri helped me organize my startup life without the sensory overload of 50 different notifications. It's essential now."
+                        </p>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A professional man in his 30s with a clean-shaven face and short hair, looking thoughtfully into the distance with a gentle smile. The lighting is soft and natural, coming from a large window. The background is a minimalist, airy office space with plants. The image conveys focus, professional gentleness, and mental clarity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcZ96DYXgoadNxSeBjlowz7T6gNv95EoYwEpuyQW0YKni3_nVPL6qYHdUK2myQ-YII6klE-p4IoapDWtyAOk3h5jw-jzcNqPdc5ZdapzK4WU04iL5wUP1fO88I19pZywgUkuUOgqrZcL0DsDTfChi-PXjLjzzL8YXjj-Vu78yy0FiL9rAMMSXfr71b2DM15H2gPHNYETCRLHcdMlMmosKXJBTm0TgHdy1mF9LumHX3g6zPWs1TNcunJtavQGnPbhOv5WNSe60sjiH7"/>
+<div>
+<p class="font-bold text-on-surface">Lucas V.</p>
+<p class="text-label-md text-secondary">Founder</p>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-white p-8 rounded-lg soft-shadow flex flex-col justify-between">
+<p class="italic text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                            "The visual timers are a game changer. I don't feel the 'panic' I usually get with ticking clocks. Everything is so quiet."
+                        </p>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="A young creative person with short-cropped hair and glasses, looking directly at the camera with a calm and confident expression. The lighting is soft and even, highlighting clear skin and a neutral expression. The background is a simple pastel green wall, matching the brand color palette. The overall mood is serene and organized." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvlY6xGcv3qIDG0p-HkTCo-OYm2FxIY9KFjcD5v8T3t-3AyH-mY4IWKRCcdpkSz_iqsYz1PHeO8Ix46CWNxtT7WqAwI7LLqpbI2Ds2lCoJXVuxpbuYxRbqdgd8dAOe1d-0N1Z12c0JwC0vP9q9sdQ3sP-jY8XGsDytpoEVwzq_45A6GlXqz_o105hV99Juw2gvYZm4OgHJbSfVAR6EDGWF73r1lp9OW6F_YPOkK9ycQhYAYzq9xqMqUWqc9G1dpmGRAxz5qZ319e1L"/>
+<div>
+<p class="font-bold text-on-surface">Bia R.</p>
+<p class="text-label-md text-secondary">Illustrator</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Final Section -->
+<section class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-lg">
+<div class="bg-primary text-on-primary rounded-lg p-12 md:p-24 text-center space-y-6 relative overflow-hidden">
+<!-- Background decoration for CTA -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl"></div>
+<h2 class="font-headline-xl text-headline-xl md:text-[48px] relative z-10">Pronto para encontrar seu ritmo?</h2>
+<p class="font-body-lg text-body-lg text-white/80 max-w-xl mx-auto relative z-10">
+                    Join 10,000+ others who have turned their routine from a source of stress into a source of peace.
+                </p>
+<div class="pt-6 relative z-10">
+<button class="bg-white text-primary px-12 py-5 rounded-full font-headline-lg text-headline-lg hover:bg-primary-fixed transition-colors shadow-xl active:scale-95">
+                        Começar gratuitamente
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest w-full rounded-t-lg">
+<div class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-lg flex flex-col md:flex-row justify-between items-center gap-stack-gap-md">
+<div class="flex flex-col items-center md:items-start gap-4">
+<span class="font-headline-lg text-headline-lg-mobile font-semibold text-primary dark:text-primary-fixed-dim">Colibri</span>
+<p class="font-body-md text-body-md text-secondary text-center md:text-left max-w-xs">
+                    © 2024 Colibri. Designed with gentle focus for the neurodivergent mind.
+                </p>
+</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Privacy Policy</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Terms of Service</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Accessibility Statement</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Contact</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Micro-interaction: Parallax effect for header icon
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const icon = document.querySelector('.colibri-float');
+            if (icon) {
+                icon.style.transform = `translateY(${scrolled * 0.1}px)`;
+            }
+        });
+
+        // Button interaction feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'scale(0.98)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

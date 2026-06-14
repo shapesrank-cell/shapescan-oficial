@@ -143,6 +143,29 @@ export async function esqueceuSenha(formData: FormData): Promise<{ erro?: string
 }
 
 /**
+ * Inicia login com Google (OAuth via Supabase).
+ * Retorna a URL pra qual o client deve redirecionar (tela do Google).
+ */
+export async function loginComGoogle(formData: FormData): Promise<{ erro?: string; url?: string }> {
+  const redirectTo = (formData.get("redirect") as string) || "/dashboard";
+  const supabase = await createClient();
+  const origin = (await headers()).get("origin") || "https://shapescan-oficial.vercel.app";
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+    },
+  });
+
+  if (error || !data.url) {
+    return { erro: "Erro ao iniciar login com Google. Tente novamente." };
+  }
+
+  return { url: data.url };
+}
+
+/**
  * Faz logout e volta pra home.
  */
 export async function logout() {

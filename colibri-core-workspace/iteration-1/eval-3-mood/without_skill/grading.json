@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly 5 mood options (emojis or visual representations) displayed simultaneously",
+      "passed": true,
+      "evidence": "MOOD_OPTIONS in types.ts has exactly 5 entries (values 1-5) with emojis. MoodPicker.tsx renders all 5 via MOOD_OPTIONS.map() in a single flex row."
+    },
+    {
+      "text": "Single-tap on a mood option registers it immediately — no confirmation dialog",
+      "passed": true,
+      "evidence": "handleSelect() in MoodPicker.tsx calls onSelect(mood) directly on click. No confirmation dialog or modal. MoodTracker.tsx passes addEntry as onSelect which immediately persists to localStorage."
+    },
+    {
+      "text": "Visual feedback animation on selection (pulse, scale, color change, or similar)",
+      "passed": true,
+      "evidence": "MoodPicker.tsx applies animate-bounce-once CSS class (custom keyframe in mood-animations.css: scale 1->1.25->0.95->1.08->1.1 over 0.5s), scale-110 on selected, colored box-shadow glow, border ring with animate-fade-in, active:scale-90 on press, and opacity dimming of unselected items."
+    },
+    {
+      "text": "7-day mood history component is present and displays past entries",
+      "passed": true,
+      "evidence": "MoodHistory.tsx receives a 'days' prop of 7 entries (MoodEntry | null)[]. Renders 7 columns with day labels (Dom-Sáb/Hoje/Ontem), mood bars with height proportional to mood value, and emojis. useMoodStorage.ts last7Days() generates exactly 7 slots. Used in MoodTracker.tsx."
+    },
+    {
+      "text": "All response messages are welcoming and non-judgmental (no 'why' questions, no guilt language)",
+      "passed": true,
+      "evidence": "CONFIRMATIONS in MoodPicker.tsx: 'Dias difíceis existem', 'Vai passar', 'Tudo bem sentir assim', 'Um passo de cada vez', 'Sem pressa', 'Neutro tá ótimo', 'Dia tranquilo', 'Boa!', 'Que bom!'. Question: 'Como você tá agora?' Empty state: 'Nenhum registro ainda. Sem pressa.' No 'why' questions, no guilt language anywhere."
+    },
+    {
+      "text": "Uses Colibri color tokens (colibri-bg, colibri-surface, colibri-primary or mood-specific colors)",
+      "passed": false,
+      "evidence": "Does NOT use Colibri design token class names. Throughout the codebase uses generic white-opacity classes: text-white/60, text-white/40, text-white/30, text-white/25, bg-white/[0.04], bg-white/[0.08], bg-white/[0.03], bg-white/[0.06], bg-white/10. The only Colibri-adjacent reference is text-[#7C3AED] (raw hex for colibri-primary) used once in MoodHistory.tsx for the today label. No bg-colibri-bg, bg-colibri-surface, text-colibri-primary, or any colibri-* token class names are used."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

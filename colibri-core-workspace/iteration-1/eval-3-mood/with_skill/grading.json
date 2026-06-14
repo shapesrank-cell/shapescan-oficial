@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Exactly 5 mood options (emojis or visual representations) displayed simultaneously",
+      "passed": true,
+      "evidence": "MOOD_OPTIONS array in MoodSelector.tsx has exactly 5 entries (values 1-5) with emojis: star-struck, smiling, neutral, face exhaling, crying. All rendered in a single flex row via MOOD_OPTIONS.map()."
+    },
+    {
+      "text": "Single-tap on a mood option registers it immediately — no confirmation dialog",
+      "passed": true,
+      "evidence": "handleSelect() in MoodSelector.tsx calls registerMood(option.value) directly on click. No confirmation dialog, no modal, no extra step. registerMood in MoodContext.tsx immediately updates state via setState."
+    },
+    {
+      "text": "Visual feedback animation on selection (pulse, scale, color change, or similar)",
+      "passed": true,
+      "evidence": "MoodSelector.tsx applies: scale-125 when active, animate-pulse on just-selected items, colored ring-3 with ring-offset-2, and transition-all duration-150. Multiple simultaneous visual feedback signals."
+    },
+    {
+      "text": "7-day mood history component is present and displays past entries",
+      "passed": true,
+      "evidence": "MoodHistory.tsx component renders getLast7DaysDates() which generates 7 dates (today minus 6 through today). Each day shows emoji in colored dot or empty bg-colibri-subtle dot. Section titled 'Ultimos 7 dias'. Used in MoodPage.tsx inside a section with aria-label='Historico de humor'."
+    },
+    {
+      "text": "All response messages are welcoming and non-judgmental (no 'why' questions, no guilt language)",
+      "passed": true,
+      "evidence": "Feedback messages: 'Que bom que voce ta bem!', 'Dia tranquilo, que bom!', 'Tudo bem estar no meio-termo', 'Dia puxado, ne? Ta tudo bem', 'To aqui com voce. Respira fundo'. Page header: 'Sem julgamento, sem pressao. So voce e o momento.' Question is gentle: 'Como voce ta agora?' Empty state: 'Quando sentir vontade, e so tocar'. No 'why' questions anywhere."
+    },
+    {
+      "text": "Uses Colibri color tokens (colibri-bg, colibri-surface, colibri-primary or mood-specific colors)",
+      "passed": true,
+      "evidence": "Extensively uses Colibri tokens throughout: bg-colibri-surface (MoodPage.tsx sections), text-colibri-text (headings, question), text-colibri-text-secondary (messages, subtitle), text-colibri-text-muted (labels), bg-colibri-success (mood dot), bg-colibri-warn (mood dot), ring-colibri-primary (today indicator), ring-offset-colibri-bg (selection ring offset), bg-colibri-subtle (empty day dot)."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

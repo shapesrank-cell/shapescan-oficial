@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "ProgressRing component uses SVG with stroke-dasharray and stroke-dashoffset for circular animation",
+      "passed": true,
+      "evidence": "ProgressRing.tsx lines 80-81: <circle> element has strokeDasharray={circumference} and strokeDashoffset={offset}, where circumference = 2 * Math.PI * radius and offset = circumference * (1 - progress)."
+    },
+    {
+      "text": "Exactly 3 preset buttons for durations (15, 25, 45 minutes) — no slider, no dropdown",
+      "passed": true,
+      "evidence": "PresetSelector.tsx line 11: const PRESETS = [15, 25, 45] as const; rendered as 3 <button> elements via .map(). No <select>, <input type='range'>, or dropdown present."
+    },
+    {
+      "text": "Interactive buttons have minimum touch target size (min-h-12 or min-h-touch, at least 48px)",
+      "passed": true,
+      "evidence": "ProgressRing.tsx line 47: button uses 'min-h-touch min-w-touch' classes. PresetSelector.tsx line 39: each preset button uses 'min-h-touch'. TimerPage.tsx line 139: celebration dismiss button uses 'min-h-touch'. All interactive buttons explicitly declare minimum touch target."
+    },
+    {
+      "text": "Celebration message on timer completion uses positive, encouraging tone (no guilt/pressure words)",
+      "passed": true,
+      "evidence": "TimerPage.tsx lines 26-31: Messages are 'Incrível! Mais uma sessão no bolso. Você tá voando!', 'Mandou muito bem!', 'Sessão completa! Você é demais!', 'Arrasou!', 'Que tal uma pausa merecida?'. Sub-text line 131: 'Quando quiser, comece outra sessão. Sem pressa.' — all positive, zero guilt or pressure language."
+    },
+    {
+      "text": "Timer state is persisted to localStorage (duration, remaining, sessionsCompleted)",
+      "passed": true,
+      "evidence": "TimerContext.tsx line 32: STORAGE_KEY = 'colibri-timer'. Lines 146-161: useEffect hydrates from localStorage on mount via dispatch HYDRATE. Lines 164-178: useEffect persists full state (duration, remaining, sessionsCompleted, lastSessionDate) to localStorage via requestIdleCallback on every state change."
+    },
+    {
+      "text": "Start/pause is a single-tap action on the progress ring or a prominent button",
+      "passed": true,
+      "evidence": "ProgressRing.tsx wraps the entire SVG ring in a <button> element (line 40) with onClick={onTap}. TimerPage.tsx line 85: onTap={toggle} where toggle dispatches START or PAUSE. Single tap toggles between running and paused states."
+    }
+  ],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "total": 6,
+    "pass_rate": 1.0
+  }
+}

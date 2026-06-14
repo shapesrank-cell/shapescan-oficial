@@ -1,0 +1,24 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body -->
+  <path d="M50 60 C 60 60, 70 50, 75 40 C 70 35, 60 35, 50 40 L 40 45 Z" fill="#A8D5BA" />
+  <!-- Head -->
+  <circle cx="75" cy="35" r="5" fill="#A8D5BA" />
+  <!-- Beak -->
+  <line x1="80" y1="35" x2="95" y2="30" stroke="#7FB595" stroke-width="2" />
+  <!-- Wings (to be animated) -->
+  <g id="wing-group">
+    <path id="wing" d="M50 40 C 40 20, 20 20, 15 40 C 20 50, 40 50, 50 40" fill="#D1E7D6" opacity="0.8">
+      <animateTransform 
+        attributeName="transform" 
+        type="rotate" 
+        from="0 50 40" 
+        to="-20 50 40" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum"
+        values="0 50 40; -20 50 40; 0 50 40" 
+        keyTimes="0; 0.5; 1"
+      />
+    </path>
+  </g>
+</svg>

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "ProgressRing component uses SVG with stroke-dasharray and stroke-dashoffset for circular animation",
+      "passed": true,
+      "evidence": "ProgressRing.tsx lines 76-77: <circle> element has strokeDasharray={CIRCUMFERENCE} and strokeDashoffset={offset}, where CIRCUMFERENCE = 2 * Math.PI * RADIUS and offset = CIRCUMFERENCE - progress * CIRCUMFERENCE."
+    },
+    {
+      "text": "Exactly 3 preset buttons for durations (15, 25, 45 minutes) — no slider, no dropdown",
+      "passed": true,
+      "evidence": "types.ts lines 9-13: PRESETS array has exactly 3 entries with minutes: 15, 25, 45. PresetSelector.tsx renders them as <button> elements via .map(). No <select>, <input type='range'>, or dropdown present."
+    },
+    {
+      "text": "Interactive buttons have minimum touch target size (min-h-12 or min-h-touch, at least 48px)",
+      "passed": false,
+      "evidence": "No button in the codebase uses min-h-12 or min-h-touch classes. ProgressRing button is 260px (adequate via inline style). PresetSelector buttons use py-5 (~60px total, likely adequate but no explicit min-height). CelebrationOverlay buttons use py-4 and py-3. PomodoroTimer action buttons use py-3 (12px*2=24px padding + ~20px text = ~44px, potentially under 48px). No explicit minimum height constraint guarantees 48px on all interactive buttons."
+    },
+    {
+      "text": "Celebration message on timer completion uses positive, encouraging tone (no guilt/pressure words)",
+      "passed": true,
+      "evidence": "types.ts lines 15-22: CELEBRATION_MESSAGES includes 'Você arrasou!', 'Foco incrível!', 'Missão cumprida!', 'Que dedicação!', 'Parabéns, campeão!', 'Mais uma vitória!'. CelebrationOverlay line 29: 'Cada minuto de foco conta. Continue assim!' — all positive and encouraging, no guilt or pressure words."
+    },
+    {
+      "text": "Timer state is persisted to localStorage (duration, remaining, sessionsCompleted)",
+      "passed": false,
+      "evidence": "useTimer.ts has no localStorage.getItem or localStorage.setItem calls. No other file references localStorage. Timer state is entirely in React useState hooks and is lost on page refresh. No persistence mechanism exists."
+    },
+    {
+      "text": "Start/pause is a single-tap action on the progress ring or a prominent button",
+      "passed": true,
+      "evidence": "ProgressRing.tsx wraps the entire SVG in a <button> element (line 36) with onClick={onTap}. PomodoroTimer.tsx line 50: onTap={toggleStartPause} which toggles between running and paused/idle states. Single tap toggles timer."
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 2,
+    "total": 6,
+    "pass_rate": 0.67
+  }
+}

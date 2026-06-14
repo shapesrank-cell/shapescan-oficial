@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Folder structure follows App Shell pattern with components/shell/, features/, contexts/, hooks/, lib/",
+      "passed": false,
+      "evidence": "Missing most required directories. Found: src/components/ (BottomNav.tsx, TopBar.tsx) and src/pages/. Missing entirely: components/shell/, features/, contexts/, hooks/, lib/. Uses flat pages/ pattern instead of features/ pattern, no shell subdirectory, no contexts or hooks directories."
+    },
+    {
+      "text": "tailwind.config contains Colibri color tokens (colibri-bg #121214, colibri-primary #7C3AED, colibri-surface #1A1A1E)",
+      "passed": false,
+      "evidence": "tailwind.config.js defines colibri tokens but with WRONG values: colibri.bg is '#0f172a' (expected '#121214'), colibri.primary is '#38bdf8' (expected '#7C3AED'), colibri.surface is '#1e293b' (expected '#1A1A1E'). All three required color values are incorrect."
+    },
+    {
+      "text": "vite.config.ts includes VitePWA plugin with manifest and workbox runtimeCaching",
+      "passed": false,
+      "evidence": "vite.config.ts includes VitePWA with manifest configuration, but does NOT include workbox.runtimeCaching. The workbox section is entirely absent — only manifest and includeAssets are configured."
+    },
+    {
+      "text": "All feature routes use React.lazy() with Suspense fallback",
+      "passed": false,
+      "evidence": "App.tsx uses direct static imports: 'import TimerPage from ./pages/TimerPage', etc. No React.lazy() calls, no Suspense wrapper. Pages are rendered via a Record<TabId, React.FC> map with useState-based tab switching instead of lazy-loaded routes."
+    },
+    {
+      "text": "BottomNav has exactly 5 navigation items (Timer, Humor, Tarefas, Chat, Perfil)",
+      "passed": true,
+      "evidence": "BottomNav.tsx defines navItems array with exactly 5 items: {label:'Timer'}, {label:'Humor'}, {label:'Tarefas'}, {label:'Chat'}, {label:'Perfil'}. Labels match exactly."
+    },
+    {
+      "text": "Project builds successfully without errors (npm run build)",
+      "passed": false,
+      "evidence": "Build was not executed — no build output or logs found in the run directory. Cannot verify build success. Marking as not verified/failed."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 5,
+    "total": 6,
+    "pass_rate": 0.17
+  }
+}

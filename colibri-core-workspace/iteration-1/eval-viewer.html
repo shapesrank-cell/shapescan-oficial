@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colibri Core — Skill Eval Viewer</title>
+<style>
+  :root { --bg: #0f0f13; --surface: #1a1a22; --border: #2a2a35; --accent: #7C3AED; --accent-light: #A78BFA; --green: #34D399; --red: #F87171; --yellow: #FBBF24; --text: #f4f4f5; --text-dim: #a1a1aa; --text-muted: #52525b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 20px; font-weight: 600; margin: 32px 0 16px; color: var(--accent-light); }
+  h3 { font-size: 16px; font-weight: 600; margin: 16px 0 8px; }
+  .subtitle { color: var(--text-dim); margin-bottom: 32px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 10px 20px; cursor: pointer; border: none; background: none; color: var(--text-dim); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Benchmark */
+  .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-value { font-size: 32px; font-weight: 700; margin: 4px 0; }
+  .stat-delta { font-size: 14px; font-weight: 500; }
+  .stat-delta.positive { color: var(--green); }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--text-dim); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .badge.pass { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .badge.fail { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+  .config-with { color: var(--accent-light); }
+  .config-without { color: var(--text-dim); }
+
+  /* Outputs */
+  .eval-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .eval-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .eval-btn.active { border-color: var(--accent); color: var(--accent-light); background: rgba(124, 58, 237, 0.1); }
+  .eval-panel { display: none; }
+  .eval-panel.active { display: block; }
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .run-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .run-box h3 { display: flex; align-items: center; gap: 8px; }
+  .run-box .score { font-size: 24px; font-weight: 700; }
+  .assertion-list { list-style: none; margin: 12px 0; }
+  .assertion-list li { padding: 6px 0; font-size: 13px; display: flex; align-items: flex-start; gap: 8px; }
+  .assertion-list .icon { flex-shrink: 0; width: 18px; text-align: center; }
+  .evidence { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .feedback-area { margin-top: 16px; }
+  .feedback-area textarea { width: 100%; min-height: 80px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; color: var(--text); font-family: inherit; font-size: 13px; resize: vertical; }
+  .feedback-area textarea:focus { outline: none; border-color: var(--accent); }
+  .feedback-area label { font-size: 12px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+
+  .notes-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 24px; }
+  .notes-section ul { list-style: disc; padding-left: 20px; }
+  .notes-section li { font-size: 13px; color: var(--text-dim); padding: 4px 0; }
+
+  .submit-btn { margin-top: 24px; padding: 12px 24px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+  .submit-btn:hover { opacity: 0.9; }
+
+  @media (max-width: 768px) {
+    .summary-grid { grid-template-columns: 1fr; }
+    .comparison { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Colibri Core — Skill Evaluation</h1>
+  <p class="subtitle">Iteration 1 &bull; 3 evals &bull; with_skill vs without_skill</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('benchmark')">Benchmark</button>
+    <button class="tab" onclick="switchTab('outputs')">Outputs</button>
+  </div>
+
+  <!-- BENCHMARK TAB -->
+  <div id="tab-benchmark" class="tab-content active">
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="stat-label">Pass Rate (com skill)</div>
+        <div class="stat-value" style="color: var(--green)">94%</div>
+        <div class="stat-delta positive">+39pp vs baseline (56%)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tempo Medio</div>
+        <div class="stat-value">230s</div>
+        <div class="stat-delta" style="color:var(--yellow)">+100s vs baseline (130s)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Tokens Medio</div>
+        <div class="stat-value">51.7k</div>
+        <div class="stat-delta" style="color:var(--yellow)">+14.4k vs baseline (37.3k)</div>
+      </div>
+    </div>
+
+    <h2>Per-Eval Breakdown</h2>
+    <table>
+      <thead>
+        <tr><th>Eval</th><th>Config</th><th>Pass Rate</th><th>Passed</th><th>Failed</th><th>Time</th><th>Tokens</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bootstrap</td><td class="config-with">com skill</td><td><span class="badge pass">83%</span></td><td>5</td><td>1</td><td>374s</td><td>65.8k</td></tr>
+        <tr><td>Bootstrap</td><td class="config-without">sem skill</td><td><span class="badge fail">17%</span></td><td>1</td><td>5</td><td>185s</td><td>41.8k</td></tr>
+        <tr style="border-top:2px solid var(--border)"><td>Timer</td><td class="config-with">com skill</td><td><span class="badge pass">100%</span></td><td>6</td><td>0</td><td>146s</td><td>44.4k</td></tr>
+        <tr><td>Timer</td><td class="config-without">sem skill</td><td><span class="badge fail">67%</span></td><td>4</td><td>2</td><td>87s</td><td>34.7k</td></tr>
+        <tr style="border-top:2px solid var(--border)"><td>Mood</td><td class="config-with">com skill</td><td><span class="badge pass">100%</span></td><td>6</td><td>0</td><td>171s</td><td>44.7k</td></tr>
+        <tr><td>Mood</td><td class="config-without">sem skill</td><td><span class="badge fail">83%</span></td><td>5</td><td>1</td><td>118s</td><td>35.3k</td></tr>
+      </tbody>
+    </table>
+
+    <div class="notes-section">
+      <h3>Analyst Notes</h3>
+      <ul>
+        <li>Build assertion (Eval 1) failed for both configs due to shell permission restrictions — not a skill quality issue</li>
+        <li><strong>Biggest skill impact on Bootstrap (83% vs 17%):</strong> without skill, agent invented its own folder structure, wrong colors, no lazy loading</li>
+        <li>Without skill, Timer missed localStorage persistence entirely — state lost on refresh</li>
+        <li>Without skill, Mood used generic Tailwind classes instead of Colibri design tokens</li>
+        <li>Skill adds ~100s average time and ~14k tokens but improves pass rate by 39 percentage points</li>
+        <li>BottomNav 5-item assertion passes in both configs — this is explicitly stated in the prompt, not skill-dependent</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- OUTPUTS TAB -->
+  <div id="tab-outputs" class="tab-content">
+    <div class="eval-nav">
+      <button class="eval-btn active" onclick="switchEval(0)">1. Bootstrap</button>
+      <button class="eval-btn" onclick="switchEval(1)">2. Timer</button>
+      <button class="eval-btn" onclick="switchEval(2)">3. Mood</button>
+    </div>
+
+    <!-- EVAL 1: Bootstrap -->
+    <div class="eval-panel active" id="eval-0">
+      <p style="color:var(--text-dim);margin-bottom:16px"><strong>Prompt:</strong> "Inicializa o projeto Colibri do zero. Cria a estrutura de pastas, configura Vite com PWA, Tailwind com as cores certas, e monta o App Shell basico com BottomNav de 5 itens."</p>
+      <div class="comparison">
+        <div class="run-box">
+          <h3><span class="config-with">Com Skill</span> <span class="score" style="color:var(--green)">5/6</span></h3>
+          <ul class="assertion-list">
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>App Shell folder structure (components/shell/, features/, contexts/, hooks/, lib/)<div class="evidence">All directories present with correct files</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Colibri color tokens (#121214, #7C3AED, #1A1A1E)<div class="evidence">All three exact values in tailwind.config.js</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>VitePWA with manifest + workbox runtimeCaching<div class="evidence">StaleWhileRevalidate handler for API calls</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>React.lazy() + Suspense fallback on all routes<div class="evidence">All 5 pages lazy-loaded, wrapped in Suspense</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>BottomNav with 5 items<div class="evidence">Timer, Humor, Tarefas, Chat, Perfil</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>Build successful<div class="evidence">Not executed (shell permissions)</div></div></li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">28 files created &bull; 374s &bull; 65.8k tokens</p>
+        </div>
+        <div class="run-box">
+          <h3><span class="config-without">Sem Skill</span> <span class="score" style="color:var(--red)">1/6</span></h3>
+          <ul class="assertion-list">
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>App Shell folder structure<div class="evidence">Flat pages/ and components/ — no shell/, features/, contexts/, hooks/, lib/</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>Colibri color tokens<div class="evidence">Wrong colors: bg=#0f172a, primary=#38bdf8, surface=#1e293b</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>VitePWA with runtimeCaching<div class="evidence">Has manifest but no workbox.runtimeCaching</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>React.lazy() + Suspense<div class="evidence">No lazy loading — uses useState tab switching</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>BottomNav with 5 items<div class="evidence">5 items with correct labels</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>Build successful<div class="evidence">Not executed (shell permissions)</div></div></li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">18 files created &bull; 185s &bull; 41.8k tokens</p>
+        </div>
+      </div>
+      <div class="feedback-area">
+        <label>Feedback para este eval:</label>
+        <textarea id="feedback-0" placeholder="O que achou dos resultados? Algo a melhorar?"></textarea>
+      </div>
+    </div>
+
+    <!-- EVAL 2: Timer -->
+    <div class="eval-panel" id="eval-1">
+      <p style="color:var(--text-dim);margin-bottom:16px"><strong>Prompt:</strong> "Cria a feature de Timer Pomodoro do Colibri. Anel de progresso visual, 3 presets (15/25/45), toque pra iniciar/pausar, mensagem de celebracao."</p>
+      <div class="comparison">
+        <div class="run-box">
+          <h3><span class="config-with">Com Skill</span> <span class="score" style="color:var(--green)">6/6</span></h3>
+          <ul class="assertion-list">
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>SVG ProgressRing with stroke-dasharray/dashoffset<div class="evidence">SVG circle with animated stroke properties</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>3 preset buttons (15/25/45) — no slider<div class="evidence">PresetSelector with 3 button elements</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Min touch target 48px<div class="evidence">min-h-touch class on all interactive buttons</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Positive celebration messages<div class="evidence">5 rotating messages, no guilt/pressure words</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>State persisted to localStorage<div class="evidence">requestIdleCallback persistence in TimerContext</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Single-tap start/pause<div class="evidence">ProgressRing is a button, tap toggles state</div></div></li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">5 files &bull; 146s &bull; 44.4k tokens</p>
+        </div>
+        <div class="run-box">
+          <h3><span class="config-without">Sem Skill</span> <span class="score" style="color:var(--yellow)">4/6</span></h3>
+          <ul class="assertion-list">
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>SVG ProgressRing with stroke-dasharray/dashoffset<div class="evidence">SVG with strokeDasharray/Dashoffset present</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>3 preset buttons (15/25/45) — no slider<div class="evidence">3 preset buttons found</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>Min touch target 48px<div class="evidence">No min-h-12 or min-h-touch. Relies on padding only</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Positive celebration messages<div class="evidence">6 random positive messages</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>State persisted to localStorage<div class="evidence">No localStorage — only useState, state lost on refresh</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Single-tap start/pause<div class="evidence">Ring is clickable for start/pause</div></div></li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">7 files &bull; 87s &bull; 34.7k tokens</p>
+        </div>
+      </div>
+      <div class="feedback-area">
+        <label>Feedback para este eval:</label>
+        <textarea id="feedback-1" placeholder="O que achou dos resultados? Algo a melhorar?"></textarea>
+      </div>
+    </div>
+
+    <!-- EVAL 3: Mood -->
+    <div class="eval-panel" id="eval-2">
+      <p style="color:var(--text-dim);margin-bottom:16px"><strong>Prompt:</strong> "Cria a feature de Registro de Humor do Colibri. 5 emojis pra escolher com 1 toque, feedback visual imediato, historico dos ultimos 7 dias."</p>
+      <div class="comparison">
+        <div class="run-box">
+          <h3><span class="config-with">Com Skill</span> <span class="score" style="color:var(--green)">6/6</span></h3>
+          <ul class="assertion-list">
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>5 mood options simultaneously<div class="evidence">5 mood emojis in horizontal row</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Single-tap registers — no confirmation<div class="evidence">onClick directly calls registerMood()</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Visual feedback animation<div class="evidence">animate-pulse + scale-125 + colored ring</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>7-day mood history<div class="evidence">MoodHistory shows last 7 days as colored dots</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Welcoming, non-judgmental messages<div class="evidence">All acolhedor messages, no 'why' or guilt</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Colibri color tokens<div class="evidence">bg-colibri-surface, text-colibri-text, ring-colibri-primary, bg-colibri-success</div></div></li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">4 files &bull; 171s &bull; 44.7k tokens</p>
+        </div>
+        <div class="run-box">
+          <h3><span class="config-without">Sem Skill</span> <span class="score" style="color:var(--yellow)">5/6</span></h3>
+          <ul class="assertion-list">
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>5 mood options simultaneously<div class="evidence">5 mood options defined</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Single-tap registers — no confirmation<div class="evidence">Direct click handler</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Visual feedback animation<div class="evidence">bounce-once + scale + glow</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>7-day mood history<div class="evidence">Bar chart for last 7 days</div></div></li>
+            <li><span class="icon" style="color:var(--green)">&#10003;</span><div>Welcoming, non-judgmental messages<div class="evidence">Warm messages, no judgment</div></div></li>
+            <li><span class="icon" style="color:var(--red)">&#10007;</span><div>Colibri color tokens<div class="evidence">Generic text-white/60, bg-white/[0.04] — no colibri-* tokens</div></div></li>
+          </ul>
+          <p style="font-size:12px;color:var(--text-muted);margin-top:8px">7 files &bull; 118s &bull; 35.3k tokens</p>
+        </div>
+      </div>
+      <div class="feedback-area">
+        <label>Feedback para este eval:</label>
+        <textarea id="feedback-2" placeholder="O que achou dos resultados? Algo a melhorar?"></textarea>
+      </div>
+    </div>
+
+    <button class="submit-btn" onclick="submitFeedback()">Enviar Feedback</button>
+  </div>
+</div>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function switchEval(idx) {
+  document.querySelectorAll('.eval-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.querySelectorAll('.eval-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+}
+
+function submitFeedback() {
+  const reviews = [0, 1, 2].map(i => ({
+    eval_id: i + 1,
+    feedback: document.getElementById('feedback-' + i).value,
+    timestamp: new Date().toISOString()
+  }));
+  const data = JSON.stringify({ reviews, status: 'complete' }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'feedback.json';
+  a.click();
+  alert('Feedback salvo! O arquivo feedback.json foi baixado.');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') {
+    const active = document.querySelector('.eval-btn.active');
+    const btns = [...document.querySelectorAll('.eval-btn')];
+    const idx = btns.indexOf(active);
+    if (idx < btns.length - 1) switchEval(idx + 1);
+  }
+  if (e.key === 'ArrowLeft') {
+    const active = document.querySelector('.eval-btn.active');
+    const btns = [...document.querySelectorAll('.eval-btn')];
+    const idx = btns.indexOf(active);
+    if (idx > 0) switchEval(idx - 1);
+  }
+});
+</script>
+</body>
+</html>

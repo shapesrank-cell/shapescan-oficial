@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Colibri - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Atkinson+Hyperlegible+Next:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #fbf9f8;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-shadow {
+            shadow-color: rgba(209, 231, 214, 0.2);
+            box-shadow: 0 10px 40px 0 rgba(209, 231, 214, 0.2);
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.8s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .bento-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bento-card:active {
+            transform: scale(0.98);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#0d1f15",
+                        "surface-dim": "#dbd9d9",
+                        "surface-container": "#efeded",
+                        "on-tertiary-container": "#516958",
+                        "surface-variant": "#e4e2e2",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface": "#fbf9f8",
+                        "primary": "#4f6356",
+                        "on-primary-container": "#55685b",
+                        "surface-container-low": "#f5f3f3",
+                        "on-error-container": "#93000a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#344c3d",
+                        "on-secondary-fixed-variant": "#464744",
+                        "outline": "#737873",
+                        "tertiary": "#4b6453",
+                        "on-background": "#1b1c1c",
+                        "outline-variant": "#c3c8c2",
+                        "tertiary-container": "#cce8d3",
+                        "surface-container-high": "#eae8e7",
+                        "primary-fixed": "#d2e8d7",
+                        "on-surface": "#1b1c1c",
+                        "background": "#fbf9f8",
+                        "tertiary-fixed": "#cee9d4",
+                        "on-primary": "#ffffff",
+                        "primary-fixed-dim": "#b6ccbb",
+                        "inverse-surface": "#303030",
+                        "inverse-primary": "#b6ccbb",
+                        "on-tertiary-fixed": "#082013",
+                        "on-surface-variant": "#434843",
+                        "secondary-fixed-dim": "#c7c7c2",
+                        "tertiary-fixed-dim": "#b2cdb9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed": "#1b1c19",
+                        "error-container": "#ffdad6",
+                        "secondary": "#5e5f5b",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#e3e3de",
+                        "on-error": "#ffffff",
+                        "on-secondary-container": "#646561",
+                        "surface-container-highest": "#e4e2e2",
+                        "surface-bright": "#fbf9f8",
+                        "secondary-fixed": "#e3e3de",
+                        "primary-container": "#d1e7d6",
+                        "surface-tint": "#4f6356",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#384b3f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-gap-sm": "12px",
+                        "container-padding-mobile": "24px",
+                        "stack-gap-lg": "48px",
+                        "unit": "8px",
+                        "container-padding-desktop": "64px",
+                        "stack-gap-md": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Atkinson Hyperlegible Next"],
+                        "body-md": ["Atkinson Hyperlegible Next"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "body-lg": ["Atkinson Hyperlegible Next"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-md": ["18px", {"lineHeight": "28px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-xl": ["40px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-lg": ["20px", {"lineHeight": "32px", "letterSpacing": "0.02em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full top-0 bg-background flex justify-between items-center w-full px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-sm max-w-[800px] mx-auto z-40 sticky">
+<div class="flex items-center gap-3">
+<img alt="Colibri Logo" class="w-10 h-10 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxJITUEDlgSO-921ownVTzJi7e8NB0v6xKOums2I2u4BDFzqTpQacEbi8kK06faV8ePm6DYUciCHg9fGbltF0SZ-hqy3ubXKuQdq1UWqnkqkT8_d_4tnd-dkzoRda6Tl1xyF68RaE_0BcLfdYubUre2GYyRrmfgBJtUvRlCybNqK3fRvPXt6Z5e3hEUun94h_1wQiygXDnANAjyZSQuy5lpSiJ8oPrkwre2d4_uTKhUcwQRG8fmQG1awnagQypa8QlLG3EpPTqfT_b"/>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-semibold text-primary">Colibri</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a serene-looking person against a soft, neutral, out-of-focus studio background. The lighting is bright and airy, reflecting a calm and focused atmosphere that aligns with the Colibri app's minimalist design and soothing green and cream color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOyNqa6nWxDv8trIVpbhUgIhz6uM2Y_2ETkZoe4ZibFE0ry8U3Hqo1tuDHWNQt1U6zNlQngQFxQCN0o9Q35qMKKsyReYSeCbxFB6nMEHD8uQB6H4UgjPW_QI6wDHw2gfodyqd1bRdqo9xwqaDbF_c0dQhMYoY-0BffjSQqmkSZ2J1-dLOCkBdMm6oz-B_UJjn7_e8ucBmux6lP994C-mStRxHKlWHYgigW5qoGUr-1S5dojcWLfMsWeDlR4GldUFEbToGuit21Vy_M"/>
+</div>
+</div>
+</header>
+<main class="max-w-[800px] mx-auto px-container-padding-mobile md:px-container-padding-desktop pb-32 pt-stack-gap-md">
+<!-- Greeting Section -->
+<section class="mb-stack-gap-lg">
+<h1 class="font-headline-xl text-headline-xl text-primary mb-2">Gentle Morning.</h1>
+<p class="font-body-lg text-body-lg text-secondary">Take a breath. Your day is shaped by small steps.</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-gap-md">
+<!-- Visual Progress Tracker -->
+<div class="bento-card bg-surface-container-lowest rounded-lg p-stack-gap-md soft-shadow flex flex-col items-center justify-center text-center">
+<div class="relative w-48 h-48 mb-stack-gap-sm">
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<circle class="text-surface-container" cx="50" cy="50" fill="transparent" r="45" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary-container progress-ring__circle" cx="50" cy="50" fill="transparent" id="progress-circle" r="45" stroke="currentColor" stroke-dasharray="282.7" stroke-dashoffset="113" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="font-headline-lg text-headline-lg text-primary">60%</span>
+<span class="font-label-md text-label-md text-secondary">Routine</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">3 of 5 morning habits done</p>
+</div>
+<!-- Start Focus Session -->
+<div class="bento-card bg-primary-container rounded-lg p-stack-gap-md flex flex-col justify-between items-start soft-shadow">
+<div>
+<span class="material-symbols-outlined text-primary mb-stack-gap-sm" data-icon="center_focus_strong" style="font-size: 32px;">center_focus_strong</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-primary-fixed mb-2">Ready to focus?</h3>
+<p class="font-body-md text-body-md text-on-primary-fixed-variant opacity-80">Start a low-stimulation session to clear your task list.</p>
+</div>
+<button class="mt-6 w-full py-4 bg-primary text-on-primary rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity active:scale-95 transition-transform duration-200">
+                    Start Focus Session
+                </button>
+</div>
+<!-- Current Focus Tasks -->
+<div class="md:col-span-2 bg-surface-container-lowest rounded-lg p-stack-gap-md soft-shadow">
+<div class="flex justify-between items-center mb-stack-gap-md">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Current Focus</h2>
+<span class="material-symbols-outlined text-secondary" data-icon="more_horiz">more_horiz</span>
+</div>
+<div class="space-y-stack-gap-sm">
+<!-- Task Item -->
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface hover:bg-surface-container-low transition-colors group">
+<button class="w-6 h-6 rounded-full border-2 border-primary-container flex items-center justify-center group-hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-transparent group-hover:text-primary text-[16px]" data-icon="check">check</span>
+</button>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface">Review Weekly Planning</p>
+<p class="font-label-md text-label-md text-secondary">Next in: 15 mins</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="drag_indicator">drag_indicator</span>
+</div>
+<!-- Task Item -->
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface hover:bg-surface-container-low transition-colors group">
+<button class="w-6 h-6 rounded-full border-2 border-primary-container flex items-center justify-center group-hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-transparent group-hover:text-primary text-[16px]" data-icon="check">check</span>
+</button>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface">Hydration Break</p>
+<p class="font-label-md text-label-md text-secondary">High Priority</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="drag_indicator">drag_indicator</span>
+</div>
+<!-- Task Item -->
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface hover:bg-surface-container-low transition-colors group">
+<button class="w-6 h-6 rounded-full border-2 border-primary-container flex items-center justify-center group-hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-transparent group-hover:text-primary text-[16px]" data-icon="check">check</span>
+</button>
+<div class="flex-1">
+<p class="font-body-md text-body-md text-on-surface">Digital Declutter</p>
+<p class="font-label-md text-label-md text-secondary">10 mins task</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="drag_indicator">drag_indicator</span>
+</div>
+</div>
+<button class="mt-stack-gap-md flex items-center gap-2 text-primary font-label-md text-label-md hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    Add task
+                </button>
+</div>
+<!-- Stats/History Snippet -->
+<div class="bento-card bg-surface-container-lowest rounded-lg p-stack-gap-md soft-shadow">
+<h3 class="font-label-md text-label-md text-secondary uppercase tracking-widest mb-4">Consistency</h3>
+<div class="flex items-end gap-2 h-24">
+<div class="flex-1 bg-primary-container rounded-t-full h-[40%]"></div>
+<div class="flex-1 bg-primary-container rounded-t-full h-[60%]"></div>
+<div class="flex-1 bg-primary-container rounded-t-full h-[30%]"></div>
+<div class="flex-1 bg-primary-container rounded-t-full h-[80%]"></div>
+<div class="flex-1 bg-primary-container rounded-t-full h-[55%]"></div>
+<div class="flex-1 bg-primary rounded-t-full h-[95%]"></div>
+<div class="flex-1 bg-surface-container-high rounded-t-full h-[10%]"></div>
+</div>
+<p class="mt-4 font-body-md text-body-md text-on-surface">Your focus is 12% higher today than yesterday.</p>
+</div>
+<!-- Quote/Atmospheric card -->
+<div class="bento-card bg-surface-container-lowest rounded-lg p-stack-gap-md soft-shadow relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary-container/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+<span class="material-symbols-outlined text-tertiary mb-4" data-icon="spa">spa</span>
+<p class="italic font-body-md text-body-md text-tertiary leading-relaxed relative z-10">
+                    "Simplicity is the ultimate sophistication."
+                </p>
+<p class="mt-2 text-label-md font-label-md text-on-tertiary-container relative z-10">— Leonardo da Vinci</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-surface-container-lowest shadow-[0_-10px_40px_0_rgba(209,231,214,0.2)] rounded-t-lg">
+<a class="flex flex-col items-center justify-center text-secondary px-6 py-2 hover:bg-surface-container rounded-full transition-all" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="event_repeat">event_repeat</span>
+<span class="font-label-md text-label-md">Routine</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-6 py-2 active:scale-90 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="center_focus_strong" style="font-variation-settings: 'FILL' 1;">center_focus_strong</span>
+<span class="font-label-md text-label-md font-bold">Focus</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-6 py-2 hover:bg-surface-container rounded-full transition-all" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary px-6 py-2 hover:bg-surface-container rounded-full transition-all" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction: Update progress ring based on percentage
+        function setProgress(percent) {
+            const circle = document.getElementById('progress-circle');
+            const radius = circle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            circle.style.strokeDasharray = `${circumference} ${circumference}`;
+            const offset = circumference - (percent / 100 * circumference);
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // Initialize progress
+        document.addEventListener('DOMContentLoaded', () => {
+            setProgress(60);
+        });
+
+        // Atmospheric touch: Light interaction scaling for cards
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

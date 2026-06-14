@@ -1,0 +1,47 @@
+{
+  "skill_name": "colibri-core",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Inicializa o projeto Colibri do zero. Cria a estrutura de pastas, configura Vite com PWA, Tailwind com as cores certas, e monta o App Shell básico com BottomNav de 5 itens (Timer, Humor, Tarefas, Chat, Perfil). Quero rodar npm run dev e ver a shell funcionando com navegação.",
+      "expected_output": "Projeto Vite scaffoldado com todas as dependências instaladas, estrutura de pastas conforme a arquitetura App Shell do SKILL.md, tailwind.config.js com tokens Colibri, vite.config.ts com PWA, AppShell + BottomNav + Header criados, rotas lazy com Skeleton fallback, build sem erros.",
+      "files": [],
+      "expectations": [
+        "Folder structure follows App Shell pattern with components/shell/, features/, contexts/, hooks/, lib/",
+        "tailwind.config contains Colibri color tokens (colibri-bg #121214, colibri-primary #7C3AED, colibri-surface #1A1A1E)",
+        "vite.config.ts includes VitePWA plugin with manifest and workbox runtimeCaching",
+        "All feature routes use React.lazy() with Suspense fallback",
+        "BottomNav has exactly 5 navigation items (Timer, Humor, Tarefas, Chat, Perfil)",
+        "Project builds successfully without errors (npm run build)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Cria a feature de Timer Pomodoro do Colibri. Preciso do anel de progresso visual, 3 presets (15/25/45), toque pra iniciar/pausar, e uma mensagem de celebração quando completar. Tem que seguir as regras de UX do TDAH — botões grandes, 1 toque, mensagens positivas.",
+      "expected_output": "TimerPage.tsx com ProgressRing SVG animado, PresetSelector com 3 botões grandes (min-h-touch), TimerContext com estado persistido no localStorage, lógica de countdown com drift correction, mensagem de celebração ao completar, tudo com cores Colibri e tom acolhedor.",
+      "files": [],
+      "expectations": [
+        "ProgressRing component uses SVG with stroke-dasharray and stroke-dashoffset for circular animation",
+        "Exactly 3 preset buttons for durations (15, 25, 45 minutes) — no slider, no dropdown",
+        "Interactive buttons have minimum touch target size (min-h-12 or min-h-touch, at least 48px)",
+        "Celebration message on timer completion uses positive, encouraging tone (no guilt/pressure words)",
+        "Timer state is persisted to localStorage (duration, remaining, sessionsCompleted)",
+        "Start/pause is a single-tap action on the progress ring or a prominent button"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Cria a feature de Registro de Humor do Colibri. 5 emojis pra escolher com 1 toque, feedback visual imediato, e um histórico dos últimos 7 dias. Lembra que é pra TDAH — nada de perguntar 'por quê' ou julgar, só acolher.",
+      "expected_output": "MoodPage.tsx com MoodSelector (5 emojis interativos com cores específicas), MoodHistory (dots dos últimos 7 dias), MoodContext com persistência localStorage, animação de pulse no emoji selecionado, mensagens acolhedoras para cada nível de humor, sem julgamento.",
+      "files": [],
+      "expectations": [
+        "Exactly 5 mood options (emojis or visual representations) displayed simultaneously",
+        "Single-tap on a mood option registers it immediately — no confirmation dialog",
+        "Visual feedback animation on selection (pulse, scale, color change, or similar)",
+        "7-day mood history component is present and displays past entries",
+        "All response messages are welcoming and non-judgmental (no 'why' questions, no guilt language)",
+        "Uses Colibri color tokens (colibri-bg, colibri-surface, colibri-primary or mood-specific colors)"
+      ]
+    }
+  ]
+}

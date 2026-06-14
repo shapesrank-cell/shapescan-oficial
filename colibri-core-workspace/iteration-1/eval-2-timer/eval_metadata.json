@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "timer-pomodoro",
+  "prompt": "Cria a feature de Timer Pomodoro do Colibri. Preciso do anel de progresso visual, 3 presets (15/25/45), toque pra iniciar/pausar, e uma mensagem de celebração quando completar. Tem que seguir as regras de UX do TDAH — botões grandes, 1 toque, mensagens positivas.",
+  "assertions": [
+    "ProgressRing component uses SVG with stroke-dasharray and stroke-dashoffset for circular animation",
+    "Exactly 3 preset buttons for durations (15, 25, 45 minutes) — no slider, no dropdown",
+    "Interactive buttons have minimum touch target size (min-h-12 or min-h-touch, at least 48px)",
+    "Celebration message on timer completion uses positive, encouraging tone (no guilt/pressure words)",
+    "Timer state is persisted to localStorage (duration, remaining, sessionsCompleted)",
+    "Start/pause is a single-tap action on the progress ring or a prominent button"
+  ]
+}

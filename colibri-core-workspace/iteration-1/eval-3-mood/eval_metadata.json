@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "mood-tracker",
+  "prompt": "Cria a feature de Registro de Humor do Colibri. 5 emojis pra escolher com 1 toque, feedback visual imediato, e um histórico dos últimos 7 dias. Lembra que é pra TDAH — nada de perguntar 'por quê' ou julgar, só acolher.",
+  "assertions": [
+    "Exactly 5 mood options (emojis or visual representations) displayed simultaneously",
+    "Single-tap on a mood option registers it immediately — no confirmation dialog",
+    "Visual feedback animation on selection (pulse, scale, color change, or similar)",
+    "7-day mood history component is present and displays past entries",
+    "All response messages are welcoming and non-judgmental (no 'why' questions, no guilt language)",
+    "Uses Colibri color tokens (colibri-bg, colibri-surface, colibri-primary or mood-specific colors)"
+  ]
+}

@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+    background-color: #fbf9f8;
+    color: #1b1c1c;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block;
+    vertical-align: middle;
+    user-select: none;
+  }
+}
+
+@layer utilities {
+  @keyframes colibri-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.45; }
+  }
+  .animate-colibri-pulse {
+    animation: colibri-pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes ring-breathe {
+    0%, 100% { opacity: 0.45; }
+    50%      { opacity: 0.75; }
+  }
+  .animate-ring-breathe {
+    animation: ring-breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes scale-in {
+    from { transform: scale(0.8); opacity: 0.5; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  .animate-scale-in {
+    animation: scale-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+}
+
+@layer components {
+  .soft-shadow {
+    box-shadow: 0 10px 40px 0 rgba(209, 231, 214, 0.25);
+  }
+
+  .soft-shadow-hover {
+    box-shadow: 0 20px 50px 0 rgba(209, 231, 214, 0.45);
+  }
+
+  .bento-card {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  }
+
+  .bento-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .bento-card:active {
+    transform: scale(0.98);
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Colibri",
+  "short_name": "Colibri",
+  "description": "Encontre o seu ritmo, gentilmente. Companheiro TDAH para foco e rotina.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#121214",
+  "theme_color": "#4f6356",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/colibri.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

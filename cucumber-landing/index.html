@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CUCUMBER — A Quiet Revolution</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --cream: #f4efe6;
+      --cream-dark: #e8e0d0;
+      --forest: #1a3a2a;
+      --forest-light: #2d5a42;
+      --sage: #7a9a82;
+      --gold: #c4a35a;
+      --gold-light: #e8d5a0;
+      --cucumber: #5b8c3e;
+      --cucumber-light: #8bb85e;
+      --ink: #1a1a18;
+      --ink-50: rgba(26, 26, 24, 0.5);
+      --ink-20: rgba(26, 26, 24, 0.2);
+      --ink-08: rgba(26, 26, 24, 0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.35s; }
+    .reveal-delay-4 { transition-delay: 0.5s; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 3rem;
+      mix-blend-mode: difference;
+    }
+    nav .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--cream);
+      text-transform: uppercase;
+    }
+    nav .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    nav .nav-links a {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.3s;
+    }
+    nav .nav-links a:hover { opacity: 0.6; }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      background: var(--forest);
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 40%, rgba(91, 140, 62, 0.15), transparent),
+        radial-gradient(ellipse 50% 70% at 20% 80%, rgba(196, 163, 90, 0.08), transparent);
+      pointer-events: none;
+    }
+    .hero-text {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 5rem 6rem;
+      position: relative;
+      z-index: 2;
+    }
+    .hero-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 2rem;
+      font-weight: 500;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(4rem, 8vw, 8rem);
+      font-weight: 900;
+      color: var(--cream);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+    }
+    .hero h1 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--cucumber-light);
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--sage);
+      margin-top: 2.5rem;
+      max-width: 380px;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .hero-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cucumber-illustration {
+      width: 320px;
+      height: 520px;
+      position: relative;
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-20px) rotate(1deg); }
+    }
+    .cucumber-body {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(145deg, #6b9e45, #4a7a2e, #3d6825);
+      border-radius: 45% 45% 48% 48% / 12% 12% 15% 15%;
+      position: relative;
+      box-shadow:
+        inset -20px -10px 40px rgba(0,0,0,0.2),
+        inset 20px 10px 40px rgba(139, 184, 94, 0.3),
+        0 40px 80px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .cucumber-body::before {
+      content: '';
+      position: absolute;
+      top: 5%;
+      left: 15%;
+      width: 70%;
+      height: 90%;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 18px,
+        rgba(255,255,255,0.06) 18px,
+        rgba(255,255,255,0.06) 20px
+      );
+      border-radius: inherit;
+    }
+    .cucumber-body::after {
+      content: '';
+      position: absolute;
+      top: 8%;
+      left: 25%;
+      width: 15%;
+      height: 80%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15), transparent);
+      border-radius: 50%;
+      filter: blur(8px);
+    }
+    .bump {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(91, 140, 62, 0.8), rgba(74, 122, 46, 0.6));
+      box-shadow: inset 1px 1px 3px rgba(255,255,255,0.1);
+    }
+    .bump:nth-child(1) { width: 8px; height: 8px; top: 15%; left: 20%; }
+    .bump:nth-child(2) { width: 6px; height: 6px; top: 25%; left: 65%; }
+    .bump:nth-child(3) { width: 7px; height: 7px; top: 35%; left: 30%; }
+    .bump:nth-child(4) { width: 5px; height: 5px; top: 45%; left: 70%; }
+    .bump:nth-child(5) { width: 8px; height: 8px; top: 55%; left: 25%; }
+    .bump:nth-child(6) { width: 6px; height: 6px; top: 65%; left: 60%; }
+    .bump:nth-child(7) { width: 7px; height: 7px; top: 75%; left: 35%; }
+    .bump:nth-child(8) { width: 5px; height: 5px; top: 82%; left: 55%; }
+    .stem {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 30px;
+      background: linear-gradient(135deg, #5a8a38, #4a7530);
+      border-radius: 50% 50% 30% 30%;
+    }
+    .hero-scroll {
+      position: absolute;
+      bottom: 3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--sage);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px;
+      height: 50px;
+      background: var(--sage);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.3); }
+    }
+
+    /* ─── MARQUEE ─── */
+    .marquee-section {
+      background: var(--cucumber);
+      padding: 1.2rem 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .marquee-track {
+      display: flex;
+      gap: 3rem;
+      animation: marquee 25s linear infinite;
+      width: max-content;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .marquee-item {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--cream);
+      white-space: nowrap;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .marquee-dot {
+      color: var(--gold);
+      font-size: 0.6rem;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ─── EDITORIAL SECTION ─── */
+    .editorial {
+      padding: 10rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .editorial-left {
+      position: relative;
+    }
+    .editorial-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 12rem;
+      font-weight: 900;
+      color: var(--ink-08);
+      line-height: 1;
+      position: absolute;
+      top: -2rem;
+      left: -1rem;
+    }
+    .editorial-left h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .editorial-left h2 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      color: var(--cucumber);
+    }
+    .editorial-left p {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--ink-50);
+      max-width: 480px;
+      font-weight: 300;
+    }
+    .editorial-right {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+      padding-top: 4rem;
+    }
+    .fact-card {
+      background: var(--cream-dark);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fact-card:hover {
+      transform: translateY(-4px);
+    }
+    .fact-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--cucumber), var(--gold));
+    }
+    .fact-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 0.8rem;
+    }
+    .fact-card p {
+      font-size: 0.9rem;
+      color: var(--ink-50);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .fact-stat {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--cucumber);
+      margin-bottom: 0.3rem;
+    }
+
+    /* ─── NUTRITION STRIP ─── */
+    .nutrition {
+      background: var(--forest);
+      padding: 6rem 5rem;
+    }
+    .nutrition-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .nutrition-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 4rem;
+    }
+    .nutrition-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      color: var(--cream);
+      font-weight: 700;
+    }
+    .nutrition-header span {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sage);
+    }
+    .nutrition-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.5rem;
+    }
+    .nutrient {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1.2rem;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .nutrient:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--cucumber-light);
+      transform: translateY(-6px);
+    }
+    .nutrient-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: var(--cucumber-light);
+      line-height: 1;
+    }
+    .nutrient-unit {
+      font-size: 0.8rem;
+      color: var(--sage);
+      margin-top: 0.3rem;
+    }
+    .nutrient-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cream);
+      margin-top: 1.2rem;
+      font-weight: 500;
+    }
+    .nutrient-bar {
+      width: 100%;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+    .nutrient-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--cucumber), var(--cucumber-light));
+      border-radius: 2px;
+      transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 0;
+    }
+    .nutrient-fill.animated { width: var(--fill); }
+
+    /* ─── VARIETIES ─── */
+    .varieties {
+      padding: 10rem 5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .varieties-header {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+    .varieties-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+    }
+    .varieties-header p {
+      color: var(--ink-50);
+      margin-top: 1rem;
+      font-size: 1.05rem;
+      font-weight: 300;
+    }
+    .varieties-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+    .variety {
+      border: 1px solid var(--ink-08);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      position: relative;
+    }
+    .variety:hover {
+      border-color: var(--cucumber);
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(26, 58, 42, 0.1);
+    }
+    .variety-visual {
+      height: 240px;
+      position: relative;
+      overflow: hidden;
+    }
+    .variety:nth-child(1) .variety-visual {
+      background: linear-gradient(135deg, #3d6825, #6b9e45, #8bb85e);
+    }
+    .variety:nth-child(2) .variety-visual {
+      background: linear-gradient(135deg, #2d5a42, #5a8a38, #7aaa52);
+    }
+    .variety:nth-child(3) .variety-visual {
+      background: linear-gradient(135deg, #4a7530, #8bb85e, #a8d470);
+    }
+    .variety-visual::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: linear-gradient(to top, var(--cream), transparent);
+    }
+    .variety-emoji {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 5rem;
+      filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));
+      z-index: 2;
+    }
+    .variety-info {
+      padding: 2rem;
+    }
+    .variety-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .variety-origin {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sage);
+      margin-bottom: 1rem;
+    }
+    .variety-desc {
+      font-size: 0.9rem;
+      color: var(--ink-50);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ─── QUOTE ─── */
+    .quote-section {
+      padding: 8rem 5rem;
+      background: var(--cream-dark);
+      position: relative;
+      overflow: hidden;
+    }
+    .quote-section::before {
+      content: '\201C';
+      font-family: 'Playfair Display', serif;
+      font-size: 30rem;
+      color: var(--ink-08);
+      position: absolute;
+      top: -4rem;
+      left: 3rem;
+      line-height: 1;
+    }
+    .quote-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .quote-inner blockquote {
+      font-family: 'Instrument Serif', serif;
+      font-size: 2.5rem;
+      font-style: italic;
+      line-height: 1.4;
+      color: var(--forest);
+      margin-bottom: 2rem;
+    }
+    .quote-inner cite {
+      font-family: 'DM Sans', sans-serif;
+      font-style: normal;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--sage);
+    }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      padding: 10rem 5rem;
+      text-align: center;
+      position: relative;
+    }
+    .cta-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem;
+      font-weight: 900;
+      margin-bottom: 1.5rem;
+    }
+    .cta-section h2 em {
+      font-family: 'Instrument Serif', serif;
+      font-style: italic;
+      color: var(--cucumber);
+    }
+    .cta-section p {
+      font-size: 1.1rem;
+      color: var(--ink-50);
+      max-width: 500px;
+      margin: 0 auto 3rem;
+      line-height: 1.7;
+      font-weight: 300;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: var(--forest);
+      color: var(--cream);
+      padding: 1.2rem 3rem;
+      border-radius: 100px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 500;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+      cursor: pointer;
+    }
+    .cta-btn:hover {
+      background: var(--cucumber);
+      transform: scale(1.05);
+      box-shadow: 0 15px 50px rgba(91, 140, 62, 0.3);
+    }
+    .cta-btn svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s;
+    }
+    .cta-btn:hover svg {
+      transform: translateX(4px);
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 4rem 5rem 2rem;
+    }
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4rem;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+    }
+    .footer-links {
+      display: flex;
+      gap: 4rem;
+    }
+    .footer-col h4 {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      color: var(--sage);
+    }
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .footer-col a {
+      color: rgba(244, 239, 230, 0.5);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 300;
+      transition: color 0.3s;
+    }
+    .footer-col a:hover { color: var(--cream); }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding-top: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-bottom span {
+      font-size: 0.75rem;
+      color: rgba(244, 239, 230, 0.3);
+    }
+
+    /* ─── GRAIN OVERLAY ─── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .hero-text { padding: 8rem 3rem 6rem; }
+      .editorial { grid-template-columns: 1fr; padding: 6rem 3rem; gap: 4rem; }
+      .nutrition-grid { grid-template-columns: repeat(3, 1fr); }
+      .varieties-grid { grid-template-columns: repeat(2, 1fr); }
+      nav { padding: 1.5rem 2rem; }
+      nav .nav-links { display: none; }
+    }
+    @media (max-width: 640px) {
+      .hero h1 { font-size: 3.5rem; }
+      .nutrition-grid { grid-template-columns: repeat(2, 1fr); }
+      .varieties-grid { grid-template-columns: 1fr; }
+      .nutrition { padding: 4rem 2rem; }
+      .varieties { padding: 5rem 2rem; }
+      .quote-inner blockquote { font-size: 1.6rem; }
+      .footer-links { flex-direction: column; gap: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Cucumber</div>
+    <ul class="nav-links">
+      <li><a href="#origin">Origin</a></li>
+      <li><a href="#nutrition">Nutrition</a></li>
+      <li><a href="#varieties">Varieties</a></li>
+      <li><a href="#journal">Journal</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-tag reveal">Cucumis Sativus — Since 3000 BCE</div>
+      <h1 class="reveal reveal-delay-1">The<br><em>Quiet</em><br>Revolution</h1>
+      <p class="hero-sub reveal reveal-delay-2">
+        95% water. 100% underestimated. A 5,000-year history of hydrating civilizations, one crisp bite at a time.
+      </p>
+    </div>
+    <div class="hero-visual">
+      <div class="cucumber-illustration">
+        <div class="stem"></div>
+        <div class="cucumber-body">
+          <div class="bump"></div>
+          <div class="bump"></div>
+          <div class="bump"></div>
+          <div class="bump"></div>
+          <div class="bump"></div>
+          <div class="bump"></div>
+          <div class="bump"></div>
+          <div class="bump"></div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <section class="marquee-section">
+    <div class="marquee-track">
+      <span class="marquee-item">Hydration</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Vitality</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Ancient Wisdom</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Cool as a Cucumber</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Garden Fresh</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Pure &amp; Simple</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Naturally Perfect</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Hydration</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Vitality</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Ancient Wisdom</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Cool as a Cucumber</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Garden Fresh</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Pure &amp; Simple</span><span class="marquee-dot">&bull;</span>
+      <span class="marquee-item">Naturally Perfect</span><span class="marquee-dot">&bull;</span>
+    </div>
+  </section>
+
+  <!-- EDITORIAL -->
+  <section class="editorial" id="origin">
+    <div class="editorial-left">
+      <div class="editorial-number reveal">01</div>
+      <h2 class="reveal reveal-delay-1">Born in the<br>foothills of the<br><em>Himalayas</em></h2>
+      <p class="reveal reveal-delay-2">
+        First cultivated in ancient India over 5,000 years ago, the cucumber traveled westward along trade routes — through Persia, into Greece and Rome, and eventually across the entire globe. Today it's the fourth most cultivated vegetable on Earth.
+      </p>
+    </div>
+    <div class="editorial-right">
+      <div class="fact-card reveal">
+        <div class="fact-stat">95%</div>
+        <h3>Pure Water</h3>
+        <p>The highest water content of any solid food. One cucumber hydrates more effectively than a glass of water, thanks to natural electrolytes and minerals.</p>
+      </div>
+      <div class="fact-card reveal reveal-delay-1">
+        <div class="fact-stat">5,000+</div>
+        <h3>Years of Cultivation</h3>
+        <p>From the gardens of Ur to your kitchen counter — cucumbers have been a companion crop to human civilization since the Bronze Age.</p>
+      </div>
+      <div class="fact-card reveal reveal-delay-2">
+        <div class="fact-stat">84M</div>
+        <h3>Tons per Year</h3>
+        <p>Global production exceeds 84 million metric tons annually. China alone grows over 80% of the world's supply.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- NUTRITION -->
+  <section class="nutrition" id="nutrition">
+    <div class="nutrition-inner">
+      <div class="nutrition-header">
+        <h2 class="reveal">Inside Every<br>Cucumber</h2>
+        <span class="reveal reveal-delay-1">Per 100g serving</span>
+      </div>
+      <div class="nutrition-grid">
+        <div class="nutrient reveal">
+          <div class="nutrient-value">15</div>
+          <div class="nutrient-unit">kcal</div>
+          <div class="nutrient-label">Calories</div>
+          <div class="nutrient-bar"><div class="nutrient-fill" style="--fill: 8%"></div></div>
+        </div>
+        <div class="nutrient reveal reveal-delay-1">
+          <div class="nutrient-value">3.6</div>
+          <div class="nutrient-unit">grams</div>
+          <div class="nutrient-label">Carbs</div>
+          <div class="nutrient-bar"><div class="nutrient-fill" style="--fill: 18%"></div></div>
+        </div>
+        <div class="nutrient reveal reveal-delay-2">
+          <div class="nutrient-value">0.7</div>
+          <div class="nutrient-unit">grams</div>
+          <div class="nutrient-label">Protein</div>
+          <div class="nutrient-bar"><div class="nutrient-fill" style="--fill: 12%"></div></div>
+        </div>
+        <div class="nutrient reveal reveal-delay-3">
+          <div class="nutrient-value">147</div>
+          <div class="nutrient-unit">mg</div>
+          <div class="nutrient-label">Potassium</div>
+          <div class="nutrient-bar"><div class="nutrient-fill" style="--fill: 45%"></div></div>
+        </div>
+        <div class="nutrient reveal reveal-delay-4">
+          <div class="nutrient-value">16</div>
+          <div class="nutrient-unit">&micro;g</div>
+          <div class="nutrient-label">Vitamin K</div>
+          <div class="nutrient-bar"><div class="nutrient-fill" style="--fill: 62%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VARIETIES -->
+  <section class="varieties" id="varieties">
+    <div class="varieties-header">
+      <h2 class="reveal">Three Worlds,<br>One Vine</h2>
+      <p class="reveal reveal-delay-1">Every climate, every cuisine — there's a cucumber for that.</p>
+    </div>
+    <div class="varieties-grid">
+      <div class="variety reveal">
+        <div class="variety-visual">
+          <div class="variety-emoji">🥒</div>
+        </div>
+        <div class="variety-info">
+          <div class="variety-origin">Slicing — Global</div>
+          <div class="variety-name">English Cucumber</div>
+          <div class="variety-desc">Long, seedless, and wrapped in plastic like a gift from the garden. Mild flavor, thin skin, zero bitterness. The everyday hero.</div>
+        </div>
+      </div>
+      <div class="variety reveal reveal-delay-1">
+        <div class="variety-visual">
+          <div class="variety-emoji">🫙</div>
+        </div>
+        <div class="variety-info">
+          <div class="variety-origin">Pickling — Eastern Europe</div>
+          <div class="variety-name">Kirby Cucumber</div>
+          <div class="variety-desc">Short, bumpy, and built for brining. Thick skin holds up to vinegar and time. The backbone of every good deli.</div>
+        </div>
+      </div>
+      <div class="variety reveal reveal-delay-2">
+        <div class="variety-visual">
+          <div class="variety-emoji">🍃</div>
+        </div>
+        <div class="variety-info">
+          <div class="variety-origin">Asian — East Asia</div>
+          <div class="variety-name">Japanese Cucumber</div>
+          <div class="variety-desc">Slim, crisp, and slightly sweet. Smashed with garlic and sesame, it becomes something transcendent. The poet of the cucumber world.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="quote-section" id="journal">
+    <div class="quote-inner reveal">
+      <blockquote>A cucumber should be well-sliced, dressed with pepper and vinegar, and then thrown out, as good for nothing.</blockquote>
+      <cite>Samuel Johnson, 1773 — and he was delightfully wrong</cite>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2 class="reveal">Stay <em>Cool</em></h2>
+    <p class="reveal reveal-delay-1">Subscribe to our botanical journal for seasonal growing guides, heritage variety profiles, and the quiet joy of cucumbers.</p>
+    <button class="cta-btn reveal reveal-delay-2">
+      Join the Vine
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-logo">CUCUMBER</div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="#">Origin Story</a></li>
+            <li><a href="#">Nutrition</a></li>
+            <li><a href="#">Varieties</a></li>
+            <li><a href="#">Growing Guide</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="#">Journal</a></li>
+            <li><a href="#">Recipes</a></li>
+            <li><a href="#">Newsletter</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">Pinterest</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 Cucumber Botanical. All rights reserved.</span>
+      <span>Made with soil, water &amp; sunlight</span>
+    </div>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          if (entry.target.querySelector('.nutrient-fill')) {
+            entry.target.querySelectorAll('.nutrient-fill').forEach(fill => {
+              fill.classList.add('animated');
+            });
+          }
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    document.querySelectorAll('.nutrient').forEach(el => {
+      const newObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.querySelector('.nutrient-fill')?.classList.add('animated');
+          }
+        });
+      }, { threshold: 0.3 });
+      newObserver.observe(el);
+    });
+  </script>
+
+</body>
+</html>

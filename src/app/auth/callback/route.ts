@@ -10,6 +10,27 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const nomeGoogle =
+          (user.user_metadata?.full_name as string | undefined) ||
+          (user.user_metadata?.name as string | undefined) ||
+          null;
+
+        await supabase
+          .from("profiles")
+          .update({ termos_aceitos_em: new Date().toISOString() })
+          .eq("id", user.id)
+          .is("termos_aceitos_em", null);
+
+        if (nomeGoogle) {
+          await supabase
+            .from("profiles")
+            .update({ nome: nomeGoogle })
+            .eq("id", user.id)
+            .is("nome", null);
+        }
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

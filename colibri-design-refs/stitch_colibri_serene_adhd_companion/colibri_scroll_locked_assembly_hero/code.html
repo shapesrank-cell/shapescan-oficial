@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html class="light" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Colibri - Encontre o seu ritmo, gentilmente.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Atkinson+Hyperlegible+Next:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#384b3f",
+                        "on-surface": "#1b1c1c",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#5e5f5b",
+                        "on-secondary-fixed-variant": "#464744",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f2f0f0",
+                        "on-tertiary-container": "#516958",
+                        "surface-container-highest": "#e4e2e2",
+                        "inverse-primary": "#b6ccbb",
+                        "outline-variant": "#c3c8c2",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#b2cdb9",
+                        "surface-variant": "#e4e2e2",
+                        "on-secondary-fixed": "#1b1c19",
+                        "primary": "#4f6356",
+                        "primary-fixed": "#d2e8d7",
+                        "tertiary-fixed": "#cee9d4",
+                        "on-primary-fixed": "#0d1f15",
+                        "outline": "#737873",
+                        "secondary-fixed": "#e3e3de",
+                        "inverse-surface": "#303030",
+                        "on-secondary-container": "#646561",
+                        "surface-container": "#efeded",
+                        "surface-tint": "#4f6356",
+                        "tertiary-container": "#cce8d3",
+                        "surface-container-high": "#eae8e7",
+                        "secondary-fixed-dim": "#c7c7c2",
+                        "primary-container": "#d1e7d6",
+                        "on-tertiary-fixed-variant": "#344c3d",
+                        "surface": "#fbf9f8",
+                        "surface-container-low": "#f5f3f3",
+                        "error": "#ba1a1a",
+                        "background": "#fbf9f8",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "on-surface-variant": "#434843",
+                        "surface-bright": "#fbf9f8",
+                        "primary-fixed-dim": "#b6ccbb",
+                        "on-primary-container": "#55685b",
+                        "on-tertiary-fixed": "#082013",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dbd9d9",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#e3e3de",
+                        "tertiary": "#4b6453"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding-mobile": "24px",
+                        "stack-gap-sm": "12px",
+                        "stack-gap-md": "24px",
+                        "container-padding-desktop": "64px",
+                        "stack-gap-lg": "48px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-md": ["Atkinson Hyperlegible Next"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "body-md": ["Atkinson Hyperlegible Next"],
+                        "body-lg": ["Atkinson Hyperlegible Next"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-xl": ["40px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["18px", {"lineHeight": "28px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "body-lg": ["20px", {"lineHeight": "32px", "letterSpacing": "0.02em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #fbf9f8;
+            color: #1b1c1c;
+            overflow-x: hidden;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .soft-shadow {
+            box-shadow: 0 10px 40px rgba(209, 231, 214, 0.3);
+        }
+
+        .bento-card {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(209, 231, 214, 0.5);
+        }
+
+        .glass-nav {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .colibri-part {
+            transition: transform 0.05s linear, opacity 0.05s linear;
+            transform-origin: center;
+        }
+
+        .hero-scroll-wrapper {
+            height: 200vh;
+            position: relative;
+        }
+
+        .hero-sticky-container {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-content-fade {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+    </style>
+</head>
+<body class="font-body-md">
+<!-- Background Orbs -->
+<div class="orb w-[500px] h-[500px] bg-primary-container top-[-100px] left-[-100px]"></div>
+<div class="orb w-[400px] h-[400px] bg-tertiary-container bottom-[-50px] right-[-50px]" style="animation-delay: -5s;"></div>
+<div class="orb w-[300px] h-[300px] bg-secondary-fixed top-[40%] left-[20%]" style="animation-delay: -10s;"></div>
+<!-- Top Navigation -->
+<nav class="fixed top-0 w-full z-50 glass-nav bg-surface/80 dark:bg-surface-dim/80">
+<div class="flex justify-between items-center max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop h-20">
+<div class="flex items-center gap-2">
+<span class="font-headline-lg text-headline-lg font-semibold text-primary dark:text-primary-fixed-dim tracking-tight">Colibri</span>
+</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-primary dark:text-primary-fixed-dim font-bold border-b-2 border-primary dark:border-primary-fixed-dim pb-1 font-label-md text-label-md" href="#">Features</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md" href="#">Science</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md" href="#">Community</a>
+<a class="text-on-surface-variant dark:text-surface-variant font-medium hover:text-primary dark:hover:text-primary-fixed-dim transition-colors font-label-md text-label-md" href="#">About</a>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-full font-label-md text-label-md hover:opacity-80 active:scale-95 transition-all duration-200 shadow-md">
+            Try for free
+        </button>
+</div>
+</nav>
+<main>
+<!-- Scroll-Locked Hero Assembly Section -->
+<div class="hero-scroll-wrapper" id="hero-trigger">
+<div class="hero-sticky-container">
+<!-- Background Watermark Bird -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0" id="bird-assembly-container">
+<svg class="w-full h-full max-w-[90vh] max-h-[90vh]" fill="none" height="800" viewbox="0 0 400 400" width="800" xmlns="http://www.w3.org/2000/svg">
+<!-- Head -->
+<path class="colibri-part" d="M245 135 C245 120, 275 120, 275 135 L275 145 L245 145 Z" data-id="1" fill="#b6ccbb"></path>
+<!-- Eye -->
+<circle class="colibri-part" cx="262" cy="133" data-id="2" fill="#ffffff" r="3"></circle>
+<!-- Beak -->
+<path class="colibri-part" d="M275 135 L335 120 L275 145 Z" data-id="3" fill="#4f6356"></path>
+<!-- Wing Front -->
+<path class="colibri-part" d="M240 150 L140 30 L220 150 Z" data-id="4" fill="#d2e8d7"></path>
+<path class="colibri-part" d="M220 150 L180 80 L180 180 Z" data-id="5" fill="#b2cdb9"></path>
+<!-- Body Upper -->
+<path class="colibri-part" d="M245 145 L180 180 C180 180, 200 230, 250 210 L245 145 Z" data-id="6" fill="#cee9d4"></path>
+<!-- Wing Back -->
+<path class="colibri-part" d="M180 180 L80 100 L160 170 Z" data-id="7" fill="#d2e8d7" opacity="0.6"></path>
+<!-- Tail -->
+<path class="colibri-part" d="M200 220 L160 320 L210 240 Z" data-id="8" fill="#b6ccbb"></path>
+<path class="colibri-part" d="M210 240 L190 310 L230 240 Z" data-id="9" fill="#d1e7d6"></path>
+<path class="colibri-part" d="M230 240 L215 290 L240 230 Z" data-id="10" fill="#b2cdb9"></path>
+<!-- Dust Particles -->
+<circle class="colibri-part dust" cx="280" cy="100" data-id="11" fill="#d1e7d6" r="2"></circle>
+<circle class="colibri-part dust" cx="310" cy="150" data-id="12" fill="#d1e7d6" r="1.5"></circle>
+<circle class="colibri-part dust" cx="120" cy="60" data-id="13" fill="#d1e7d6" r="2.5"></circle>
+<circle class="colibri-part dust" cx="100" cy="180" data-id="14" fill="#d1e7d6" r="2"></circle>
+<circle class="colibri-part dust" cx="200" cy="50" data-id="15" fill="#d1e7d6" r="1.5"></circle>
+</svg>
+</div>
+<!-- Foreground Content -->
+<section class="relative z-10 max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop hero-content-fade" id="hero-text-content">
+<div class="max-w-2xl text-center md:text-left space-y-stack-gap-md">
+<div class="inline-flex items-center gap-2 bg-primary-container/40 text-primary px-4 py-2 rounded-full font-label-md text-label-md mb-4">
+<span class="material-symbols-outlined text-[20px]">colors_spark</span>
+<span>Gentle focus for neurodivergent minds</span>
+</div>
+<h1 class="font-headline-xl text-[48px] md:text-[64px] leading-tight text-on-surface">
+                        Encontre o seu ritmo, gentilmente.
+                    </h1>
+<p class="font-body-lg text-body-lg text-secondary max-w-lg mx-auto md:mx-0">
+                        A gentle ADHD companion for routine and focus. Designed to soothe sensory overload while helping you stay on track.
+                    </p>
+<div class="pt-4">
+<button class="bg-primary-container text-on-primary-container px-10 py-5 rounded-full font-headline-lg text-[20px] hover:shadow-lg active:scale-95 transition-all duration-300 flex items-center gap-3 mx-auto md:mx-0">
+                            Começar minha jornada leve
+                            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Bento Grid Feature Section -->
+<section class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-lg fade-in-section">
+<div class="text-center mb-stack-gap-lg">
+<h2 class="font-headline-xl text-headline-xl text-on-surface mb-4">Focus without the noise.</h2>
+<p class="font-body-md text-body-md text-secondary max-w-2xl mx-auto">We've stripped away the chaos of traditional productivity tools to create a space that feels like a deep breath.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+<!-- Main App Mockup Card -->
+<div class="md:col-span-8 bg-white rounded-lg p-8 bento-card soft-shadow flex flex-col justify-between overflow-hidden relative">
+<div>
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-full text-label-md font-label-md">Interface</span>
+<h3 class="font-headline-lg text-headline-lg mt-4 mb-2">The Visual Calm Dashboard</h3>
+<p class="text-secondary max-w-md">No red badges. No urgent pings. Just your day, visualized in soft gradients and gentle blocks.</p>
+</div>
+<div class="mt-8 transform translate-y-12 rotate-2">
+<div class="bg-surface-container rounded-lg p-6 shadow-xl border border-outline-variant/30 min-h-[300px]">
+<div class="flex gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-primary-container"></div>
+<div class="space-y-2 flex-1">
+<div class="h-4 bg-outline-variant/30 rounded-full w-1/3"></div>
+<div class="h-3 bg-outline-variant/20 rounded-full w-1/2"></div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="h-20 bg-white rounded-lg p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed"></div>
+<div class="h-4 bg-outline-variant/20 rounded-full w-32"></div>
+</div>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="h-20 bg-white/60 rounded-lg p-4 flex items-center justify-between border-dashed border-2 border-outline-variant/20">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed"></div>
+<div class="h-4 bg-outline-variant/20 rounded-full w-24"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Cards -->
+<div class="md:col-span-4 space-y-6">
+<div class="bg-primary-container rounded-lg p-8 bento-card h-[288px] flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-5xl text-primary mb-4" style="font-variation-settings: 'FILL' 1;">timer</span>
+<h4 class="font-headline-lg text-headline-lg text-on-primary-container mb-2">Micro-Flows</h4>
+<p class="text-on-primary-container/80 text-body-md">Bite-sized focus sessions that respect your energy levels.</p>
+</div>
+<div class="bg-secondary-fixed rounded-lg p-8 bento-card h-[288px] flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-5xl text-secondary mb-4">psychology</span>
+<h4 class="font-headline-lg text-headline-lg text-on-secondary-fixed mb-2">Neuro-Science</h4>
+<p class="text-on-secondary-fixed/80 text-body-md">Built on cognitive principles that support dopamine regulation.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials Section -->
+<section class="bg-surface-container-low py-stack-gap-lg mt-stack-gap-lg">
+<div class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop">
+<div class="text-center mb-12">
+<h2 class="font-headline-xl text-headline-xl text-on-surface">Authentic Testimonials</h2>
+<p class="text-secondary font-body-md mt-2">Voices from our neurodivergent community.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="bg-white p-8 rounded-lg soft-shadow flex flex-col justify-between">
+<p class="italic text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                        "Finally, a tool that doesn't make me feel guilty for having a 'low-capacity' day. The interface is like a digital hug."
+                    </p>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt-FWS7OMDbkCcQgcvMg-xomAtH_arxFquNvBtco6UxGHyqdYrKZkJ9wKHPJU0njVJE9yHdMuATkEKVnFIdZXm8rsZZeGJsSwcXhiUswvLVRZgn9euYLdNpHVjiuPTtoJmunfPEF_aJYCUFcv7AN8496BtCq40-KzlsM3DAKGArIS0aOEBXxdFIUtMj3-Ba0sFNyri1-bNRvHICzbdHbCBLiQEGN7BXFhERldWc-yaj-lub4fJUSOsbBroWwwvDzHdiBetwUUxm3VW"/>
+<div>
+<p class="font-bold text-on-surface">Mariana S.</p>
+<p class="text-label-md text-secondary">UX Designer</p>
+</div>
+</div>
+</div>
+<div class="bg-white p-8 rounded-lg soft-shadow flex flex-col justify-between md:scale-105 z-10">
+<p class="italic text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                        "Colibri helped me organize my startup life without the sensory overload of 50 different notifications. It's essential now."
+                    </p>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcZ96DYXgoadNxSeBjlowz7T6gNv95EoYwEpuyQW0YKni3_nVPL6qYHdUK2myQ-YII6klE-p4IoapDWtyAOk3h5jw-jzcNqPdc5ZdapzK4WU04iL5wUP1fO88I19pZywgUkuUOgqrZcL0DsDTfChi-PXjLjzzL8YXjj-Vu78yy0FiL9rAMMSXfr71b2DM15H2gPHNYETCRLHcdMlMmosKXJBTm0TgHdy1mF9LumHX3g6zPWs1TNcunJtavQGnPbhOv5WNSe60sjiH7"/>
+<div>
+<p class="font-bold text-on-surface">Lucas V.</p>
+<p class="text-label-md text-secondary">Founder</p>
+</div>
+</div>
+</div>
+<div class="bg-white p-8 rounded-lg soft-shadow flex flex-col justify-between">
+<p class="italic text-body-lg text-on-surface-variant mb-6 leading-relaxed">
+                        "The visual timers are a game changer. I don't feel the 'panic' I usually get with ticking clocks. Everything is so quiet."
+                    </p>
+<div class="flex items-center gap-4">
+<img class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvlY6xGcv3qIDG0p-HkTCo-OYm2FxIY9KFjcD5v8T3t-3AyH-mY4IWKRCcdpkSz_iqsYz1PHeO8Ix46CWNxtT7WqAwI7LLqpbI2Ds2lCoJXVuxpbuYxRbqdgd8dAOe1d-0N1Z12c0JwC0vP9q9sdQ3sP-jY8XGsDytpoEVwzq_45A6GlXqz_o105hV99Juw2gvYZm4OgHJbSfVAR6EDGWF73r1lp9OW6F_YPOkK9ycQhYAYzq9xqMqUWqc9G1dpmGRAxz5qZ319e1L"/>
+<div>
+<p class="font-bold text-on-surface">Bia R.</p>
+<p class="text-label-md text-secondary">Illustrator</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Final Section -->
+<section class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-lg">
+<div class="bg-primary text-on-primary rounded-lg p-12 md:p-24 text-center space-y-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl"></div>
+<h2 class="font-headline-xl text-headline-xl md:text-[48px] relative z-10">Pronto para encontrar seu ritmo?</h2>
+<p class="font-body-lg text-body-lg text-white/80 max-w-xl mx-auto relative z-10">
+                Join 10,000+ others who have turned their routine from a source of stress into a source of peace.
+            </p>
+<div class="pt-6 relative z-10">
+<button class="bg-white text-primary px-12 py-5 rounded-full font-headline-lg text-headline-lg hover:bg-primary-fixed transition-colors shadow-xl active:scale-95">
+                    Começar gratuitamente
+                </button>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-surface-container-low dark:bg-surface-container-lowest w-full rounded-t-lg">
+<div class="max-w-[1200px] mx-auto px-container-padding-mobile md:px-container-padding-desktop py-stack-gap-lg flex flex-col md:flex-row justify-between items-center gap-stack-gap-md">
+<div class="flex flex-col items-center md:items-start gap-4">
+<span class="font-headline-lg text-headline-lg-mobile font-semibold text-primary dark:text-primary-fixed-dim">Colibri</span>
+<p class="font-body-md text-body-md text-secondary text-center md:text-left max-w-xs">
+                © 2024 Colibri. Designed with gentle focus for the neurodivergent mind.
+            </p>
+</div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Privacy Policy</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Terms of Service</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Accessibility Statement</a>
+<a class="text-secondary dark:text-secondary-fixed-dim hover:text-primary transition-colors font-label-md text-label-md" href="#">Contact</a>
+</div>
+</div>
+</footer>
+<script>
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.fade-in-section').forEach(section => observer.observe(section));
+
+    // Scroll Assembly Logic
+    const parts = document.querySelectorAll('.colibri-part');
+    const heroWrapper = document.getElementById('hero-trigger');
+    const heroContent = document.getElementById('hero-text-content');
+    const birdContainer = document.getElementById('bird-assembly-container');
+
+    // Randomize initial positions for parts
+    const partData = Array.from(parts).map(() => ({
+        x: (Math.random() - 0.5) * 1000,
+        y: (Math.random() - 0.5) * 1000,
+        rotation: (Math.random() - 0.5) * 720,
+        scale: 0.1 + Math.random() * 0.5
+    }));
+
+    window.addEventListener('scroll', () => {
+        const wrapperRect = heroWrapper.getBoundingClientRect();
+        const wrapperTop = heroWrapper.offsetTop;
+        const totalHeight = heroWrapper.offsetHeight;
+        const scrollY = window.pageYOffset - wrapperTop;
+        
+        // Progress within the 200vh section (0 to 1)
+        let progress = Math.max(0, Math.min(1, scrollY / (totalHeight - window.innerHeight)));
+        
+        // Phase 1: Bird Assembly & Scale Up (0 to 0.5 progress)
+        // Maps to 0 to 100% of assembly
+        const assemblyProgress = Math.max(0, Math.min(1, progress * 2));
+        
+        parts.forEach((part, i) => {
+            const data = partData[i];
+            const currentX = data.x * (1 - assemblyProgress);
+            const currentY = data.y * (1 - assemblyProgress);
+            const currentRot = data.rotation * (1 - assemblyProgress);
+            const currentScale = data.scale + (1 - data.scale) * assemblyProgress;
+            const currentOpacity = 0.1 + (0.9 * assemblyProgress);
+
+            part.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${currentRot}deg) scale(${currentScale})`;
+            part.style.opacity = currentOpacity;
+        });
+
+        // Background Bird Scaling up as watermark
+        const scaleFactor = 1 + (assemblyProgress * 1.5); // Grows from 1x to 2.5x
+        const watermarkOpacity = 0.2 + (assemblyProgress * 0.1); // subtle peak opacity
+        birdContainer.style.transform = `scale(${scaleFactor})`;
+        birdContainer.style.opacity = assemblyProgress > 0.9 ? 0.3 : 1; // Fade slightly once assembled to become background
+
+        // Phase 2: Content Fade In (0.5 to 1.0 progress)
+        const contentProgress = Math.max(0, Math.min(1, (progress - 0.5) * 2));
+        
+        if (contentProgress > 0) {
+            heroContent.style.opacity = contentProgress;
+            heroContent.style.transform = `translateY(${40 * (1 - contentProgress)}px)`;
+        } else {
+            heroContent.style.opacity = 0;
+            heroContent.style.transform = `translateY(40px)`;
+        }
+    });
+
+    // Initial state setup
+    window.dispatchEvent(new Event('scroll'));
+
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.98)');
+        btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
+    });
+</script>
+</body></html>
