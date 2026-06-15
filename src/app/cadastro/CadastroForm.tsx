@@ -9,6 +9,7 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
   const [carregando, startTransition] = useTransition();
   const [carregandoGoogle, setCarregandoGoogle] = useState(false);
   const [aceitouTermos, setAceitouTermos] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   function handleSubmit(formData: FormData) {
     setErro(null);
@@ -105,16 +106,26 @@ export function CadastroForm({ redirect }: { redirect?: string }) {
           <label htmlFor="senha" className="text-sm font-medium text-white/70">
             Senha
           </label>
-          <input
-            id="senha"
-            name="senha"
-            type="password"
-            required
-            minLength={8}
-            autoComplete="new-password"
-            placeholder="Mínimo 8 caracteres"
-            className="input"
-          />
+          <div className="relative">
+            <input
+              id="senha"
+              name="senha"
+              type={mostrarSenha ? "text" : "password"}
+              required
+              minLength={8}
+              autoComplete="new-password"
+              placeholder="Mínimo 8 caracteres"
+              className="input pr-12 w-full"
+            />
+            <button
+              type="button"
+              onClick={() => setMostrarSenha((v) => !v)}
+              aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+            >
+              <EyeIcon aberto={mostrarSenha} />
+            </button>
+          </div>
           <p className="text-[11px] text-white/30">
             Use ao menos 8 caracteres. Combine letras e números pra mais segurança.
           </p>
@@ -177,6 +188,22 @@ function GoogleLogo() {
       <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
       <path d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.997 8.997 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/>
       <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/>
+    </svg>
+  );
+}
+
+function EyeIcon({ aberto }: { aberto: boolean }) {
+  return aberto ? (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  ) : (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" x2="22" y1="2" y2="22" />
     </svg>
   );
 }

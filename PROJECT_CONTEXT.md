@@ -113,7 +113,9 @@ src/
 
 ## 🗄️ Banco de dados Supabase
 
-**Project ID:** `omoniqnveezoxbaakjrb` (NÃO confundir com "shapesrank-cell's Project" que é OUTRO)
+**Project ID:** `gnvsgftorqfkcphkjgau` (org "shapesrank project" · projeto "shapescan" · branch `main`)
+
+> ⚠️ **Atualizado em 14/06/2026:** o projeto antigo `omoniqnveezoxbaakjrb` foi DELETADO (DNS não resolve mais — `ERR_NAME_NOT_RESOLVED`). O projeto ativo agora é `gnvsgftorqfkcphkjgau`. Qualquer referência a `omoniqnveezoxbaakjrb` neste repo está obsoleta.
 
 ```
 auth.users              — gerenciado pelo Supabase Auth
@@ -138,21 +140,21 @@ public.rate_limit_log   — sliding window rate limiting
   - `004_security_hardening.sql` — rate_limit_log, error_log, termos_aceitos_em
   - `005_profile_fields.sql` — campos do perfil (sexo, idade, peso, altura, etc)
 
-**⚠️ Todas as migrations 001-005 já foram rodadas no projeto correto** (`omoniqnveezoxbaakjrb`).
+**⚠️ ATENÇÃO:** as migrations 001-005 foram rodadas no projeto ANTIGO (`omoniqnveezoxbaakjrb`, hoje deletado). **NÃO está confirmado** se já rodaram no projeto novo (`gnvsgftorqfkcphkjgau`). Verificar no SQL Editor do projeto novo se as tabelas existem; se não, rodar as migrations de novo.
 
 ## 🔑 Credenciais
 
 | Serviço | Info |
 |---|---|
 | GitHub | Conta: `shapesrank-cell` · Repo: `shapescan-oficial` |
-| Supabase | `https://omoniqnveezoxbaakjrb.supabase.co` · Região: AWS us-west |
+| Supabase | `https://gnvsgftorqfkcphkjgau.supabase.co` (projeto ativo) · antigo `omoniqnveezoxbaakjrb` foi deletado |
 | Gemini | Conta: `goldenf0408@gmail.com` · Var: `GEMINI_API_KEY` · Free tier |
 | Vercel | URL: `https://shapescan-oficial.vercel.app` · Branch: `main` |
 | Super Admin | `shapesrank@gmail.com` e `goldenf0408@gmail.com` (hardcoded em `lib/admin.ts`) |
 | Env vars Vercel | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY` |
 
 > ⚠️ Usuário tem 2 contas GitHub (shapesrank-cell e CaueSRU). Sempre confirmar push vai pra `shapesrank-cell`.
-> ⚠️ Usuário tem 2 projetos Supabase. O CORRETO é `omoniqnveezoxbaakjrb` (não `shapesrank-cell's Project`).
+> ⚠️ O projeto Supabase ativo é `gnvsgftorqfkcphkjgau`. O antigo `omoniqnveezoxbaakjrb` foi deletado e não deve mais ser usado.
 
 ## 🛡️ Segurança implementada
 

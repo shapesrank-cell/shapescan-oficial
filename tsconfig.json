@@ -30,5 +30,14 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "colibri-core",
+    "colibri-core-workspace",
+    "colibri-design-refs",
+    "cucumber-landing",
+    "awesome-claude-skills",
+    "telegram-bridge",
+    "stitch_colibri_serene_adhd_companion"
+  ]
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   UserPlus,
   ClipboardList,
@@ -57,6 +58,9 @@ export default async function Home() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Quem já está logado não vê a landing — vai direto pro app
+  if (user) redirect("/dashboard");
 
   // Stats reais do banco — substituem os testimonials falsos
   let totalUsuarios = 0;
