@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, TrendingUp, BarChart3, Calendar, User, Settings, GitCompare } from "lucide-react";
+import { Activity, TrendingUp, BarChart3, Calendar, User, Settings, GitCompare, LineChart } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./LogoutButton";
 
@@ -64,6 +64,12 @@ export default async function DashboardPage() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard/evolucao"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
+            >
+              <LineChart size={14} /> Evolução
+            </Link>
             <Link
               href="/perfil"
               className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
@@ -144,6 +150,27 @@ export default async function DashboardPage() {
           </div>
         </div>
 
+        {/* Card Evolução */}
+        <Link
+          href="/dashboard/evolucao"
+          className="group flex items-center gap-4 p-5 bg-white/[0.05] border border-white/[0.10] rounded-2xl hover:border-orange-400/30 hover:bg-white/[0.08] active:scale-[0.99] transition-all"
+        >
+          <div className="h-11 w-11 rounded-xl bg-orange-400/10 border border-orange-400/20 flex items-center justify-center flex-shrink-0 text-orange-400">
+            <LineChart size={20} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-white text-sm sm:text-base">
+              Evolução do corpo
+            </p>
+            <p className="text-xs sm:text-sm text-white/40">
+              Registre peso, medidas e fotos para acompanhar seu progresso.
+            </p>
+          </div>
+          <span className="text-sm text-white/30 group-hover:text-orange-400 group-hover:translate-x-1 transition-all">
+            →
+          </span>
+        </Link>
+
         {/* Histórico */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -221,6 +248,12 @@ export default async function DashboardPage() {
 
         {/* Links mobile pra perfil/config (sm:hidden) */}
         <div className="sm:hidden grid grid-cols-2 gap-3">
+          <Link
+            href="/dashboard/evolucao"
+            className="col-span-2 flex items-center justify-center gap-2 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.12] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all text-sm font-medium"
+          >
+            <LineChart size={16} /> Evolução
+          </Link>
           <Link
             href="/perfil"
             className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.12] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all text-sm font-medium"

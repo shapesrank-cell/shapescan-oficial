@@ -155,6 +155,11 @@ export async function loginComGoogle(formData: FormData): Promise<{ erro?: strin
     provider: "google",
     options: {
       redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      // Força o Google a SEMPRE mostrar o seletor de contas (igual sites grandes),
+      // em vez de logar silenciosamente na conta já ativa no navegador.
+      queryParams: {
+        prompt: "select_account",
+      },
     },
   });
 

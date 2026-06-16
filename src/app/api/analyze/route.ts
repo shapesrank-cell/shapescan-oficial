@@ -11,7 +11,11 @@
  * - Retorna { id, analise } pra navegação direta ao resultado
  */
 import { NextResponse } from "next/server";
-import { gerarAnaliseBiotipo, type DadosUsuario } from "@/lib/gemini";
+import {
+  gerarAnaliseBiotipo,
+  type DadosUsuario,
+  type PreferenciasAnalise,
+} from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit } from "@/lib/rateLimit";
@@ -21,6 +25,55 @@ import { logError } from "@/lib/errorLog";
 const MAX_FOTO_BASE64 = 5 * 1024 * 1024; // 5MB base64 ≈ 3.75MB binário
 const RATE_LIMIT_ANALISES_HORA = 10;
 const RATE_LIMIT_ANALISES_DIA = 30;
+const MIMES_FOTO = ["image/jpeg", "image/png", "image/webp"];
+
+// Whitelists das preferências (espelham os tipos de PreferenciasAnalise)
+const PRAZOS = ["1_mes", "3_meses", "6_meses", "sem_pressa"];
+const LOCAIS = ["academia", "casa", "ar_livre"];
+const EXPERIENCIAS = ["iniciante", "intermediario", "avancado"];
+const RESTRICOES = ["lactose", "gluten", "vegetariano", "vegano"];
+const ORCAMENTOS = ["economico", "medio", "sem_limite"];
+
+/**
+ * Sanitiza as preferências vindas do cliente: só aceita valores das whitelists
+ * e ranges seguros. Retorna undefined se nada válido foi enviado.
+ */
+function sanitizarPreferencias(
+  raw: Partial<PreferenciasAnalise> | undefined
+): PreferenciasAnalise | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const p: PreferenciasAnalise = {};
+
+  const pesoAlvo = Number(raw.pesoAlvo);
+  if (Number.isFinite(pesoAlvo) && pesoAlvo >= 20 && pesoAlvo <= 400)
+    p.pesoAlvo = Math.round(pesoAlvo * 10) / 10;
+
+  if (raw.prazo && PRAZOS.includes(raw.prazo)) p.prazo = raw.prazo;
+
+  const dias = Number(raw.diasSemana);
+  if (Number.isFinite(dias) && dias >= 1 && dias <= 7) p.diasSemana = Math.round(dias);
+
+  if (raw.local && LOCAIS.includes(raw.local)) p.local = raw.local;
+  if (raw.experiencia && EXPERIENCIAS.includes(raw.experiencia))
+    p.experiencia = raw.experiencia;
+  if (typeof raw.lesoes === "string" && raw.lesoes.trim())
+    p.lesoes = raw.lesoes.trim().slice(0, 200);
+
+  if (Array.isArray(raw.restricoes)) {
+    const r = raw.restricoes.filter((x) => RESTRICOES.includes(x));
+    if (r.length) p.restricoes = Array.from(new Set(r));
+  }
+  if (typeof raw.evita === "string" && raw.evita.trim())
+    p.evita = raw.evita.trim().slice(0, 200);
+
+  const refeicoes = Number(raw.refeicoesDia);
+  if (Number.isFinite(refeicoes) && refeicoes >= 1 && refeicoes <= 10)
+    p.refeicoesDia = Math.round(refeicoes);
+
+  if (raw.orcamento && ORCAMENTOS.includes(raw.orcamento)) p.orcamento = raw.orcamento;
+
+  return Object.keys(p).length > 0 ? p : undefined;
+}
 
 // Tipo provider IA (preparado pra Claude futuro)
 type ProviderIA = "gemini" | "claude";
@@ -144,14 +197,39 @@ export async function POST(request: Request) {
 
   // Validação de mimeType da foto (whitelist)
   if (body.foto) {
-    const mimesValidos = ["image/jpeg", "image/png", "image/webp"];
-    if (!body.fotoMimeType || !mimesValidos.includes(body.fotoMimeType)) {
+    if (!body.fotoMimeType || !MIMES_FOTO.includes(body.fotoMimeType)) {
       return NextResponse.json(
         { erro: "Formato de foto inválido. Use JPEG, PNG ou WebP." },
         { status: 400 }
       );
     }
   }
+
+  // Foto de SHAPE DE REFERÊNCIA (opcional) — mesmas regras de tamanho e formato
+  if (body.fotoReferencia) {
+    if (body.fotoReferencia.length > MAX_FOTO_BASE64) {
+      return NextResponse.json(
+        {
+          erro: `Foto de referência muito grande. Máximo ${Math.round(
+            MAX_FOTO_BASE64 / 1024 / 1024
+          )}MB.`,
+        },
+        { status: 413 }
+      );
+    }
+    if (
+      !body.fotoReferenciaMimeType ||
+      !MIMES_FOTO.includes(body.fotoReferenciaMimeType)
+    ) {
+      return NextResponse.json(
+        { erro: "Formato da foto de referência inválido. Use JPEG, PNG ou WebP." },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Preferências da análise (rotina/dieta/meta) — sanitizadas contra whitelists
+  const preferencias = sanitizarPreferencias(body.preferencias);
 
   // Limite de tamanho do nome
   const nome = (body.nome as string).slice(0, 100).trim();
@@ -170,6 +248,13 @@ export async function POST(request: Request) {
     ...(body.foto && body.fotoMimeType
       ? { foto: body.foto, fotoMimeType: body.fotoMimeType }
       : {}),
+    ...(body.fotoReferencia && body.fotoReferenciaMimeType
+      ? {
+          fotoReferencia: body.fotoReferencia,
+          fotoReferenciaMimeType: body.fotoReferenciaMimeType,
+        }
+      : {}),
+    ...(preferencias ? { preferencias } : {}),
   };
 
   // 4. BUSCA API KEY (banco tem prioridade sobre env)
@@ -212,10 +297,13 @@ export async function POST(request: Request) {
   }
 
   // 6. SALVA NO BANCO (server-side, dados validados, provider rastreado)
-  // Remove a foto base64 do que vai pro banco (economiza espaço, foto era só pra IA)
+  // Remove as fotos base64 do que vai pro banco (eram só pra IA). As
+  // preferências FICAM — são o retrato da rotina daquela análise.
   const dadosParaSalvar = { ...dados } as Partial<DadosUsuario>;
   delete dadosParaSalvar.foto;
   delete dadosParaSalvar.fotoMimeType;
+  delete dadosParaSalvar.fotoReferencia;
+  delete dadosParaSalvar.fotoReferenciaMimeType;
 
   let analiseId: string | null = null;
   try {

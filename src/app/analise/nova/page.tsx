@@ -25,6 +25,20 @@ export default async function NovaAnalisePage() {
     redirect("/onboarding");
   }
 
+  // Pré-preenche as preferências com a última análise (rotina muda com o tempo,
+  // mas a maioria continua igual — o usuário só ajusta o que mudou).
+  const { data: ultimaAnalise } = await supabase
+    .from("analyses")
+    .select("dados_entrada")
+    .eq("user_id", user.id)
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const preferenciasIniciais =
+    (ultimaAnalise?.dados_entrada as { preferencias?: unknown } | null)
+      ?.preferencias ?? null;
+
   return (
     <div className="flex flex-1 flex-col px-4 py-8 sm:py-12 bg-[#111111] animate-[fadeIn_0.4s_ease-out]">
       <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
@@ -63,6 +77,11 @@ export default async function NovaAnalisePage() {
               | "definir"
               | "saude_geral",
           }}
+          preferenciasIniciais={
+            preferenciasIniciais as React.ComponentProps<
+              typeof AnaliseNovaClient
+            >["preferenciasIniciais"]
+          }
         />
       </div>
     </div>

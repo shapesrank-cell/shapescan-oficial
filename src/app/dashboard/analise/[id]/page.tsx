@@ -3,7 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AnaliseView } from "@/app/onboarding/AnaliseView";
 import { BotaoSalvarPDF } from "./BotaoSalvarPDF";
-import type { AnaliseBiotipo } from "@/lib/gemini";
+import { PreferenciasResumo } from "./PreferenciasResumo";
+import type { AnaliseBiotipo, PreferenciasAnalise } from "@/lib/gemini";
 
 /**
  * Detalhe de uma análise salva.
@@ -30,7 +31,10 @@ export default async function AnaliseDetalhePage(props: {
 
   if (!analise) notFound();
 
-  const dadosEntrada = analise.dados_entrada as { nome?: string };
+  const dadosEntrada = analise.dados_entrada as {
+    nome?: string;
+    preferencias?: PreferenciasAnalise;
+  };
   const resultado = analise.resultado as AnaliseBiotipo;
   const nome = dadosEntrada?.nome || "você";
   const data = new Date(analise.criado_em).toLocaleDateString("pt-BR", {
@@ -56,6 +60,11 @@ export default async function AnaliseDetalhePage(props: {
             <BotaoSalvarPDF />
           </div>
         </div>
+
+        <PreferenciasResumo
+          estiloObjetivo={resultado?.estiloObjetivo}
+          preferencias={dadosEntrada?.preferencias}
+        />
 
         <AnaliseView analise={resultado} nome={nome} />
       </div>
