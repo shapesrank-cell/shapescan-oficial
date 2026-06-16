@@ -34,6 +34,26 @@ export type DadosUsuario = {
   fotoMimeType?: string; // ex: "image/jpeg"
 };
 
+// Uma refeição do cardápio do dia (ex: café da manhã com itens e porções).
+export type Refeicao = {
+  nome: string; // "Café da manhã", "Almoço", "Lanche da tarde"...
+  horario: string; // "07:00"
+  calorias: number; // calorias aproximadas da refeição
+  itens: { alimento: string; quantidade: string }[]; // "Ovos mexidos" / "3 unidades"
+};
+
+// Um dia de treino da divisão semanal (ex: Treino A — Peito e Tríceps).
+export type DiaTreino = {
+  nome: string; // "Treino A — Peito e Tríceps"
+  foco: string; // grupos musculares trabalhados
+  exercicios: {
+    nome: string; // "Supino reto com barra"
+    series: number; // 4
+    repeticoes: string; // "8-12" (string pra aceitar faixas e "até a falha")
+    descanso: string; // "60-90s"
+  }[];
+};
+
 // Formato da resposta que a IA vai gerar.
 export type AnaliseBiotipo = {
   biotipo: "ectomorfo" | "mesomorfo" | "endomorfo" | "misto";
@@ -48,11 +68,15 @@ export type AnaliseBiotipo = {
       gorduraGramas: number;
     };
     sugestoesAlimentares: string[];
+    // Cardápio detalhado de um dia típico (opcional p/ análises antigas)
+    refeicoes?: Refeicao[];
   };
   treino: {
     frequenciaSemanal: number;
     focoPrincipal: string;
     exerciciosRecomendados: string[];
+    // Divisão de treino dia a dia (opcional p/ análises antigas)
+    divisao?: DiaTreino[];
   };
   avisoImportante: string;
 };
@@ -70,7 +94,11 @@ REGRAS:
 - SEMPRE inclua o avisoImportante lembrando que isto é uma sugestão de IA e não substitui acompanhamento profissional.
 - Seja específico nos exercícios e alimentos sugeridos (4 a 6 itens em cada lista).
 - Se o usuário enviar uma foto, analise visualmente a composição corporal (proporção tronco/ombros/cintura, aparência de gordura corporal, postura, etc.) para REFINAR sua avaliação de biotipo. A foto é complementar — os dados manuais continuam sendo a base principal.
-- NUNCA faça comentários negativos sobre aparência. Seja respeitoso e motivador.`;
+- NUNCA faça comentários negativos sobre aparência. Seja respeitoso e motivador.
+
+PLANO DETALHADO DO DIA A DIA (muito importante — é o que o usuário mais valoriza):
+- CARDÁPIO (campo dieta.refeicoes): monte um dia típico REAL com 5 a 6 refeições (Café da manhã, Lanche da manhã, Almoço, Lanche da tarde, Jantar e, se fizer sentido, Ceia). Para cada refeição: horário sugerido, calorias aproximadas e 2 a 5 itens com QUANTIDADE concreta (gramas, unidades ou medidas caseiras — ex: "120g de peito de frango", "1 scoop de whey", "2 fatias de pão integral"). A soma das calorias das refeições deve bater aproximadamente com dieta.caloriasEstimadas. Use alimentos brasileiros, acessíveis e coerentes com o objetivo.
+- TREINO (campo treino.divisao): monte uma divisão com EXATAMENTE treino.frequenciaSemanal dias (ex: 3 dias = Treino A/B/C). Para cada dia: nome (ex: "Treino A — Peito e Tríceps"), foco (grupos musculares) e 5 a 7 exercícios com séries (número), repetições (faixa, ex: "8-12") e descanso (ex: "60-90s"). Distribua os grupos musculares de forma equilibrada ao longo da semana, coerente com o biotipo e objetivo.`;
 
 /**
  * Gera análise completa de biotipo para os dados informados.
@@ -166,16 +194,43 @@ Objetivo: ${dados.objetivo}${dados.foto ? "\n\nO usuário também enviou uma fot
                 type: Type.ARRAY,
                 items: { type: Type.STRING },
               },
+              refeicoes: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    nome: { type: Type.STRING },
+                    horario: { type: Type.STRING },
+                    calorias: { type: Type.NUMBER },
+                    itens: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          alimento: { type: Type.STRING },
+                          quantidade: { type: Type.STRING },
+                        },
+                        required: ["alimento", "quantidade"],
+                        propertyOrdering: ["alimento", "quantidade"],
+                      },
+                    },
+                  },
+                  required: ["nome", "horario", "calorias", "itens"],
+                  propertyOrdering: ["nome", "horario", "calorias", "itens"],
+                },
+              },
             },
             required: [
               "caloriasEstimadas",
               "distribuicaoMacros",
               "sugestoesAlimentares",
+              "refeicoes",
             ],
             propertyOrdering: [
               "caloriasEstimadas",
               "distribuicaoMacros",
               "sugestoesAlimentares",
+              "refeicoes",
             ],
           },
           treino: {
@@ -187,16 +242,49 @@ Objetivo: ${dados.objetivo}${dados.foto ? "\n\nO usuário também enviou uma fot
                 type: Type.ARRAY,
                 items: { type: Type.STRING },
               },
+              divisao: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    nome: { type: Type.STRING },
+                    foco: { type: Type.STRING },
+                    exercicios: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          nome: { type: Type.STRING },
+                          series: { type: Type.NUMBER },
+                          repeticoes: { type: Type.STRING },
+                          descanso: { type: Type.STRING },
+                        },
+                        required: ["nome", "series", "repeticoes", "descanso"],
+                        propertyOrdering: [
+                          "nome",
+                          "series",
+                          "repeticoes",
+                          "descanso",
+                        ],
+                      },
+                    },
+                  },
+                  required: ["nome", "foco", "exercicios"],
+                  propertyOrdering: ["nome", "foco", "exercicios"],
+                },
+              },
             },
             required: [
               "frequenciaSemanal",
               "focoPrincipal",
               "exerciciosRecomendados",
+              "divisao",
             ],
             propertyOrdering: [
               "frequenciaSemanal",
               "focoPrincipal",
               "exerciciosRecomendados",
+              "divisao",
             ],
           },
           avisoImportante: { type: Type.STRING },
