@@ -33,17 +33,15 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const { data: perfil } = await supabase
-    .from("profiles")
-    .select("nome")
-    .eq("id", user.id)
-    .single();
-
-  const { data: analises } = await supabase
-    .from("analyses")
-    .select("id, criado_em, dados_entrada, resultado")
-    .eq("user_id", user.id)
-    .order("criado_em", { ascending: false });
+  // Queries em paralelo (antes rodavam em série, somando latência)
+  const [{ data: perfil }, { data: analises }] = await Promise.all([
+    supabase.from("profiles").select("nome").eq("id", user.id).single(),
+    supabase
+      .from("analyses")
+      .select("id, criado_em, dados_entrada, resultado")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false }),
+  ]);
 
   const nomeExibicao = perfil?.nome || user.email?.split("@")[0] || "atleta";
   const primeiroNome = nomeExibicao.split(/\s+/)[0];
