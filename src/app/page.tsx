@@ -82,8 +82,28 @@ export default async function Home() {
   // - Logado → /analise/nova (que redireciona pra /onboarding se perfil incompleto)
   const ctaAnalise = user ? "/analise/nova" : "/cadastro?redirect=/onboarding";
 
+  // Dados estruturados (JSON-LD) — conteúdo ESTÁTICO e controlado por nós
+  // (sem input de usuário), usado pelo Google pra rich results.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "ShapeScan",
+    url: "https://shapescan-oficial.vercel.app",
+    description:
+      "Análise corporal personalizada por IA: biotipo, dieta e plano de treino em minutos.",
+    applicationCategory: "HealthApplication",
+    operatingSystem: "Web",
+    inLanguage: "pt-BR",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "BRL" },
+  };
+
   return (
     <div className="flex-1 bg-[#111111] relative overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ParticleCanvas />
 
       {/* ── HEADER MINIMALISTA ── */}

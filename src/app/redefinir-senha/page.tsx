@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { RedefinirSenhaForm } from "./RedefinirSenhaForm";
+
+export const metadata: Metadata = {
+  title: "Redefinir senha",
+  description: "Defina uma nova senha para sua conta ShapeScan.",
+  robots: { index: false, follow: false },
+};
 
 export default function RedefinirSenhaPage() {
   return (

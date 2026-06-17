@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { CadastroForm } from "./CadastroForm";
+
+export const metadata: Metadata = {
+  title: "Criar conta grátis",
+  description:
+    "Crie sua conta ShapeScan grátis e descubra seu biotipo, dieta e plano de treino com IA em 2 minutos.",
+};
 
 export default async function CadastroPage(props: {
   searchParams: Promise<{ redirect?: string }>;

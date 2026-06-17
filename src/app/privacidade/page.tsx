@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Política de Privacidade — ShapeScan",
-  description: "Como tratamos seus dados no ShapeScan",
+  title: "Política de Privacidade",
+  description: "Como o ShapeScan coleta, usa e protege seus dados (LGPD).",
 };
 
 export default function PrivacidadePage() {

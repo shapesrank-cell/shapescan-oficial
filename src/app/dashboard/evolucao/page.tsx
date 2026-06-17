@@ -13,6 +13,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { DeletarCheckinBotao } from "./DeletarCheckinBotao";
 import { ComparadorFotos, type FotoCheckin } from "./ComparadorFotos";
+import { RelatorioIA } from "./RelatorioIA";
 
 type Checkin = {
   id: string;
@@ -180,6 +181,9 @@ export default async function EvolucaoPage() {
                 <GraficoPeso checkins={checkins} />
               </section>
             )}
+
+            {/* Relatório de evolução com IA (precisa de histórico) */}
+            {total >= 2 && <RelatorioIA />}
 
             {/* Evolução das medidas */}
             <section className="bg-white/[0.04] border border-white/[0.10] rounded-2xl p-5 flex flex-col gap-4">

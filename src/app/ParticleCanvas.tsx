@@ -38,6 +38,17 @@ export default function ParticleCanvas() {
       opacity: Math.random() * 0.45 + 0.08,
     }))
 
+    // Desenha os pontos parados (1 frame), sem animar.
+    const drawStatic = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      for (const p of particles) {
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`
+        ctx.fill()
+      }
+    }
+
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       for (const p of particles) {
@@ -55,11 +66,35 @@ export default function ParticleCanvas() {
       animId = requestAnimationFrame(draw)
     }
 
+    // A11y: respeita quem pediu menos movimento — desenha estático e para.
+    const reduzMovimento = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches
+    if (reduzMovimento) {
+      drawStatic()
+      window.addEventListener('resize', drawStatic)
+      return () => {
+        window.removeEventListener('resize', resize)
+        window.removeEventListener('resize', drawStatic)
+      }
+    }
+
+    // Perf: pausa a animação quando a aba não está visível (economiza CPU/bateria).
+    const onVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId)
+      } else {
+        animId = requestAnimationFrame(draw)
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
     draw()
 
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 

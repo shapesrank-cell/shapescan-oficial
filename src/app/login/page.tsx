@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { LoginForm } from "./LoginForm";
+
+export const metadata: Metadata = {
+  title: "Entrar",
+  description:
+    "Acesse sua conta ShapeScan e veja suas análises de biotipo, dieta e treino.",
+};
 
 export default async function LoginPage(props: {
   searchParams: Promise<{ redirect?: string }>;

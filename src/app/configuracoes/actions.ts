@@ -39,9 +39,22 @@ export async function deletarConta(): Promise<{ erro?: string } | void> {
   } = await supabase.auth.getUser();
   if (!user) return { erro: "Você precisa estar logado." };
 
-  // Deleta análises (RLS exige user_id)
+  // Remove as fotos de progresso do storage (não são apagadas em cascata
+  // quando o perfil/check-ins são deletados — precisam ser removidas à mão).
+  const { data: checkins } = await supabase
+    .from("checkins")
+    .select("foto_path")
+    .eq("user_id", user.id);
+  const fotos = (checkins ?? [])
+    .map((c) => c.foto_path)
+    .filter((p): p is string => Boolean(p));
+  if (fotos.length > 0) {
+    await supabase.storage.from("checkins").remove(fotos);
+  }
+
+  // Deleta dados do usuário (RLS exige ownership)
+  await supabase.from("checkins").delete().eq("user_id", user.id);
   await supabase.from("analyses").delete().eq("user_id", user.id);
-  // Deleta perfil
   await supabase.from("profiles").delete().eq("id", user.id);
   // Faz logout (não conseguimos deletar o auth.user no client — fica órfão mas dados foram removidos)
   await supabase.auth.signOut();
@@ -61,14 +74,20 @@ export async function baixarMeusDados(): Promise<{ erro?: string; json?: string 
   } = await supabase.auth.getUser();
   if (!user) return { erro: "Você precisa estar logado." };
 
-  const [{ data: perfil }, { data: analises }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
-    supabase
-      .from("analyses")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("criado_em", { ascending: false }),
-  ]);
+  const [{ data: perfil }, { data: analises }, { data: checkins }] =
+    await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      supabase
+        .from("analyses")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("criado_em", { ascending: false }),
+      supabase
+        .from("checkins")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("criado_em", { ascending: false }),
+    ]);
 
   const dados = {
     exportado_em: new Date().toISOString(),
@@ -82,6 +101,7 @@ export async function baixarMeusDados(): Promise<{ erro?: string; json?: string 
     },
     perfil,
     analises: analises ?? [],
+    checkins: checkins ?? [],
   };
 
   return { json: JSON.stringify(dados, null, 2) };

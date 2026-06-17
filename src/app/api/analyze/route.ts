@@ -11,69 +11,18 @@
  * - Retorna { id, analise } pra navegação direta ao resultado
  */
 import { NextResponse } from "next/server";
-import {
-  gerarAnaliseBiotipo,
-  type DadosUsuario,
-  type PreferenciasAnalise,
-} from "@/lib/gemini";
+import { gerarAnaliseBiotipo, type DadosUsuario } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { logError } from "@/lib/errorLog";
+import { sanitizarPreferencias } from "@/lib/preferencias";
 
 // Limites
 const MAX_FOTO_BASE64 = 5 * 1024 * 1024; // 5MB base64 ≈ 3.75MB binário
 const RATE_LIMIT_ANALISES_HORA = 10;
 const RATE_LIMIT_ANALISES_DIA = 30;
 const MIMES_FOTO = ["image/jpeg", "image/png", "image/webp"];
-
-// Whitelists das preferências (espelham os tipos de PreferenciasAnalise)
-const PRAZOS = ["1_mes", "3_meses", "6_meses", "sem_pressa"];
-const LOCAIS = ["academia", "casa", "ar_livre"];
-const EXPERIENCIAS = ["iniciante", "intermediario", "avancado"];
-const RESTRICOES = ["lactose", "gluten", "vegetariano", "vegano"];
-const ORCAMENTOS = ["economico", "medio", "sem_limite"];
-
-/**
- * Sanitiza as preferências vindas do cliente: só aceita valores das whitelists
- * e ranges seguros. Retorna undefined se nada válido foi enviado.
- */
-function sanitizarPreferencias(
-  raw: Partial<PreferenciasAnalise> | undefined
-): PreferenciasAnalise | undefined {
-  if (!raw || typeof raw !== "object") return undefined;
-  const p: PreferenciasAnalise = {};
-
-  const pesoAlvo = Number(raw.pesoAlvo);
-  if (Number.isFinite(pesoAlvo) && pesoAlvo >= 20 && pesoAlvo <= 400)
-    p.pesoAlvo = Math.round(pesoAlvo * 10) / 10;
-
-  if (raw.prazo && PRAZOS.includes(raw.prazo)) p.prazo = raw.prazo;
-
-  const dias = Number(raw.diasSemana);
-  if (Number.isFinite(dias) && dias >= 1 && dias <= 7) p.diasSemana = Math.round(dias);
-
-  if (raw.local && LOCAIS.includes(raw.local)) p.local = raw.local;
-  if (raw.experiencia && EXPERIENCIAS.includes(raw.experiencia))
-    p.experiencia = raw.experiencia;
-  if (typeof raw.lesoes === "string" && raw.lesoes.trim())
-    p.lesoes = raw.lesoes.trim().slice(0, 200);
-
-  if (Array.isArray(raw.restricoes)) {
-    const r = raw.restricoes.filter((x) => RESTRICOES.includes(x));
-    if (r.length) p.restricoes = Array.from(new Set(r));
-  }
-  if (typeof raw.evita === "string" && raw.evita.trim())
-    p.evita = raw.evita.trim().slice(0, 200);
-
-  const refeicoes = Number(raw.refeicoesDia);
-  if (Number.isFinite(refeicoes) && refeicoes >= 1 && refeicoes <= 10)
-    p.refeicoesDia = Math.round(refeicoes);
-
-  if (raw.orcamento && ORCAMENTOS.includes(raw.orcamento)) p.orcamento = raw.orcamento;
-
-  return Object.keys(p).length > 0 ? p : undefined;
-}
 
 // Tipo provider IA (preparado pra Claude futuro)
 type ProviderIA = "gemini" | "claude";

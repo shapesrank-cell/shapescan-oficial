@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { EsqueciSenhaForm } from "./EsqueciSenhaForm";
+
+export const metadata: Metadata = {
+  title: "Recuperar senha",
+  description: "Recupere o acesso à sua conta ShapeScan.",
+  robots: { index: false, follow: false },
+};
 
 export default function EsqueciSenhaPage() {
   return (

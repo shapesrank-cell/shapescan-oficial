@@ -124,9 +124,21 @@ export async function deletarUsuario(userId: string, confirmacao: string) {
 
   const admin = createAdminClient();
 
-  // Apaga análises do usuário
+  // Remove as fotos de progresso do storage (não saem em cascata)
+  const { data: checkins } = await admin
+    .from("checkins")
+    .select("foto_path")
+    .eq("user_id", userId);
+  const fotos = (checkins ?? [])
+    .map((c) => c.foto_path)
+    .filter((p): p is string => Boolean(p));
+  if (fotos.length > 0) {
+    await admin.storage.from("checkins").remove(fotos);
+  }
+
+  // Apaga check-ins, análises e perfil do usuário
+  await admin.from("checkins").delete().eq("user_id", userId);
   await admin.from("analyses").delete().eq("user_id", userId);
-  // Apaga perfil
   await admin.from("profiles").delete().eq("id", userId);
   // Apaga usuário do auth
   const { error: authErr } = await admin.auth.admin.deleteUser(userId);

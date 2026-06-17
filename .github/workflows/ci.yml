@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: Lint, typecheck, testes e build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # Lint é informativo por enquanto (há débito pré-existente de
+      # react-hooks/purity). Não bloqueia o pipeline.
+      - name: Lint (não bloqueia)
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Testes unitários (Vitest)
+        run: npm test
+
+      - name: Build de produção
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key-for-build
+          SUPABASE_SERVICE_ROLE_KEY: dummy-service-key-for-build
+          GEMINI_API_KEY: dummy-gemini-key-for-build

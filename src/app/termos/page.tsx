@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Termos de Uso — ShapeScan",
-  description: "Termos de uso do ShapeScan",
+  title: "Termos de Uso",
+  description: "Termos de uso do ShapeScan.",
 };
 
 export default function TermosPage() {

@@ -2,6 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { RANGES, validaMedida } from "@/lib/checkinValidation";
+import {
+  gerarRelatorioEvolucao,
+  type RelatorioEvolucao,
+} from "@/lib/gemini";
+
+// Limite de check-ins por hora (evita abuso/spam de upload de fotos no storage)
+const RATE_LIMIT_CHECKINS_HORA = 20;
 
 export interface CheckinInput {
   peso: number;
@@ -16,35 +25,8 @@ export interface CheckinInput {
   fotoMimeType?: string | null;
 }
 
-// Ranges idênticos aos CHECKs da migration 006 (validação dupla: cliente + servidor)
-const RANGES = {
-  peso: [20, 400],
-  cintura: [20, 300],
-  quadril: [20, 300],
-  braco: [10, 150],
-  peito: [30, 300],
-  coxa: [20, 200],
-} as const;
-
 const MIMES_PERMITIDOS = ["image/jpeg", "image/png", "image/webp"];
 const LIMITE_FOTO_BYTES = 5 * 1024 * 1024; // 5MB no binário decodificado
-
-function validaMedida(
-  valor: number | null | undefined,
-  [min, max]: readonly [number, number],
-  rotulo: string,
-  obrigatorio: boolean
-): { erro?: string; valor: number | null } {
-  if (valor === null || valor === undefined || Number.isNaN(valor)) {
-    if (obrigatorio) return { erro: `${rotulo} é obrigatório.`, valor: null };
-    return { valor: null };
-  }
-  if (!Number.isFinite(valor) || valor < min || valor > max) {
-    return { erro: `${rotulo} fora do esperado (${min}-${max}).`, valor: null };
-  }
-  // Arredonda pra 1 casa decimal (bate com numeric(5,1))
-  return { valor: Math.round(valor * 10) / 10 };
-}
 
 /**
  * Cria um check-in de evolução. Faz upload da foto (se houver) para o bucket
@@ -59,6 +41,19 @@ export async function criarCheckin(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { erro: "Você precisa estar logado." };
+
+  // --- Rate limit (anti-abuso de storage) ---
+  const limite = await checkRateLimit({
+    identifier: user.id,
+    action: "checkin.create",
+    limit: RATE_LIMIT_CHECKINS_HORA,
+    windowMinutes: 60,
+  });
+  if (!limite.allowed) {
+    return {
+      erro: `Você atingiu o limite de ${RATE_LIMIT_CHECKINS_HORA} check-ins por hora. Tente novamente mais tarde.`,
+    };
+  }
 
   // --- Validação dos números ---
   const peso = validaMedida(dados.peso, RANGES.peso, "Peso", true);
@@ -173,4 +168,86 @@ export async function deletarCheckin(
   revalidatePath("/dashboard/evolucao");
   revalidatePath("/dashboard");
   return { ok: true };
+}
+
+// Limite de relatórios de IA por hora (chamada de IA = custo)
+const RATE_LIMIT_RELATORIOS_HORA = 5;
+
+/**
+ * Gera um relatório de evolução com IA a partir do histórico de check-ins.
+ * Exige pelo menos 2 check-ins. Não persiste — é derivado e regenerável.
+ */
+export async function gerarRelatorio(): Promise<
+  { erro: string } | { relatorio: RelatorioEvolucao }
+> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { erro: "Você precisa estar logado." };
+
+  const limite = await checkRateLimit({
+    identifier: user.id,
+    action: "relatorio.evolucao",
+    limit: RATE_LIMIT_RELATORIOS_HORA,
+    windowMinutes: 60,
+  });
+  if (!limite.allowed) {
+    return {
+      erro: `Você já gerou ${RATE_LIMIT_RELATORIOS_HORA} relatórios nesta hora. Tente novamente mais tarde.`,
+    };
+  }
+
+  const { data: checkins } = await supabase
+    .from("checkins")
+    .select("peso, cintura, quadril, braco, peito, coxa, criado_em")
+    .eq("user_id", user.id)
+    .order("criado_em", { ascending: true });
+
+  if (!checkins || checkins.length < 2) {
+    return {
+      erro: "Você precisa de pelo menos 2 check-ins pra gerar o relatório.",
+    };
+  }
+
+  const [{ data: perfil }, { data: ultimaAnalise }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("sexo, idade, objetivo")
+      .eq("id", user.id)
+      .single(),
+    supabase
+      .from("analyses")
+      .select("resultado")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  const biotipo =
+    (ultimaAnalise?.resultado as { biotipo?: string } | null)?.biotipo ?? null;
+
+  try {
+    const relatorio = await gerarRelatorioEvolucao({
+      sexo: perfil?.sexo ?? "não informado",
+      idade: perfil?.idade ?? null,
+      objetivo: perfil?.objetivo ?? null,
+      biotipo,
+      checkins: checkins.map((c) => ({
+        data: c.criado_em,
+        peso: c.peso,
+        cintura: c.cintura,
+        quadril: c.quadril,
+        braco: c.braco,
+        peito: c.peito,
+        coxa: c.coxa,
+      })),
+    });
+    return { relatorio };
+  } catch {
+    return {
+      erro: "A IA falhou ao gerar o relatório. Tente novamente em alguns segundos.",
+    };
+  }
 }

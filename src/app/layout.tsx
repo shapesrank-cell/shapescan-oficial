@@ -21,7 +21,10 @@ const bebasNeue = Bebas_Neue({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shapescan-oficial.vercel.app"),
-  title: "ShapeScan — Descubra seu biotipo com IA",
+  title: {
+    default: "ShapeScan — Descubra seu biotipo com IA",
+    template: "%s — ShapeScan",
+  },
   description:
     "Análise corporal personalizada por inteligência artificial. Receba seu biotipo, dieta e plano de treinos em minutos.",
   applicationName: "ShapeScan",

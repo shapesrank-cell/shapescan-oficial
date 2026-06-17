@@ -8,6 +8,10 @@
  * rápido — perfeito para o MVP do ShapeScan.
  */
 import { GoogleGenAI, Type } from "@google/genai";
+import {
+  formatarHistoricoCheckins,
+  type CheckinHistorico,
+} from "@/lib/relatorio";
 
 // Modelo padrão do ShapeScan. Flash é rápido e gratuito até certo limite.
 export const SHAPESCAN_MODEL = "gemini-2.5-flash";
@@ -435,4 +439,141 @@ Objetivo: ${dados.objetivo}${formatarPreferencias(dados.preferencias)}`,
   }
 
   return JSON.parse(texto) as AnaliseBiotipo;
+}
+
+// ============================================
+// Relatório de Evolução (análise do progresso dos check-ins)
+// ============================================
+
+export type RelatorioInput = {
+  sexo: string;
+  idade?: number | null;
+  objetivo?: string | null; // objetivo do perfil
+  biotipo?: string | null; // da última análise (se houver)
+  checkins: CheckinHistorico[];
+};
+
+export type RelatorioEvolucao = {
+  resumoGeral: string;
+  tendenciaPeso: {
+    direcao: "subindo" | "descendo" | "estavel";
+    analise: string;
+  };
+  destaques: string[]; // o que melhorou / está indo bem
+  pontosAtencao: string[]; // o que estagnou / precisa de atenção
+  ajustesPlano: {
+    dieta: string[];
+    treino: string[];
+  };
+  proximoPasso: string;
+  avisoImportante: string;
+};
+
+const PROMPT_RELATORIO = `Você é um coach de fitness do app ShapeScan analisando a EVOLUÇÃO de um usuário ao longo do tempo, com base nos check-ins (peso e medidas) que ele registrou.
+
+REGRAS:
+- Português brasileiro, tom motivador mas HONESTO. Nunca invente progresso que os números não mostram.
+- Baseie TODA conclusão nos dados reais dos check-ins (linha do tempo e variações fornecidas). Cruze com o objetivo do usuário (emagrecer, ganhar massa, definir, saúde geral) e o biotipo, quando informados.
+- tendenciaPeso.direcao: classifique como "subindo", "descendo" ou "estavel" conforme a variação real de peso.
+- destaques: 2 a 4 pontos do que está indo BEM (alinhado ao objetivo). Se o usuário quer emagrecer e o peso/cintura caíram, isso é destaque. Se quer ganhar massa e o peso subiu de forma controlada, idem.
+- pontosAtencao: 2 a 4 pontos honestos do que estagnou, regrediu ou merece cuidado. Se faltam dados (poucos check-ins, medidas em branco), aponte com gentileza.
+- ajustesPlano: sugestões CONCRETAS e acionáveis pra dieta (2-4) e treino (2-4), coerentes com a tendência observada e o objetivo. Ex: "aumentar proteína se a massa não subiu", "incluir mais cardio se o peso estagnou no déficit".
+- proximoPasso: 1 frase motivadora com a ação mais importante pra próxima fase.
+- NUNCA faça comentários negativos sobre aparência/corpo. Foque em comportamento e números.
+- avisoImportante: SEMPRE lembre que é uma análise de IA e não substitui acompanhamento profissional (nutricionista/educador físico/médico).`;
+
+/**
+ * Gera um relatório de evolução analisando o histórico de check-ins do usuário.
+ */
+export async function gerarRelatorioEvolucao(
+  input: RelatorioInput,
+  apiKey?: string
+): Promise<RelatorioEvolucao> {
+  const gemini = criarClienteGemini(apiKey);
+
+  const contexto = [
+    `Objetivo do usuário: ${input.objetivo ?? "não informado"}`,
+    `Sexo: ${input.sexo}`,
+    input.idade ? `Idade: ${input.idade} anos` : null,
+    input.biotipo ? `Biotipo (última análise): ${input.biotipo}` : null,
+    "",
+    "DADOS DOS CHECK-INS:",
+    formatarHistoricoCheckins(input.checkins),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const resposta = await gemini.models.generateContent({
+    model: SHAPESCAN_MODEL,
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: `Analise a evolução abaixo e gere o relatório de progresso:\n\n${contexto}`,
+          },
+        ],
+      },
+    ],
+    config: {
+      systemInstruction: PROMPT_RELATORIO,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          resumoGeral: { type: Type.STRING },
+          tendenciaPeso: {
+            type: Type.OBJECT,
+            properties: {
+              direcao: {
+                type: Type.STRING,
+                enum: ["subindo", "descendo", "estavel"],
+              },
+              analise: { type: Type.STRING },
+            },
+            required: ["direcao", "analise"],
+            propertyOrdering: ["direcao", "analise"],
+          },
+          destaques: { type: Type.ARRAY, items: { type: Type.STRING } },
+          pontosAtencao: { type: Type.ARRAY, items: { type: Type.STRING } },
+          ajustesPlano: {
+            type: Type.OBJECT,
+            properties: {
+              dieta: { type: Type.ARRAY, items: { type: Type.STRING } },
+              treino: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ["dieta", "treino"],
+            propertyOrdering: ["dieta", "treino"],
+          },
+          proximoPasso: { type: Type.STRING },
+          avisoImportante: { type: Type.STRING },
+        },
+        required: [
+          "resumoGeral",
+          "tendenciaPeso",
+          "destaques",
+          "pontosAtencao",
+          "ajustesPlano",
+          "proximoPasso",
+          "avisoImportante",
+        ],
+        propertyOrdering: [
+          "resumoGeral",
+          "tendenciaPeso",
+          "destaques",
+          "pontosAtencao",
+          "ajustesPlano",
+          "proximoPasso",
+          "avisoImportante",
+        ],
+      },
+    },
+  });
+
+  const texto = resposta.text;
+  if (!texto) {
+    throw new Error("A IA não retornou nenhuma resposta.");
+  }
+
+  return JSON.parse(texto) as RelatorioEvolucao;
 }
