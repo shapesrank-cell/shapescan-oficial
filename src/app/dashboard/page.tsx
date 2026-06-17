@@ -17,6 +17,8 @@ import {
   urlInspiracao,
   INSPIRACOES,
 } from "@/lib/motivacao";
+import { calcularStreak, diaDeHojeSP } from "@/lib/streak";
+import { StreakCard } from "./StreakCard";
 
 const BIOTIPO_LABEL: Record<string, string> = {
   ectomorfo: "Ectomorfo",
@@ -34,14 +36,26 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   // Queries em paralelo (antes rodavam em série, somando latência)
-  const [{ data: perfil }, { data: analises }] = await Promise.all([
-    supabase.from("profiles").select("nome").eq("id", user.id).single(),
-    supabase
-      .from("analyses")
-      .select("id, criado_em, dados_entrada, resultado")
-      .eq("user_id", user.id)
-      .order("criado_em", { ascending: false }),
-  ]);
+  const [{ data: perfil }, { data: analises }, { data: diasHabito }] =
+    await Promise.all([
+      supabase.from("profiles").select("nome").eq("id", user.id).single(),
+      supabase
+        .from("analyses")
+        .select("id, criado_em, dados_entrada, resultado")
+        .eq("user_id", user.id)
+        .order("criado_em", { ascending: false }),
+      supabase
+        .from("habit_log")
+        .select("dia")
+        .eq("user_id", user.id)
+        .order("dia", { ascending: false })
+        .limit(400),
+    ]);
+
+  const streak = calcularStreak(
+    (diasHabito ?? []).map((d) => d.dia as string),
+    diaDeHojeSP()
+  );
 
   const nomeExibicao = perfil?.nome || user.email?.split("@")[0] || "atleta";
   const primeiroNome = nomeExibicao.split(/\s+/)[0];
@@ -88,6 +102,9 @@ export default async function DashboardPage() {
             Olá, <span className="text-orange-400">{primeiroNome}</span>
           </h1>
         </div>
+
+        {/* Ofensiva (streak) — motivo de abrir todo dia */}
+        <StreakCard inicial={streak} />
 
         {/* Hero motivacional com imagem do dia */}
         <section className="relative overflow-hidden rounded-3xl border border-white/[0.08] min-h-[280px] sm:min-h-[300px] flex">
