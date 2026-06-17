@@ -73,9 +73,14 @@ export function AppNav() {
       {/* ─── Sidebar (desktop) ─────────────────────────────────────── */}
       <aside className="hidden sm:flex fixed inset-y-0 left-0 z-40 w-60 flex-col gap-1 border-r border-white/[0.08] bg-[#0d0d0d] p-4">
         <Link href="/dashboard" className="flex items-center gap-2 px-2 py-3 group">
-          <div className="h-9 w-9 rounded-2xl bg-orange-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span className="text-black font-bold text-base">S</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon-192.png"
+            alt="ShapeScan"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-xl group-hover:scale-105 transition-transform"
+          />
           <span className="text-lg font-bold tracking-tight text-white">
             ShapeScan
           </span>
