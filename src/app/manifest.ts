@@ -10,7 +10,10 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "ShapeScan",
     description:
       "Descubra seu biotipo e receba dieta e treino personalizados por IA.",
-    start_url: "/",
+    // Abre direto "dentro do app" quando instalado (não na landing de marketing).
+    // Logado → /dashboard; deslogado → o proxy redireciona pra /login.
+    start_url: "/dashboard",
+    id: "/dashboard",
     display: "standalone",
     orientation: "portrait",
     background_color: "#111111", // mesma cor do app (dark)
