@@ -141,10 +141,10 @@ export default async function Home() {
         {/* Foto de fundo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=1400&h=1000&q=90"
+          src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=1400&h=1000&q=90"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-top"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Gradientes de profundidade */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-[#111111]" />
