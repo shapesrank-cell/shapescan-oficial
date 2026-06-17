@@ -141,7 +141,7 @@ export default async function Home() {
         {/* Foto de fundo */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1400&h=900&q=90"
+          src="https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=1400&h=1000&q=90"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-top"
