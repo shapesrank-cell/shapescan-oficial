@@ -53,6 +53,7 @@ export async function deletarConta(): Promise<{ erro?: string } | void> {
   }
 
   // Deleta dados do usuário (RLS exige ownership)
+  await supabase.from("coach_messages").delete().eq("user_id", user.id);
   await supabase.from("checkins").delete().eq("user_id", user.id);
   await supabase.from("analyses").delete().eq("user_id", user.id);
   await supabase.from("profiles").delete().eq("id", user.id);
@@ -74,20 +75,29 @@ export async function baixarMeusDados(): Promise<{ erro?: string; json?: string 
   } = await supabase.auth.getUser();
   if (!user) return { erro: "Você precisa estar logado." };
 
-  const [{ data: perfil }, { data: analises }, { data: checkins }] =
-    await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).single(),
-      supabase
-        .from("analyses")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("criado_em", { ascending: false }),
-      supabase
-        .from("checkins")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("criado_em", { ascending: false }),
-    ]);
+  const [
+    { data: perfil },
+    { data: analises },
+    { data: checkins },
+    { data: conversaCoach },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", user.id).single(),
+    supabase
+      .from("analyses")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false }),
+    supabase
+      .from("checkins")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false }),
+    supabase
+      .from("coach_messages")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: true }),
+  ]);
 
   const dados = {
     exportado_em: new Date().toISOString(),
@@ -102,6 +112,7 @@ export async function baixarMeusDados(): Promise<{ erro?: string; json?: string 
     perfil,
     analises: analises ?? [],
     checkins: checkins ?? [],
+    conversa_coach: conversaCoach ?? [],
   };
 
   return { json: JSON.stringify(dados, null, 2) };

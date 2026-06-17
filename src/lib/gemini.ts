@@ -12,6 +12,11 @@ import {
   formatarHistoricoCheckins,
   type CheckinHistorico,
 } from "@/lib/relatorio";
+import {
+  montarContextoCoach,
+  type ContextoCoachInput,
+  type MensagemCoach,
+} from "@/lib/coach";
 
 // Modelo padrão do ShapeScan. Flash é rápido e gratuito até certo limite.
 export const SHAPESCAN_MODEL = "gemini-2.5-flash";
@@ -576,4 +581,54 @@ export async function gerarRelatorioEvolucao(
   }
 
   return JSON.parse(texto) as RelatorioEvolucao;
+}
+
+// ============================================
+// Coach IA conversacional (chat com contexto do usuário)
+// ============================================
+
+const PROMPT_COACH = `Você é o Coach IA do ShapeScan: um treinador/nutricionista virtual amigável que conversa com o usuário sobre treino, dieta e evolução corporal.
+
+REGRAS DE COMPORTAMENTO:
+- Português brasileiro, tom de coach: próximo, motivador e direto, mas SEMPRE honesto. Nunca invente progresso ou prometa resultados garantidos.
+- Você TEM o contexto do usuário abaixo (perfil, última análise e check-ins). USE esses dados pra responder de forma personalizada — cite o plano, o objetivo e os números reais dele quando fizer sentido.
+- Responda de forma CONCISA e prática (geralmente 1 a 3 parágrafos curtos, ou uma lista de poucos itens). Nada de textos enormes. Vá ao ponto.
+- Pode usar listas simples com "- " quando ajudar a organizar (ex: passos, opções de substituição). Não use tabelas nem markdown pesado.
+- Se o usuário pedir mudança no plano (trocar um alimento, ajustar treino), dê alternativas concretas coerentes com o objetivo e as restrições dele.
+- Se faltar informação no contexto (ex: sem análise ou sem check-ins), diga isso com gentileza e oriente o próximo passo (gerar análise / registrar check-in).
+- NUNCA faça comentários negativos sobre aparência ou peso. Foque em comportamento, hábitos e números.
+- SEGURANÇA: você é uma IA e NÃO substitui um médico, nutricionista ou educador físico. Quando o usuário trouxer dor, lesão, sintoma, uso de remédios/suplementos pesados, dietas muito restritivas ou metas extremas, recomende procurar um profissional de verdade. Não dê diagnóstico médico.
+- Mantenha o foco em fitness, nutrição e bem-estar do ShapeScan. Se perguntarem algo totalmente fora disso, redirecione gentilmente pro tema do app.
+
+A seguir, o CONTEXTO REAL deste usuário. Baseie suas respostas nele:`;
+
+/**
+ * Responde no chat do Coach IA usando STREAMING.
+ * Retorna um AsyncGenerator de chunks — quem chama itera e repassa o texto.
+ *
+ * @param contexto   Perfil + última análise + check-ins do usuário
+ * @param historico  Mensagens da conversa (ordem cronológica, já limitada),
+ *                   INCLUINDO a última mensagem do usuário no final.
+ * @param apiKey     (Opcional) Chave vinda do banco; usa GEMINI_API_KEY se omitida.
+ */
+export async function responderCoach(
+  contexto: ContextoCoachInput,
+  historico: MensagemCoach[],
+  apiKey?: string
+) {
+  const gemini = criarClienteGemini(apiKey);
+  const blocoContexto = montarContextoCoach(contexto);
+
+  const contents = historico.map((m) => ({
+    role: m.papel === "assistente" ? "model" : "user",
+    parts: [{ text: m.conteudo }],
+  }));
+
+  return gemini.models.generateContentStream({
+    model: SHAPESCAN_MODEL,
+    contents,
+    config: {
+      systemInstruction: `${PROMPT_COACH}\n\n${blocoContexto}`,
+    },
+  });
 }

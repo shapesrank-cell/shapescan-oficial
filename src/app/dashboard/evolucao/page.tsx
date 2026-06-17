@@ -10,7 +10,9 @@ import {
   Camera,
   Scale,
 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { fraseDoDia } from "@/lib/motivacao";
 import { DeletarCheckinBotao } from "./DeletarCheckinBotao";
 import { ComparadorFotos, type FotoCheckin } from "./ComparadorFotos";
 import { RelatorioIA } from "./RelatorioIA";
@@ -124,6 +126,12 @@ export default async function EvolucaoPage() {
             <Plus size={16} /> Check-in
           </Link>
         </header>
+
+        {/* Frase motivacional sobre a evolução */}
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-orange-400/[0.12] to-white/[0.02] border border-orange-400/20">
+          <Sparkles size={18} className="text-orange-400 flex-shrink-0" />
+          <p className="text-sm text-white/80 font-medium">{fraseDoDia()}</p>
+        </div>
 
         {total === 0 ? (
           <div className="bg-white/[0.05] border border-dashed border-white/[0.12] rounded-2xl p-10 text-center flex flex-col items-center gap-3">

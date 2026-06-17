@@ -1,8 +1,29 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Activity, TrendingUp, BarChart3, Calendar, User, Settings, GitCompare, LineChart } from "lucide-react";
+import {
+  Activity,
+  TrendingUp,
+  BarChart3,
+  Calendar,
+  GitCompare,
+  LineChart,
+  Sparkles,
+  Plus,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "./LogoutButton";
+import {
+  fraseDoDia,
+  inspiracaoDoDia,
+  urlInspiracao,
+  INSPIRACOES,
+} from "@/lib/motivacao";
+
+const BIOTIPO_LABEL: Record<string, string> = {
+  ectomorfo: "Ectomorfo",
+  mesomorfo: "Mesomorfo",
+  endomorfo: "Endomorfo",
+  misto: "Biotipo Misto",
+};
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -25,80 +46,82 @@ export default async function DashboardPage() {
     .order("criado_em", { ascending: false });
 
   const nomeExibicao = perfil?.nome || user.email?.split("@")[0] || "atleta";
+  const primeiroNome = nomeExibicao.split(/\s+/)[0];
   const totalAnalises = analises?.length ?? 0;
   const ultimaAnalise = analises?.[0];
 
-  // Calcula stats da última análise
-  const ultimaDados = ultimaAnalise?.dados_entrada as { peso?: string; altura?: string } | undefined;
-  const ultimoResultado = ultimaAnalise?.resultado as { biotipo?: string } | undefined;
+  const ultimaDados = ultimaAnalise?.dados_entrada as
+    | { peso?: string; altura?: string }
+    | undefined;
+  const ultimoResultado = ultimaAnalise?.resultado as
+    | { biotipo?: string }
+    | undefined;
 
   const peso = Number(ultimaDados?.peso ?? 0);
   const altura = Number(ultimaDados?.altura ?? 0);
-  const imc = peso && altura ? (peso / Math.pow(altura / 100, 2)).toFixed(1) : null;
+  const imc =
+    peso && altura ? (peso / Math.pow(altura / 100, 2)).toFixed(1) : null;
 
   const biotipoLabel = ultimoResultado?.biotipo
-    ? {
-        ectomorfo: "Ectomorfo",
-        mesomorfo: "Mesomorfo",
-        endomorfo: "Endomorfo",
-        misto: "Biotipo Misto",
-      }[ultimoResultado.biotipo] ?? "—"
+    ? BIOTIPO_LABEL[ultimoResultado.biotipo] ?? "—"
     : null;
 
   const diasDesdeUltima = ultimaAnalise
-    ? Math.floor((Date.now() - new Date(ultimaAnalise.criado_em).getTime()) / (1000 * 60 * 60 * 24))
+    ? Math.floor(
+        (Date.now() - new Date(ultimaAnalise.criado_em).getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
     : null;
 
+  const frase = fraseDoDia();
+  const inspHero = inspiracaoDoDia();
+
   return (
-    <div className="flex flex-1 flex-col px-4 py-8 sm:py-12 bg-[#111111] animate-[fadeIn_0.4s_ease-out]">
-      <div className="w-full max-w-5xl mx-auto flex flex-col gap-8">
-
-        {/* Header */}
-        <header className="flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="h-9 w-9 rounded-2xl bg-orange-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="text-black font-bold text-base">S</span>
-            </div>
-            <span className="text-lg font-bold tracking-tight text-white">
-              ShapeScan
-            </span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard/evolucao"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
-            >
-              <LineChart size={14} /> Evolução
-            </Link>
-            <Link
-              href="/perfil"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
-            >
-              <User size={14} /> Perfil
-            </Link>
-            <Link
-              href="/configuracoes"
-              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all"
-            >
-              <Settings size={14} /> Config
-            </Link>
-            <LogoutButton />
-          </div>
-        </header>
-
-        {/* Boas-vindas */}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl sm:text-5xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
-            Olá, <span className="text-orange-400">{nomeExibicao}</span>
-          </h1>
-          <p className="text-sm sm:text-base text-white/50">
+    <div className="flex flex-1 flex-col px-4 py-6 sm:py-10 bg-[#111111] animate-[fadeIn_0.4s_ease-out]">
+      <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 sm:gap-8">
+        {/* Saudação */}
+        <div className="flex flex-col gap-0.5 pt-1">
+          <p className="text-sm text-white/40">
             {totalAnalises === 0
-              ? "Pronto para descobrir seu biotipo?"
-              : `Você tem ${totalAnalises} ${totalAnalises === 1 ? "análise salva" : "análises salvas"}.`}
+              ? "Bem-vindo ao ShapeScan"
+              : `${totalAnalises} ${totalAnalises === 1 ? "análise" : "análises"} no seu histórico`}
           </p>
+          <h1 className="text-3xl sm:text-5xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
+            Olá, <span className="text-orange-400">{primeiroNome}</span>
+          </h1>
         </div>
 
-        {/* Stats — só aparece se tem análise */}
+        {/* Hero motivacional com imagem do dia */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/[0.08] min-h-[280px] sm:min-h-[300px] flex">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={urlInspiracao(inspHero.id, 1100)}
+            alt={inspHero.alt}
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/65 to-black/10" />
+          <div className="relative mt-auto flex flex-col gap-3 sm:gap-4 p-5 sm:p-7 w-full">
+            <div className="flex items-center gap-1.5 text-orange-400">
+              <Sparkles size={14} />
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest">
+                Foco do dia
+              </span>
+            </div>
+            <p className="text-[22px] leading-[1.2] sm:text-3xl sm:leading-snug font-bold text-white text-balance max-w-xl">
+              {frase}
+            </p>
+            <Link
+              href="/analise/nova"
+              className="self-start inline-flex items-center gap-2 h-11 px-5 rounded-full bg-orange-400 text-black font-semibold text-sm hover:bg-orange-300 active:scale-95 transition-all"
+            >
+              <Plus size={16} />
+              {totalAnalises === 0 ? "Fazer primeira análise" : "Nova análise"}
+            </Link>
+          </div>
+        </section>
+
+        {/* Stats — só com análise */}
         {totalAnalises > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
@@ -120,56 +143,62 @@ export default async function DashboardPage() {
             <StatCard
               icon={<Calendar size={18} />}
               label="Última análise"
-              value={diasDesdeUltima === 0 ? "Hoje" : diasDesdeUltima === 1 ? "Ontem" : `${diasDesdeUltima}d atrás`}
+              value={
+                diasDesdeUltima === 0
+                  ? "Hoje"
+                  : diasDesdeUltima === 1
+                    ? "Ontem"
+                    : `${diasDesdeUltima}d atrás`
+              }
             />
           </div>
         )}
 
-        {/* Card CTA */}
-        <div className="relative overflow-hidden bg-orange-400 rounded-3xl p-6 sm:p-8">
-          <div className="absolute -top-8 -right-8 w-32 h-32 bg-black/10 rounded-full" />
-          <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-black/10 rounded-full" />
-
-          <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-2xl sm:text-3xl font-[family-name:var(--font-bebas)] tracking-wide text-black">
-                {totalAnalises === 0 ? "Comece agora" : "Fazer nova análise"}
-              </h2>
-              <p className="text-sm sm:text-base text-black/70">
-                {totalAnalises === 0
-                  ? "Descubra seu biotipo em 2 minutos"
-                  : "Acompanhe sua evolução com uma análise nova"}
-              </p>
-            </div>
-            <Link
-              href="/analise/nova"
-              className="inline-flex items-center justify-center h-12 px-6 rounded-full bg-black text-white font-semibold text-sm sm:text-base hover:bg-zinc-900 active:scale-95 transition-all whitespace-nowrap"
-            >
-              {totalAnalises === 0 ? "Começar análise →" : "Nova análise →"}
-            </Link>
-          </div>
+        {/* Atalhos pros setores */}
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+          <AtalhoCard
+            href="/dashboard/evolucao"
+            icon={<LineChart size={20} />}
+            titulo="Evolução do corpo"
+            descricao="Peso, medidas e fotos pra acompanhar seu progresso."
+          />
+          <AtalhoCard
+            href="/dashboard/coach"
+            icon={<Sparkles size={20} />}
+            titulo="Coach IA"
+            descricao="Tire dúvidas sobre treino, dieta e sua evolução."
+          />
         </div>
 
-        {/* Card Evolução */}
-        <Link
-          href="/dashboard/evolucao"
-          className="group flex items-center gap-4 p-5 bg-white/[0.05] border border-white/[0.10] rounded-2xl hover:border-orange-400/30 hover:bg-white/[0.08] active:scale-[0.99] transition-all"
-        >
-          <div className="h-11 w-11 rounded-xl bg-orange-400/10 border border-orange-400/20 flex items-center justify-center flex-shrink-0 text-orange-400">
-            <LineChart size={20} />
+        {/* Galeria de inspiração */}
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
+              Inspiração pra treinar
+            </h2>
+            <span className="text-xs text-white/30">arraste →</span>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-white text-sm sm:text-base">
-              Evolução do corpo
-            </p>
-            <p className="text-xs sm:text-sm text-white/40">
-              Registre peso, medidas e fotos para acompanhar seu progresso.
-            </p>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x">
+            {INSPIRACOES.map((insp) => (
+              <article
+                key={insp.id}
+                className="relative flex-shrink-0 w-40 sm:w-52 aspect-[3/4] rounded-2xl overflow-hidden border border-white/[0.08] snap-start"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={urlInspiracao(insp.id, 420)}
+                  alt={insp.alt}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                <p className="absolute bottom-0 left-0 right-0 p-3 text-xs sm:text-sm font-semibold text-white leading-snug">
+                  {insp.legenda}
+                </p>
+              </article>
+            ))}
           </div>
-          <span className="text-sm text-white/30 group-hover:text-orange-400 group-hover:translate-x-1 transition-all">
-            →
-          </span>
-        </Link>
+        </section>
 
         {/* Histórico */}
         <section className="flex flex-col gap-4">
@@ -192,48 +221,44 @@ export default async function DashboardPage() {
               <div className="h-12 w-12 rounded-xl bg-white/[0.08] flex items-center justify-center text-white/30">
                 <BarChart3 size={24} />
               </div>
-              <p className="font-medium text-white/60">
-                Nenhuma análise ainda
-              </p>
+              <p className="font-medium text-white/60">Nenhuma análise ainda</p>
               <p className="text-sm text-white/30">
-                Clique em &quot;Começar análise&quot; acima para fazer sua primeira análise de biotipo.
+                Toque em &quot;Nova análise&quot; pra descobrir seu biotipo,
+                dieta e treino.
               </p>
             </div>
           ) : (
             <ul className="flex flex-col gap-2">
               {analises?.map((analise, index) => {
                 const resultado = analise.resultado as { biotipo?: string };
-                const data = new Date(analise.criado_em).toLocaleDateString("pt-BR", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                });
-                const biotipoLabel = {
-                  ectomorfo: "Ectomorfo",
-                  mesomorfo: "Mesomorfo",
-                  endomorfo: "Endomorfo",
-                  misto: "Biotipo Misto",
-                }[resultado?.biotipo ?? ""] ?? "Análise";
-
-                const biotipoInitial = biotipoLabel.charAt(0).toUpperCase();
+                const data = new Date(analise.criado_em).toLocaleDateString(
+                  "pt-BR",
+                  { day: "2-digit", month: "short", year: "numeric" }
+                );
+                const label =
+                  BIOTIPO_LABEL[resultado?.biotipo ?? ""] ?? "Análise";
+                const inicial = label.charAt(0).toUpperCase();
 
                 return (
-                  <li key={analise.id} style={{ animationDelay: `${index * 60}ms` }}
-                    className="animate-[fadeIn_0.4s_ease-out]">
+                  <li
+                    key={analise.id}
+                    style={{ animationDelay: `${index * 60}ms` }}
+                    className="animate-[fadeIn_0.4s_ease-out]"
+                  >
                     <Link
                       href={`/dashboard/analise/${analise.id}`}
                       className="flex items-center gap-4 p-4 bg-white/[0.05] border border-white/[0.08] rounded-2xl hover:border-orange-400/30 hover:bg-white/[0.08] active:scale-[0.99] transition-all group"
                     >
                       <div className="h-10 w-10 rounded-xl bg-orange-400/10 border border-orange-400/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-orange-400 font-bold text-sm">{biotipoInitial}</span>
+                        <span className="text-orange-400 font-bold text-sm">
+                          {inicial}
+                        </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-white text-sm sm:text-base">
-                          {biotipoLabel}
+                          {label}
                         </p>
-                        <p className="text-xs text-white/40">
-                          {data}
-                        </p>
+                        <p className="text-xs text-white/40">{data}</p>
                       </div>
                       <span className="text-sm text-white/30 group-hover:text-orange-400 group-hover:translate-x-1 transition-all">
                         →
@@ -245,28 +270,6 @@ export default async function DashboardPage() {
             </ul>
           )}
         </section>
-
-        {/* Links mobile pra perfil/config (sm:hidden) */}
-        <div className="sm:hidden grid grid-cols-2 gap-3">
-          <Link
-            href="/dashboard/evolucao"
-            className="col-span-2 flex items-center justify-center gap-2 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.12] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all text-sm font-medium"
-          >
-            <LineChart size={16} /> Evolução
-          </Link>
-          <Link
-            href="/perfil"
-            className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.12] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all text-sm font-medium"
-          >
-            <User size={16} /> Perfil
-          </Link>
-          <Link
-            href="/configuracoes"
-            className="flex items-center justify-center gap-2 h-12 rounded-2xl bg-white/[0.05] border border-white/[0.12] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all text-sm font-medium"
-          >
-            <Settings size={16} /> Configurações
-          </Link>
-        </div>
       </div>
     </div>
   );
@@ -284,24 +287,60 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`flex flex-col gap-2 p-4 sm:p-5 rounded-2xl border transition-all ${
-      highlight
-        ? "bg-orange-400/10 border-orange-400/30"
-        : "bg-white/[0.05] border-white/[0.10]"
-    }`}>
+    <div
+      className={`flex flex-col gap-2 p-4 sm:p-5 rounded-2xl border transition-all ${
+        highlight
+          ? "bg-orange-400/10 border-orange-400/30"
+          : "bg-white/[0.05] border-white/[0.10]"
+      }`}
+    >
       <div className={highlight ? "text-orange-400" : "text-white/40"}>
         {icon}
       </div>
-      <div className="flex flex-col">
-        <span className="text-[10px] sm:text-xs text-white/40 uppercase tracking-wider font-medium">
+      <div className="flex flex-col min-w-0">
+        <span className="text-[10px] sm:text-xs text-white/40 uppercase tracking-wider font-medium truncate">
           {label}
         </span>
-        <span className={`font-bold text-lg sm:text-xl mt-0.5 ${
-          highlight ? "text-orange-400" : "text-white"
-        }`}>
+        <span
+          className={`font-bold text-base sm:text-xl mt-0.5 leading-tight truncate ${
+            highlight ? "text-orange-400" : "text-white"
+          }`}
+        >
           {value}
         </span>
       </div>
     </div>
+  );
+}
+
+function AtalhoCard({
+  href,
+  icon,
+  titulo,
+  descricao,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  titulo: string;
+  descricao: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex items-center gap-4 p-5 bg-white/[0.05] border border-white/[0.10] rounded-2xl hover:border-orange-400/30 hover:bg-white/[0.08] active:scale-[0.99] transition-all"
+    >
+      <div className="h-11 w-11 rounded-xl bg-orange-400/10 border border-orange-400/20 flex items-center justify-center flex-shrink-0 text-orange-400">
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold text-white text-sm sm:text-base">
+          {titulo}
+        </p>
+        <p className="text-xs sm:text-sm text-white/40">{descricao}</p>
+      </div>
+      <span className="text-sm text-white/30 group-hover:text-orange-400 group-hover:translate-x-1 transition-all">
+        →
+      </span>
+    </Link>
   );
 }

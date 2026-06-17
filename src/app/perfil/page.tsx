@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Mail, Calendar, BarChart3, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PerfilForm } from "./PerfilForm";
+import { LogoutButton } from "@/app/dashboard/LogoutButton";
 
 export default async function PerfilPage() {
   const supabase = await createClient();
@@ -96,6 +97,11 @@ export default async function PerfilPage() {
           </div>
           <span className="text-white/30">→</span>
         </Link>
+
+        {/* Sair (importante no mobile, onde a barra inferior não tem logout) */}
+        <div className="flex justify-center pt-1">
+          <LogoutButton />
+        </div>
 
       </div>
     </div>
