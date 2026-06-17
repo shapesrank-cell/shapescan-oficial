@@ -111,9 +111,14 @@ export default async function Home() {
         <div className="max-w-6xl mx-auto flex items-center justify-between bg-white/[0.06] backdrop-blur-xl border border-white/[0.1] rounded-2xl px-5 py-3">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shrink-0">
-              <span className="text-black font-black text-sm">S</span>
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-192.png"
+              alt="ShapeScan"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-lg shrink-0"
+            />
             <span className="text-white font-bold text-lg tracking-tight">ShapeScan</span>
           </div>
 
