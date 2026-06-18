@@ -19,6 +19,10 @@ export interface CheckinInput {
   braco?: number | null;
   peito?: number | null;
   coxa?: number | null;
+  ombros?: number | null;
+  panturrilha?: number | null;
+  antebraco?: number | null;
+  pescoco?: number | null;
   observacoes?: string | null;
   // Foto opcional já redimensionada no cliente (base64 sem o prefixo data:)
   foto?: string | null;
@@ -69,6 +73,24 @@ export async function criarCheckin(
   if (peito.erro) return { erro: peito.erro };
   const coxa = validaMedida(dados.coxa, RANGES.coxa, "Coxa", false);
   if (coxa.erro) return { erro: coxa.erro };
+  const ombros = validaMedida(dados.ombros, RANGES.ombros, "Ombros", false);
+  if (ombros.erro) return { erro: ombros.erro };
+  const panturrilha = validaMedida(
+    dados.panturrilha,
+    RANGES.panturrilha,
+    "Panturrilha",
+    false
+  );
+  if (panturrilha.erro) return { erro: panturrilha.erro };
+  const antebraco = validaMedida(
+    dados.antebraco,
+    RANGES.antebraco,
+    "Antebraço",
+    false
+  );
+  if (antebraco.erro) return { erro: antebraco.erro };
+  const pescoco = validaMedida(dados.pescoco, RANGES.pescoco, "Pescoço", false);
+  if (pescoco.erro) return { erro: pescoco.erro };
 
   const observacoes = dados.observacoes?.trim().slice(0, 500) || null;
 
@@ -114,6 +136,10 @@ export async function criarCheckin(
     braco: braco.valor,
     peito: peito.valor,
     coxa: coxa.valor,
+    ombros: ombros.valor,
+    panturrilha: panturrilha.valor,
+    antebraco: antebraco.valor,
+    pescoco: pescoco.valor,
     observacoes,
     foto_path: fotoPath,
   });
@@ -200,7 +226,9 @@ export async function gerarRelatorio(): Promise<
 
   const { data: checkins } = await supabase
     .from("checkins")
-    .select("peso, cintura, quadril, braco, peito, coxa, criado_em")
+    .select(
+      "peso, cintura, quadril, braco, peito, coxa, ombros, panturrilha, antebraco, pescoco, criado_em"
+    )
     .eq("user_id", user.id)
     .order("criado_em", { ascending: true });
 
@@ -242,6 +270,10 @@ export async function gerarRelatorio(): Promise<
         braco: c.braco,
         peito: c.peito,
         coxa: c.coxa,
+        ombros: c.ombros,
+        panturrilha: c.panturrilha,
+        antebraco: c.antebraco,
+        pescoco: c.pescoco,
       })),
     });
     return { relatorio };

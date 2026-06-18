@@ -12,6 +12,10 @@ type Medidas = {
   braco: number | null;
   peito: number | null;
   coxa: number | null;
+  ombros: number | null;
+  panturrilha: number | null;
+  antebraco: number | null;
+  pescoco: number | null;
 };
 
 const CAMPOS: {
@@ -21,11 +25,15 @@ const CAMPOS: {
   obrigatorio?: boolean;
 }[] = [
   { chave: "peso", rotulo: "Peso", unidade: "kg", obrigatorio: true },
+  { chave: "peito", rotulo: "Peito", unidade: "cm" },
+  { chave: "ombros", rotulo: "Ombros", unidade: "cm" },
+  { chave: "braco", rotulo: "Braço", unidade: "cm" },
+  { chave: "antebraco", rotulo: "Antebraço", unidade: "cm" },
   { chave: "cintura", rotulo: "Cintura", unidade: "cm" },
   { chave: "quadril", rotulo: "Quadril", unidade: "cm" },
-  { chave: "braco", rotulo: "Braço", unidade: "cm" },
-  { chave: "peito", rotulo: "Peito", unidade: "cm" },
   { chave: "coxa", rotulo: "Coxa", unidade: "cm" },
+  { chave: "panturrilha", rotulo: "Panturrilha", unidade: "cm" },
+  { chave: "pescoco", rotulo: "Pescoço", unidade: "cm" },
 ];
 
 // Mesma lógica de redimensionamento usada na análise (máx 800px, jpeg 0.7)
@@ -81,6 +89,10 @@ export function NovoCheckinForm({
     braco: paraTexto(valoresIniciais.braco),
     peito: paraTexto(valoresIniciais.peito),
     coxa: paraTexto(valoresIniciais.coxa),
+    ombros: paraTexto(valoresIniciais.ombros),
+    panturrilha: paraTexto(valoresIniciais.panturrilha),
+    antebraco: paraTexto(valoresIniciais.antebraco),
+    pescoco: paraTexto(valoresIniciais.pescoco),
   });
   const [observacoes, setObservacoes] = useState("");
   const [foto, setFoto] = useState<{ base64: string; mimeType: string } | null>(
@@ -141,6 +153,10 @@ export function NovoCheckinForm({
       braco: parseNum(valores.braco),
       peito: parseNum(valores.peito),
       coxa: parseNum(valores.coxa),
+      ombros: parseNum(valores.ombros),
+      panturrilha: parseNum(valores.panturrilha),
+      antebraco: parseNum(valores.antebraco),
+      pescoco: parseNum(valores.pescoco),
       observacoes: observacoes.trim() || null,
       ...(foto && { foto: foto.base64, fotoMimeType: foto.mimeType }),
     });

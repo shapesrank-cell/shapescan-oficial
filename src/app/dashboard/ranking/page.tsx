@@ -34,7 +34,9 @@ export default async function RankingPage() {
         .limit(20),
       supabase
         .from("checkins")
-        .select("peso, peito, braco, cintura, quadril, coxa")
+        .select(
+          "peso, peito, ombros, braco, antebraco, cintura, quadril, coxa, panturrilha, pescoco"
+        )
         .order("criado_em", { ascending: false })
         .limit(1)
         .maybeSingle(),
@@ -50,10 +52,14 @@ export default async function RankingPage() {
     idade: perfil?.idade ?? null,
     peso: ultimoCheckin?.peso ?? null,
     peito: ultimoCheckin?.peito ?? null,
+    ombros: ultimoCheckin?.ombros ?? null,
     braco: ultimoCheckin?.braco ?? null,
+    antebraco: ultimoCheckin?.antebraco ?? null,
     cintura: ultimoCheckin?.cintura ?? null,
     quadril: ultimoCheckin?.quadril ?? null,
     coxa: ultimoCheckin?.coxa ?? null,
+    panturrilha: ultimoCheckin?.panturrilha ?? null,
+    pescoco: ultimoCheckin?.pescoco ?? null,
   };
 
   const comRank = (analises ?? []).find((a) => {

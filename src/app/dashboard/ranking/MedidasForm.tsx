@@ -15,10 +15,14 @@ type ChaveCampo =
   | "altura"
   | "idade"
   | "peito"
+  | "ombros"
   | "braco"
+  | "antebraco"
   | "cintura"
   | "quadril"
-  | "coxa";
+  | "coxa"
+  | "panturrilha"
+  | "pescoco";
 
 type Campo = {
   chave: ChaveCampo;
@@ -33,10 +37,14 @@ const CAMPOS: Campo[] = [
   { chave: "idade", rotulo: "Idade", unidade: "anos", grupo: "perfil" },
   { chave: "peso", rotulo: "Peso", unidade: "kg", obrigatorio: true, grupo: "medidas" },
   { chave: "peito", rotulo: "Peito", unidade: "cm", grupo: "medidas" },
+  { chave: "ombros", rotulo: "Ombros", unidade: "cm", grupo: "medidas" },
   { chave: "braco", rotulo: "Braço", unidade: "cm", grupo: "medidas" },
+  { chave: "antebraco", rotulo: "Antebraço", unidade: "cm", grupo: "medidas" },
   { chave: "cintura", rotulo: "Cintura", unidade: "cm", grupo: "medidas" },
   { chave: "quadril", rotulo: "Quadril", unidade: "cm", grupo: "medidas" },
   { chave: "coxa", rotulo: "Coxa", unidade: "cm", grupo: "medidas" },
+  { chave: "panturrilha", rotulo: "Panturrilha", unidade: "cm", grupo: "medidas" },
+  { chave: "pescoco", rotulo: "Pescoço", unidade: "cm", grupo: "medidas" },
 ];
 
 export type MedidasIniciais = Record<ChaveCampo, number | null>;
@@ -50,10 +58,14 @@ export function MedidasForm({ iniciais }: { iniciais: MedidasIniciais }) {
     idade: paraTexto(iniciais.idade),
     peso: paraTexto(iniciais.peso),
     peito: paraTexto(iniciais.peito),
+    ombros: paraTexto(iniciais.ombros),
     braco: paraTexto(iniciais.braco),
+    antebraco: paraTexto(iniciais.antebraco),
     cintura: paraTexto(iniciais.cintura),
     quadril: paraTexto(iniciais.quadril),
     coxa: paraTexto(iniciais.coxa),
+    panturrilha: paraTexto(iniciais.panturrilha),
+    pescoco: paraTexto(iniciais.pescoco),
   });
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -85,10 +97,14 @@ export function MedidasForm({ iniciais }: { iniciais: MedidasIniciais }) {
       idade: parseNum(valores.idade),
       peso,
       peito: parseNum(valores.peito),
+      ombros: parseNum(valores.ombros),
       braco: parseNum(valores.braco),
+      antebraco: parseNum(valores.antebraco),
       cintura: parseNum(valores.cintura),
       quadril: parseNum(valores.quadril),
       coxa: parseNum(valores.coxa),
+      panturrilha: parseNum(valores.panturrilha),
+      pescoco: parseNum(valores.pescoco),
     });
 
     if ("erro" in resultado) {

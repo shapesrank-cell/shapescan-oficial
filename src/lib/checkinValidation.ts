@@ -11,6 +11,10 @@ export const RANGES = {
   braco: [10, 150],
   peito: [30, 300],
   coxa: [20, 200],
+  ombros: [60, 250],
+  panturrilha: [15, 100],
+  antebraco: [10, 80],
+  pescoco: [20, 100],
 } as const;
 
 export type MedidaResult = { erro?: string; valor: number | null };

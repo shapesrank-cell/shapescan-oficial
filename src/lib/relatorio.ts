@@ -11,6 +11,10 @@ export type CheckinHistorico = {
   braco?: number | null;
   peito?: number | null;
   coxa?: number | null;
+  ombros?: number | null;
+  panturrilha?: number | null;
+  antebraco?: number | null;
+  pescoco?: number | null;
 };
 
 const MEDIDAS: { chave: keyof CheckinHistorico; rotulo: string }[] = [
@@ -19,6 +23,10 @@ const MEDIDAS: { chave: keyof CheckinHistorico; rotulo: string }[] = [
   { chave: "braco", rotulo: "braço" },
   { chave: "peito", rotulo: "peito" },
   { chave: "coxa", rotulo: "coxa" },
+  { chave: "ombros", rotulo: "ombros" },
+  { chave: "panturrilha", rotulo: "panturrilha" },
+  { chave: "antebraco", rotulo: "antebraço" },
+  { chave: "pescoco", rotulo: "pescoço" },
 ];
 
 /** "2026-06-16T..." -> "16/06/2026" (sem problema de fuso). */

@@ -80,6 +80,10 @@ export type DadosUsuario = {
     braco?: number | null;
     peito?: number | null;
     coxa?: number | null;
+    ombros?: number | null;
+    panturrilha?: number | null;
+    antebraco?: number | null;
+    pescoco?: number | null;
     registradoEm?: string | null; // data do check-in de origem (dd/mm/aaaa)
   };
 };
@@ -216,7 +220,7 @@ RANKING DE SHAPE (campo ranking — PREENCHA APENAS se o usuário enviou ao meno
 - Avalie o NÍVEL DE DESENVOLVIMENTO MUSCULAR visível de cada grupo e dê uma NOTA de 0 a 100 (0 = início da jornada/pouco desenvolvido; 100 = nível de atleta de elite). Avalie SOMENTE pelo que dá pra ver nas fotos; se um grupo não estiver claramente visível em nenhuma foto, estime de forma conservadora pelo restante do corpo.
 - Podem vir VÁRIAS fotos do corpo em ângulos diferentes (frente, costas, lado). COMBINE todos os ângulos e avalie cada grupo pelo ângulo que melhor o mostra: costas/trapézio/dorsais, tríceps, glúteos e posterior de coxa pela foto de COSTAS; peito, ombros, abdômen e quadríceps pela de FRENTE; abdômen e postura também pela de LADO. Só estime um grupo quando ele não aparecer em nenhuma das fotos.
 - Use EXATAMENTE estes 6 ids de grupo (todos os 6, uma vez cada): peito, costas, ombros, bracos, abdomen, pernas.
-- Se houver MEDIDAS CORPORAIS (circunferências), use-as para calibrar as notas com mais precisão, combinando-as com a foto: braço → grupo bracos; peito/tórax → peito; coxa → pernas; cintura e quadril ajudam a estimar percentual de gordura e o desenvolvimento do abdomen. As medidas tornam a avaliação mais objetiva — leve-as a sério, mas a foto continua sendo a base visual.
+- Se houver MEDIDAS CORPORAIS (circunferências), use-as para calibrar as notas com mais precisão, combinando-as com a foto: peito/tórax → grupo peito; ombros → ombros; braço e antebraço → bracos; coxa e panturrilha → pernas; cintura, quadril e pescoço ajudam a estimar o percentual de gordura e o desenvolvimento do abdomen. As medidas tornam a avaliação mais objetiva — leve-as a sério, mas a foto continua sendo a base visual.
 - Para cada grupo escreva um "comentario" de 1 frase curta, MOTIVADOR e RESPEITOSO. É sobre desenvolvimento de TREINO, NUNCA sobre beleza ou estética pessoal. Mesmo notas baixas devem soar como "ponto de partida com bom potencial", jamais como crítica ofensiva.
 - CALIBRAÇÃO honesta (não infle): a maioria das pessoas comuns fica entre 20 e 60. Notas acima de 80 são raras (físico bem avançado); acima de 90, nível atlético de elite. Seja justo e coerente com o que a foto mostra.`;
 
@@ -256,10 +260,14 @@ function formatarMedidas(m?: DadosUsuario["medidas"]): string {
   if (!m) return "";
   const linhas: string[] = [];
   if (m.peito != null) linhas.push(`- Peito/tórax: ${m.peito} cm`);
+  if (m.ombros != null) linhas.push(`- Ombros: ${m.ombros} cm`);
   if (m.braco != null) linhas.push(`- Braço: ${m.braco} cm`);
+  if (m.antebraco != null) linhas.push(`- Antebraço: ${m.antebraco} cm`);
   if (m.cintura != null) linhas.push(`- Cintura: ${m.cintura} cm`);
   if (m.quadril != null) linhas.push(`- Quadril: ${m.quadril} cm`);
   if (m.coxa != null) linhas.push(`- Coxa: ${m.coxa} cm`);
+  if (m.panturrilha != null) linhas.push(`- Panturrilha: ${m.panturrilha} cm`);
+  if (m.pescoco != null) linhas.push(`- Pescoço: ${m.pescoco} cm`);
   if (linhas.length === 0) return "";
   const quando = m.registradoEm ? ` (registradas em ${m.registradoEm})` : "";
   return `\n\nMEDIDAS CORPORAIS DO USUÁRIO${quando} — circunferências reais, use-as junto com a foto para CALIBRAR as notas do ranking por grupo com mais precisão:\n${linhas.join(

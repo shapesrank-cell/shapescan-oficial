@@ -16,10 +16,14 @@ export async function salvarMedidasRanking(input: {
   idade?: number | null;
   peso: number;
   peito?: number | null;
+  ombros?: number | null;
   braco?: number | null;
+  antebraco?: number | null;
   cintura?: number | null;
   quadril?: number | null;
   coxa?: number | null;
+  panturrilha?: number | null;
+  pescoco?: number | null;
 }): Promise<{ erro?: string } | { ok: true }> {
   const supabase = await createClient();
   const {
@@ -54,10 +58,14 @@ export async function salvarMedidasRanking(input: {
   const res = await criarCheckin({
     peso: input.peso,
     peito: input.peito ?? null,
+    ombros: input.ombros ?? null,
     braco: input.braco ?? null,
+    antebraco: input.antebraco ?? null,
     cintura: input.cintura ?? null,
     quadril: input.quadril ?? null,
     coxa: input.coxa ?? null,
+    panturrilha: input.panturrilha ?? null,
+    pescoco: input.pescoco ?? null,
   });
   if ("erro" in res) return { erro: res.erro };
 

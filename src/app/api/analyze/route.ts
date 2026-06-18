@@ -250,7 +250,9 @@ export async function POST(request: Request) {
   try {
     const { data: ultimoCheckin } = await supabase
       .from("checkins")
-      .select("peso, cintura, quadril, braco, peito, coxa, criado_em")
+      .select(
+        "peso, cintura, quadril, braco, peito, coxa, ombros, panturrilha, antebraco, pescoco, criado_em"
+      )
       .eq("user_id", user.id)
       .order("criado_em", { ascending: false })
       .limit(1)
@@ -262,7 +264,11 @@ export async function POST(request: Request) {
         ultimoCheckin.quadril != null ||
         ultimoCheckin.braco != null ||
         ultimoCheckin.peito != null ||
-        ultimoCheckin.coxa != null;
+        ultimoCheckin.coxa != null ||
+        ultimoCheckin.ombros != null ||
+        ultimoCheckin.panturrilha != null ||
+        ultimoCheckin.antebraco != null ||
+        ultimoCheckin.pescoco != null;
       if (temMedida) {
         dados.medidas = {
           cintura: ultimoCheckin.cintura,
@@ -270,6 +276,10 @@ export async function POST(request: Request) {
           braco: ultimoCheckin.braco,
           peito: ultimoCheckin.peito,
           coxa: ultimoCheckin.coxa,
+          ombros: ultimoCheckin.ombros,
+          panturrilha: ultimoCheckin.panturrilha,
+          antebraco: ultimoCheckin.antebraco,
+          pescoco: ultimoCheckin.pescoco,
           registradoEm: new Date(ultimoCheckin.criado_em).toLocaleDateString(
             "pt-BR"
           ),

@@ -101,7 +101,9 @@ export async function POST(request: Request) {
       .maybeSingle(),
     supabase
       .from("checkins")
-      .select("peso, cintura, quadril, braco, peito, coxa, criado_em")
+      .select(
+        "peso, cintura, quadril, braco, peito, coxa, ombros, panturrilha, antebraco, pescoco, criado_em"
+      )
       .eq("user_id", user.id)
       .order("criado_em", { ascending: true }),
     supabase
@@ -144,6 +146,10 @@ export async function POST(request: Request) {
       braco: c.braco,
       peito: c.peito,
       coxa: c.coxa,
+      ombros: c.ombros,
+      panturrilha: c.panturrilha,
+      antebraco: c.antebraco,
+      pescoco: c.pescoco,
     })),
   };
 

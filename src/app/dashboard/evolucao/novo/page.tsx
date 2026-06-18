@@ -15,7 +15,9 @@ export default async function NovoCheckinPage() {
   // Pré-preenche o peso com o último check-in (ou o peso do perfil) pra agilizar
   const { data: ultimoCheckin } = await supabase
     .from("checkins")
-    .select("peso, cintura, quadril, braco, peito, coxa")
+    .select(
+      "peso, cintura, quadril, braco, peito, coxa, ombros, panturrilha, antebraco, pescoco"
+    )
     .eq("user_id", user.id)
     .order("criado_em", { ascending: false })
     .limit(1)
@@ -34,6 +36,10 @@ export default async function NovoCheckinPage() {
     braco: ultimoCheckin?.braco ?? null,
     peito: ultimoCheckin?.peito ?? null,
     coxa: ultimoCheckin?.coxa ?? null,
+    ombros: ultimoCheckin?.ombros ?? null,
+    panturrilha: ultimoCheckin?.panturrilha ?? null,
+    antebraco: ultimoCheckin?.antebraco ?? null,
+    pescoco: ultimoCheckin?.pescoco ?? null,
   };
 
   return (
