@@ -154,6 +154,44 @@ export async function POST(request: Request) {
     }
   }
 
+  // Fotos do CORPO ATUAL em vários ângulos (frente/costas/lado) — máx 3, cada
+  // uma validada por tamanho, mimeType e ângulo.
+  const ANGULOS_VALIDOS = ["frente", "costas", "lado"];
+  let fotosCorpo: DadosUsuario["fotos"];
+  if (body.fotos !== undefined) {
+    if (!Array.isArray(body.fotos) || body.fotos.length > 3) {
+      return NextResponse.json(
+        { erro: "Envie no máximo 3 fotos do corpo." },
+        { status: 400 }
+      );
+    }
+    for (const f of body.fotos) {
+      if (!f || typeof f.data !== "string" || f.data.length > MAX_FOTO_BASE64) {
+        return NextResponse.json(
+          {
+            erro: `Foto muito grande. Máximo ${Math.round(
+              MAX_FOTO_BASE64 / 1024 / 1024
+            )}MB por foto.`,
+          },
+          { status: 413 }
+        );
+      }
+      if (!f.mimeType || !MIMES_FOTO.includes(f.mimeType)) {
+        return NextResponse.json(
+          { erro: "Formato de foto inválido. Use JPEG, PNG ou WebP." },
+          { status: 400 }
+        );
+      }
+      if (!ANGULOS_VALIDOS.includes(f.angulo)) {
+        return NextResponse.json(
+          { erro: "Ângulo de foto inválido." },
+          { status: 400 }
+        );
+      }
+    }
+    if (body.fotos.length > 0) fotosCorpo = body.fotos;
+  }
+
   // Foto de SHAPE DE REFERÊNCIA (opcional) — mesmas regras de tamanho e formato
   if (body.fotoReferencia) {
     if (body.fotoReferencia.length > MAX_FOTO_BASE64) {
@@ -194,6 +232,7 @@ export async function POST(request: Request) {
     altura,
     nivelAtividade: body.nivelAtividade as DadosUsuario["nivelAtividade"],
     objetivo: body.objetivo as DadosUsuario["objetivo"],
+    ...(fotosCorpo ? { fotos: fotosCorpo } : {}),
     ...(body.foto && body.fotoMimeType
       ? { foto: body.foto, fotoMimeType: body.fotoMimeType }
       : {}),
@@ -205,6 +244,41 @@ export async function POST(request: Request) {
       : {}),
     ...(preferencias ? { preferencias } : {}),
   };
+
+  // 3b. MEDIDAS: puxa as circunferências do último check-in (Evolução) pra dar
+  // precisão ao ranking por grupo. Sem check-in / sem medidas → segue sem elas.
+  try {
+    const { data: ultimoCheckin } = await supabase
+      .from("checkins")
+      .select("peso, cintura, quadril, braco, peito, coxa, criado_em")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (ultimoCheckin) {
+      const temMedida =
+        ultimoCheckin.cintura != null ||
+        ultimoCheckin.quadril != null ||
+        ultimoCheckin.braco != null ||
+        ultimoCheckin.peito != null ||
+        ultimoCheckin.coxa != null;
+      if (temMedida) {
+        dados.medidas = {
+          cintura: ultimoCheckin.cintura,
+          quadril: ultimoCheckin.quadril,
+          braco: ultimoCheckin.braco,
+          peito: ultimoCheckin.peito,
+          coxa: ultimoCheckin.coxa,
+          registradoEm: new Date(ultimoCheckin.criado_em).toLocaleDateString(
+            "pt-BR"
+          ),
+        };
+      }
+    }
+  } catch {
+    // falha ao buscar check-in não bloqueia a análise
+  }
 
   // 4. BUSCA API KEY (banco tem prioridade sobre env)
   let apiKeyDoBanco: string | undefined;
@@ -249,6 +323,7 @@ export async function POST(request: Request) {
   // Remove as fotos base64 do que vai pro banco (eram só pra IA). As
   // preferências FICAM — são o retrato da rotina daquela análise.
   const dadosParaSalvar = { ...dados } as Partial<DadosUsuario>;
+  delete dadosParaSalvar.fotos;
   delete dadosParaSalvar.foto;
   delete dadosParaSalvar.fotoMimeType;
   delete dadosParaSalvar.fotoReferencia;

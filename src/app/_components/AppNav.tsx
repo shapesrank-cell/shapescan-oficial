@@ -16,6 +16,7 @@ import {
   Sparkles,
   User,
   Plus,
+  Trophy,
   LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -38,10 +39,10 @@ const ITENS: Item[] = [
     match: (p) => p === "/dashboard",
   },
   {
-    href: "/dashboard/evolucao",
-    label: "Evolução",
-    icon: LineChart,
-    match: (p) => p.startsWith("/dashboard/evolucao"),
+    href: "/dashboard/ranking",
+    label: "Ranking",
+    icon: Trophy,
+    match: (p) => p.startsWith("/dashboard/ranking"),
   },
   {
     href: "/analise/nova",
@@ -49,6 +50,12 @@ const ITENS: Item[] = [
     icon: Plus,
     match: (p) => p.startsWith("/analise"),
     destaque: true,
+  },
+  {
+    href: "/dashboard/evolucao",
+    label: "Evolução",
+    icon: LineChart,
+    match: (p) => p.startsWith("/dashboard/evolucao"),
   },
   {
     href: "/dashboard/coach",

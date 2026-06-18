@@ -130,6 +130,18 @@ async function redimensionarImagem(
 }
 
 type Foto = { base64: string; mimeType: string };
+type AnguloFoto = "frente" | "costas" | "lado";
+
+const FOTOS_CORPO: {
+  angulo: AnguloFoto;
+  rotulo: string;
+  badge: string;
+  dica: string;
+}[] = [
+  { angulo: "frente", rotulo: "Frente", badge: "Recomendada", dica: "De frente, braços levemente abertos" },
+  { angulo: "costas", rotulo: "Costas", badge: "Opcional", dica: "De costas, braços abertos" },
+  { angulo: "lado", rotulo: "Lado", badge: "Opcional", dica: "De perfil, postura neutra" },
+];
 
 const PASSOS = [
   { titulo: "Meta", icone: Target },
@@ -148,12 +160,18 @@ export function AnaliseNovaClient({
 
   const [passo, setPasso] = useState(0);
 
-  // Fotos
-  const [fotoAtual, setFotoAtual] = useState<Foto | null>(null);
-  const [fotoAtualPreview, setFotoAtualPreview] = useState("");
+  // Fotos do corpo atual (até 3 ângulos) + foto de referência
+  const [fotosCorpo, setFotosCorpo] = useState<Record<AnguloFoto, Foto | null>>(
+    { frente: null, costas: null, lado: null }
+  );
+  const [previewsCorpo, setPreviewsCorpo] = useState<Record<AnguloFoto, string>>(
+    { frente: "", costas: "", lado: "" }
+  );
   const [fotoRef, setFotoRef] = useState<Foto | null>(null);
   const [fotoRefPreview, setFotoRefPreview] = useState("");
-  const [processando, setProcessando] = useState<"atual" | "ref" | null>(null);
+  const [processando, setProcessando] = useState<AnguloFoto | "ref" | null>(
+    null
+  );
 
   // Preferências (pré-preenchidas com a última análise)
   const ini = preferenciasIniciais ?? {};
@@ -187,7 +205,7 @@ export function AnaliseNovaClient({
 
   async function handleFile(
     e: React.ChangeEvent<HTMLInputElement>,
-    qual: "atual" | "ref"
+    qual: AnguloFoto | "ref"
   ) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -195,12 +213,12 @@ export function AnaliseNovaClient({
     setErro(null);
     try {
       const { base64, mimeType, preview } = await redimensionarImagem(file);
-      if (qual === "atual") {
-        setFotoAtual({ base64, mimeType });
-        setFotoAtualPreview(preview);
-      } else {
+      if (qual === "ref") {
         setFotoRef({ base64, mimeType });
         setFotoRefPreview(preview);
+      } else {
+        setFotosCorpo((s) => ({ ...s, [qual]: { base64, mimeType } }));
+        setPreviewsCorpo((s) => ({ ...s, [qual]: preview }));
       }
     } catch {
       setErro("Não foi possível processar a foto. Tente outra imagem.");
@@ -208,6 +226,14 @@ export function AnaliseNovaClient({
       setProcessando(null);
     }
   }
+
+  function removerFotoCorpo(a: AnguloFoto) {
+    setFotosCorpo((s) => ({ ...s, [a]: null }));
+    setPreviewsCorpo((s) => ({ ...s, [a]: "" }));
+  }
+
+  const algumaFotoCorpo =
+    !!fotosCorpo.frente || !!fotosCorpo.costas || !!fotosCorpo.lado;
 
   function toggleRestricao(v: NonNullable<Preferencias["restricoes"]>[number]) {
     setRestricoes((atual) =>
@@ -248,9 +274,14 @@ export function AnaliseNovaClient({
           altura: perfil.altura,
           nivelAtividade: perfil.nivelAtividade,
           objetivo: perfil.objetivo,
-          ...(fotoAtual && {
-            foto: fotoAtual.base64,
-            fotoMimeType: fotoAtual.mimeType,
+          ...(algumaFotoCorpo && {
+            fotos: FOTOS_CORPO.map((f) => f.angulo)
+              .filter((a) => fotosCorpo[a])
+              .map((a) => ({
+                data: fotosCorpo[a]!.base64,
+                mimeType: fotosCorpo[a]!.mimeType,
+                angulo: a,
+              })),
           }),
           ...(fotoRef && {
             fotoReferencia: fotoRef.base64,
@@ -281,7 +312,7 @@ export function AnaliseNovaClient({
   }
 
   if (enviando) {
-    return <GerandoAnalise temFoto={!!fotoAtual || !!fotoRef} />;
+    return <GerandoAnalise temFoto={algumaFotoCorpo || !!fotoRef} />;
   }
 
   return (
@@ -402,22 +433,43 @@ export function AnaliseNovaClient({
 
           <Secao
             icone={<Camera size={16} />}
-            titulo="Foto do seu corpo atual (opcional)"
+            titulo="Fotos do seu corpo (pra ranking preciso)"
           >
-            <p className="text-xs text-white/40 mb-3">
-              Ajuda a IA a avaliar seu biotipo atual. Processada e descartada —
-              não fica armazenada.
+            <p className="text-xs text-white/40 mb-4">
+              Mande até 3 ângulos com{" "}
+              <strong className="text-white/60">
+                braços levemente abertos (~30°)
+              </strong>
+              , postura neutra e boa luz. Quanto mais ângulos, mais preciso o
+              ranking por grupo. Processadas e descartadas — não ficam salvas.
             </p>
-            <UploadFoto
-              preview={fotoAtualPreview}
-              processando={processando === "atual"}
-              onChange={(e) => handleFile(e, "atual")}
-              onRemove={() => {
-                setFotoAtual(null);
-                setFotoAtualPreview("");
-              }}
-              textoVazio="Tirar foto ou escolher da galeria"
-            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {FOTOS_CORPO.map((f) => (
+                <div key={f.angulo} className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-white/60 uppercase tracking-wider font-semibold">
+                      {f.rotulo}
+                    </span>
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                        f.badge === "Recomendada"
+                          ? "bg-orange-400/15 text-orange-400"
+                          : "bg-white/[0.06] text-white/40"
+                      }`}
+                    >
+                      {f.badge}
+                    </span>
+                  </div>
+                  <UploadFoto
+                    preview={previewsCorpo[f.angulo]}
+                    processando={processando === f.angulo}
+                    onChange={(e) => handleFile(e, f.angulo)}
+                    onRemove={() => removerFotoCorpo(f.angulo)}
+                    textoVazio={f.dica}
+                  />
+                </div>
+              ))}
+            </div>
           </Secao>
         </div>
       )}

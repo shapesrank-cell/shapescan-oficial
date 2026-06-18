@@ -1,4 +1,5 @@
 import type { AnaliseBiotipo } from "@/lib/gemini";
+import { RankingCard } from "./RankingCard";
 
 export function AnaliseView({
   analise,
@@ -28,6 +29,11 @@ export function AnaliseView({
           {analise.resumoBiotipo}
         </p>
       </div>
+
+      {/* Ranking de ELO por shape (só aparece se a IA gerou — exige foto) */}
+      {analise.ranking?.grupos && analise.ranking.grupos.length > 0 && (
+        <RankingCard grupos={analise.ranking.grupos} />
+      )}
 
       {/* Pontos fortes e desafios */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
