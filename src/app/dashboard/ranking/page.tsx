@@ -6,7 +6,20 @@ import { RankingCard } from "@/app/onboarding/RankingCard";
 import { TierBadge } from "@/app/onboarding/TierBadge";
 import { RankingIntroModal } from "./RankingIntroModal";
 import { MedidasForm, type MedidasIniciais } from "./MedidasForm";
-import { TIERS, GRUPO_LABEL, GRUPOS_ORDEM, formatarElo } from "@/lib/ranking";
+import { EvolucaoRank } from "./EvolucaoRank";
+import { PontoFracoCard } from "./PontoFracoCard";
+import { ProporcoesCard } from "./ProporcoesCard";
+import { CompartilharRank } from "./CompartilharRank";
+import {
+  TIERS,
+  GRUPO_LABEL,
+  GRUPOS_ORDEM,
+  formatarElo,
+  calcularEvolucao,
+  pontoFraco,
+  calcularProporcoes,
+  type AnaliseComRanking,
+} from "@/lib/ranking";
 import type { AnaliseBiotipo } from "@/lib/gemini";
 
 /**
@@ -78,6 +91,30 @@ export default async function RankingPage() {
       })
     : null;
 
+  // 1) Evolução: todas as análises com ranking viram pontos na linha do tempo.
+  const analisesComRanking: AnaliseComRanking[] = (analises ?? [])
+    .map((a) => ({
+      criadoEm: a.criado_em as string,
+      grupos: (a.resultado as AnaliseBiotipo)?.ranking?.grupos ?? [],
+    }))
+    .filter((a) => a.grupos.length > 0);
+  const evolucao = calcularEvolucao(analisesComRanking);
+
+  // 2) Ponto fraco (do ranking mais recente).
+  const pf = ranking ? pontoFraco(ranking.grupos) : null;
+
+  // 3) Proporções (a partir das medidas: perfil + último check-in).
+  const proporcoes = calcularProporcoes({
+    altura: perfil?.altura ?? null,
+    ombros: ultimoCheckin?.ombros ?? null,
+    cintura: ultimoCheckin?.cintura ?? null,
+    braco: ultimoCheckin?.braco ?? null,
+    antebraco: ultimoCheckin?.antebraco ?? null,
+    coxa: ultimoCheckin?.coxa ?? null,
+    panturrilha: ultimoCheckin?.panturrilha ?? null,
+    pescoco: ultimoCheckin?.pescoco ?? null,
+  });
+
   return (
     <div className="flex flex-1 flex-col items-center px-4 py-8 sm:py-12 bg-[#111111]">
       <RankingIntroModal />
@@ -111,6 +148,15 @@ export default async function RankingPage() {
                 </Link>
               )}
             </div>
+
+            {/* Botão de compartilhar o rank (imagem) */}
+            <CompartilharRank />
+
+            {/* Foco da vez (ponto fraco + como subir) */}
+            {pf && <PontoFracoCard pontoFraco={pf} />}
+
+            {/* Evolução do rank no tempo */}
+            <EvolucaoRank evolucao={evolucao} />
           </>
         ) : (
           /* Estado: ainda sem ranking */
@@ -137,6 +183,9 @@ export default async function RankingPage() {
 
         {/* Form de medidas — alimenta o ranking */}
         <MedidasForm iniciais={medidasIniciais} />
+
+        {/* Proporção & simetria (a partir das medidas) */}
+        <ProporcoesCard proporcoes={proporcoes} />
 
         {/* Explicação: como funciona */}
         <section className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-5 sm:p-6">

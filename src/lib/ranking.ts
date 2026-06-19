@@ -239,3 +239,197 @@ export function ordenarGrupos(grupos: RankingGrupo[]): RankingGrupo[] {
     (g): g is RankingGrupo => Boolean(g)
   );
 }
+
+// ============================================
+// 1) EVOLUÇÃO DO RANK NO TEMPO
+// ============================================
+
+export type AnaliseComRanking = {
+  criadoEm: string; // ISO
+  grupos: RankingGrupo[];
+};
+
+export type PontoEvolucao = {
+  criadoEm: string;
+  eloGeral: number;
+  porGrupo: Partial<Record<GrupoMuscular, number>>;
+};
+
+export type Evolucao = {
+  pontos: PontoEvolucao[]; // cronológico (mais antigo → mais novo)
+  deltaGeral: number | null; // variação do último ponto vs o anterior
+  deltaPorGrupo: Partial<Record<GrupoMuscular, number>>;
+};
+
+/**
+ * Monta a linha do tempo do ELO (geral + por grupo) a partir das análises que
+ * têm ranking, e calcula a variação do mais recente vs o anterior.
+ */
+export function calcularEvolucao(
+  analises: AnaliseComRanking[]
+): Evolucao {
+  const pontos: PontoEvolucao[] = analises
+    .filter((a) => a.grupos && a.grupos.length > 0)
+    .map((a) => {
+      const geral = calcularRankGeral(a.grupos);
+      const porGrupo: Partial<Record<GrupoMuscular, number>> = {};
+      for (const g of a.grupos) porGrupo[g.grupo] = notaParaElo(g.nota);
+      return {
+        criadoEm: a.criadoEm,
+        eloGeral: geral ? geral.elo : 0,
+        porGrupo,
+      };
+    })
+    .sort((a, b) => a.criadoEm.localeCompare(b.criadoEm));
+
+  let deltaGeral: number | null = null;
+  const deltaPorGrupo: Partial<Record<GrupoMuscular, number>> = {};
+  if (pontos.length >= 2) {
+    const ultimo = pontos[pontos.length - 1];
+    const anterior = pontos[pontos.length - 2];
+    deltaGeral = ultimo.eloGeral - anterior.eloGeral;
+    for (const id of GRUPOS_ORDEM) {
+      const a = anterior.porGrupo[id];
+      const u = ultimo.porGrupo[id];
+      if (a != null && u != null) deltaPorGrupo[id] = u - a;
+    }
+  }
+
+  return { pontos, deltaGeral, deltaPorGrupo };
+}
+
+// ============================================
+// 2) PONTO FRACO + PRÓXIMO TIER
+// ============================================
+
+export type ProximoTier = { faltamPts: number; alvo: Tier } | null;
+
+/** Quantos pontos faltam pro próximo tier (null se já está no topo). */
+export function proximoTier(elo: number): ProximoTier {
+  const atual = tierDeElo(elo);
+  const idx = TIERS.findIndex((t) => t.id === atual.id);
+  if (idx < 0 || idx >= TIERS.length - 1) return null; // já é Desafiante
+  const alvo = TIERS[idx + 1];
+  return { faltamPts: Math.max(0, alvo.min - Math.round(elo)), alvo };
+}
+
+// Foco de treino sugerido por grupo (pra subir de tier).
+export const FOCO_GRUPO: Record<GrupoMuscular, string> = {
+  peito: "Supino reto e inclinado, crucifixo e flexões — priorize carga progressiva.",
+  costas: "Barra fixa, remada curvada e pulldown — foco em amplitude e contração.",
+  ombros: "Desenvolvimento, elevação lateral e posterior — atenção ao deltoide medial pra largura.",
+  bracos: "Rosca direta/alternada e tríceps na polia/testa — volume e conexão mente-músculo.",
+  abdomen: "Prancha, elevação de pernas e cardio — definição vem com baixo % de gordura.",
+  pernas: "Agachamento, leg press, stiff e panturrilha — a base que mais agrega volume total.",
+};
+
+export type PontoFraco = {
+  grupo: GrupoMuscular;
+  rank: RankResolvido;
+  proximo: ProximoTier;
+  foco: string;
+};
+
+/** Identifica o grupo mais atrasado e o que fazer pra subir. */
+export function pontoFraco(grupos: RankingGrupo[]): PontoFraco | null {
+  if (!grupos || grupos.length === 0) return null;
+  const pior = [...grupos].sort((a, b) => a.nota - b.nota)[0];
+  const rank = resolverRank(pior.nota);
+  return {
+    grupo: pior.grupo,
+    rank,
+    proximo: proximoTier(rank.elo),
+    foco: FOCO_GRUPO[pior.grupo],
+  };
+}
+
+// ============================================
+// 3) PROPORÇÃO / SIMETRIA (a partir das medidas)
+// ============================================
+
+export type MedidasProporcao = {
+  altura?: number | null;
+  ombros?: number | null;
+  cintura?: number | null;
+  braco?: number | null;
+  antebraco?: number | null;
+  coxa?: number | null;
+  panturrilha?: number | null;
+  pescoco?: number | null;
+};
+
+export type Proporcao = {
+  nome: string;
+  descricao: string;
+  valor: number; // razão calculada
+  ideal: string; // texto do alvo
+  // 0–1, quão perto do ideal (pra barra)
+  qualidade: number;
+  status: "otimo" | "bom" | "melhorar";
+};
+
+/** Classifica uma razão pela distância proporcional ao ideal. */
+function classificar(
+  valor: number,
+  ideal: number,
+  toleranciaOtimo: number,
+  toleranciaBom: number
+): { qualidade: number; status: Proporcao["status"] } {
+  const desvio = Math.abs(valor - ideal) / ideal;
+  const qualidade = Math.max(0, Math.min(1, 1 - desvio / (toleranciaBom * 2)));
+  const status: Proporcao["status"] =
+    desvio <= toleranciaOtimo ? "otimo" : desvio <= toleranciaBom ? "bom" : "melhorar";
+  return { qualidade, status };
+}
+
+/**
+ * Calcula as razões clássicas de físico estético a partir das medidas.
+ * Só inclui as que têm as medidas necessárias.
+ */
+export function calcularProporcoes(m: MedidasProporcao): Proporcao[] {
+  const out: Proporcao[] = [];
+
+  // V-taper: ombros / cintura — ideal ~1.618 (proporção áurea)
+  if (m.ombros && m.cintura) {
+    const valor = m.ombros / m.cintura;
+    const { qualidade, status } = classificar(valor, 1.618, 0.06, 0.15);
+    out.push({
+      nome: "V-Taper (ombro : cintura)",
+      descricao: "A clássica forma de V — ombros largos sobre cintura fina.",
+      valor: Math.round(valor * 100) / 100,
+      ideal: "≈ 1,6",
+      qualidade,
+      status,
+    });
+  }
+
+  // Cintura / altura — ideal ~0,46 (saúde + estética)
+  if (m.cintura && m.altura) {
+    const valor = m.cintura / m.altura;
+    const { qualidade, status } = classificar(valor, 0.46, 0.08, 0.2);
+    out.push({
+      nome: "Cintura : altura",
+      descricao: "Indicador de definição e saúde — quanto mais baixo, mais seco.",
+      valor: Math.round(valor * 100) / 100,
+      ideal: "≈ 0,46",
+      qualidade,
+      status,
+    });
+  }
+
+  // Braço ≈ panturrilha (regra clássica: devem ser parecidos)
+  if (m.braco && m.panturrilha) {
+    const valor = m.braco / m.panturrilha;
+    const { qualidade, status } = classificar(valor, 1.0, 0.07, 0.18);
+    out.push({
+      nome: "Braço : panturrilha",
+      descricao: "No físico equilibrado, braço e panturrilha ficam parecidos.",
+      valor: Math.round(valor * 100) / 100,
+      ideal: "≈ 1,0",
+      qualidade,
+      status,
+    });
+  }
+
+  return out;
+}

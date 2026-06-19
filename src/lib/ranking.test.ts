@@ -6,8 +6,13 @@ import {
   calcularRankGeral,
   ordenarGrupos,
   formatarElo,
+  calcularEvolucao,
+  proximoTier,
+  pontoFraco,
+  calcularProporcoes,
   ELO_MAX,
   type RankingGrupo,
+  type AnaliseComRanking,
 } from "./ranking";
 
 describe("notaParaElo", () => {
@@ -103,5 +108,73 @@ describe("ordenarGrupos", () => {
     ] as RankingGrupo[];
     const ord = ordenarGrupos(grupos);
     expect(ord.map((g) => g.grupo)).toEqual(["peito", "pernas"]);
+  });
+});
+
+describe("calcularEvolucao", () => {
+  const analises: AnaliseComRanking[] = [
+    {
+      criadoEm: "2026-01-10T00:00:00Z",
+      grupos: [
+        { grupo: "peito", nota: 40, comentario: "" },
+        { grupo: "costas", nota: 40, comentario: "" },
+      ],
+    },
+    {
+      criadoEm: "2026-02-10T00:00:00Z",
+      grupos: [
+        { grupo: "peito", nota: 50, comentario: "" },
+        { grupo: "costas", nota: 40, comentario: "" },
+      ],
+    },
+  ];
+
+  it("ordena cronologicamente e calcula o delta do último vs anterior", () => {
+    const ev = calcularEvolucao(analises);
+    expect(ev.pontos).toHaveLength(2);
+    // peito subiu de 40 (1200) pra 50 (1500) = +300; média geral subiu
+    expect(ev.deltaPorGrupo.peito).toBe(300);
+    expect(ev.deltaGeral).toBeGreaterThan(0);
+  });
+
+  it("sem 2 pontos, delta é null", () => {
+    const ev = calcularEvolucao(analises.slice(0, 1));
+    expect(ev.deltaGeral).toBeNull();
+  });
+});
+
+describe("proximoTier", () => {
+  it("calcula pontos pro próximo tier", () => {
+    const p = proximoTier(1700); // Ouro → próximo Platina (2000)
+    expect(p?.alvo.id).toBe("platina");
+    expect(p?.faltamPts).toBe(300);
+  });
+
+  it("retorna null no topo (Desafiante)", () => {
+    expect(proximoTier(2950)).toBeNull();
+  });
+});
+
+describe("pontoFraco", () => {
+  it("acha o grupo de menor nota e sugere foco", () => {
+    const pf = pontoFraco([
+      { grupo: "peito", nota: 70, comentario: "" },
+      { grupo: "pernas", nota: 35, comentario: "" },
+    ]);
+    expect(pf?.grupo).toBe("pernas");
+    expect(pf?.foco.length).toBeGreaterThan(0);
+  });
+});
+
+describe("calcularProporcoes", () => {
+  it("calcula V-taper e classifica como ótimo perto de 1,6", () => {
+    const props = calcularProporcoes({ ombros: 130, cintura: 80 }); // 1.625
+    const vtaper = props.find((p) => p.nome.startsWith("V-Taper"));
+    expect(vtaper?.status).toBe("otimo");
+  });
+
+  it("só inclui razões com as medidas necessárias", () => {
+    const props = calcularProporcoes({ ombros: 130 }); // sem cintura
+    expect(props).toHaveLength(0);
   });
 });

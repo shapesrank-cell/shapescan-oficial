@@ -75,6 +75,13 @@ export function AppNav() {
   const pathname = usePathname() ?? "";
   const [saindo, startTransition] = useTransition();
 
+  // Mobile: separa o botão de destaque (+) dos demais e divide o resto em
+  // dois lados, pra o "+" ficar flutuando no centro EXATO da barra.
+  const itensNormais = ITENS.filter((i) => !i.destaque);
+  const destaque = ITENS.find((i) => i.destaque);
+  const esquerda = itensNormais.slice(0, 2);
+  const direita = itensNormais.slice(2);
+
   return (
     <>
       {/* ─── Sidebar (desktop) ─────────────────────────────────────── */}
@@ -139,44 +146,65 @@ export function AppNav() {
 
       {/* ─── Barra inferior (mobile) ───────────────────────────────── */}
       <nav className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/[0.08] bg-[#0d0d0d]/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-stretch justify-around px-1">
-          {ITENS.map((item) => {
-            const ativo = item.match(pathname);
-            const Icone = item.icon;
-
-            if (item.destaque) {
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex flex-col items-center justify-end flex-1 pt-1 pb-1.5"
-                  aria-label="Nova análise"
-                >
-                  <span className="-mt-5 mb-0.5 flex h-12 w-12 items-center justify-center rounded-full bg-orange-400 text-black shadow-lg shadow-orange-400/30 active:scale-95 transition-transform">
-                    <Icone size={24} />
-                  </span>
-                  <span className="text-[10px] font-medium text-white/50">
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            }
-
-            return (
-              <Link
+        <div className="relative flex items-stretch px-1">
+          {/* Itens à esquerda do botão central */}
+          <div className="flex flex-1 items-stretch justify-around">
+            {esquerda.map((item) => (
+              <ItemMobile
                 key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 transition-colors ${
-                  ativo ? "text-orange-400" : "text-white/45"
-                }`}
-              >
-                <Icone size={21} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
+                item={item}
+                ativo={item.match(pathname)}
+              />
+            ))}
+          </div>
+
+          {/* Espaço reservado pro botão flutuante (mesma largura dele) */}
+          <div className="w-14 shrink-0" aria-hidden />
+
+          {/* Itens à direita do botão central */}
+          <div className="flex flex-1 items-stretch justify-around">
+            {direita.map((item) => (
+              <ItemMobile
+                key={item.href}
+                item={item}
+                ativo={item.match(pathname)}
+              />
+            ))}
+          </div>
+
+          {/* Botão de destaque (+) — flutuando no centro EXATO da barra */}
+          {destaque && (
+            <Link
+              href={destaque.href}
+              aria-label="Nova análise"
+              className="absolute left-1/2 -translate-x-1/2 bottom-0 flex w-14 flex-col items-center justify-end pt-1 pb-1.5"
+            >
+              <span className="-mt-5 mb-0.5 flex h-12 w-12 items-center justify-center rounded-full bg-orange-400 text-black shadow-lg shadow-orange-400/30 active:scale-95 transition-transform">
+                <destaque.icon size={24} />
+              </span>
+              <span className="text-[10px] font-medium text-white/50">
+                {destaque.label}
+              </span>
+            </Link>
+          )}
         </div>
       </nav>
     </>
+  );
+}
+
+/** Item normal da barra inferior (mobile). */
+function ItemMobile({ item, ativo }: { item: Item; ativo: boolean }) {
+  const Icone = item.icon;
+  return (
+    <Link
+      href={item.href}
+      className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-2.5 transition-colors ${
+        ativo ? "text-orange-400" : "text-white/45"
+      }`}
+    >
+      <Icone size={21} />
+      <span className="text-[10px] font-medium">{item.label}</span>
+    </Link>
   );
 }
