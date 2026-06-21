@@ -11,6 +11,16 @@ import {
   formatarHistoricoCheckins,
   type CheckinHistorico,
 } from "./relatorio";
+import {
+  ordenarGrupos,
+  calcularRankGeral,
+  resolverRank,
+  proximoTier,
+  pontoFraco,
+  formatarElo,
+  GRUPO_LABEL,
+  type RankingGrupo,
+} from "./ranking";
 import type { AnaliseBiotipo } from "./gemini";
 
 // Quantas mensagens do histórico mandamos pro modelo (controla custo/tokens).
@@ -118,6 +128,43 @@ function formatarAnalise(a: AnaliseBiotipo): string {
   return linhas.join("\n");
 }
 
+/** Bloco textual com o RANKING de shape atual do usuário (tiers + pontos). */
+function formatarRanking(grupos: RankingGrupo[]): string {
+  const ordenados = ordenarGrupos(grupos);
+  const linhas: string[] = [];
+
+  const geral = calcularRankGeral(ordenados);
+  if (geral) {
+    linhas.push(`Rank Geral: ${geral.label} (está no tier ${geral.tier.nome}).`);
+    const prox = proximoTier(geral.elo);
+    linhas.push(
+      prox
+        ? `Para subir pro próximo tier (${prox.alvo.nome}) faltam ${formatarElo(
+            prox.faltamPts
+          )} pontos no Rank Geral.`
+        : "Já está no tier máximo: Desafiante."
+    );
+  }
+
+  linhas.push("Rank por grupo muscular:");
+  for (const g of ordenados) {
+    const r = resolverRank(g.nota);
+    linhas.push(`- ${GRUPO_LABEL[g.grupo]}: ${r.tier.nome} (${formatarElo(r.elo)} pts)`);
+  }
+
+  const pf = pontoFraco(ordenados);
+  if (pf) {
+    const proxPf = pf.proximo
+      ? ` Faltam ${formatarElo(pf.proximo.faltamPts)} pts pra ele subir pro tier ${pf.proximo.alvo.nome}.`
+      : "";
+    linhas.push(
+      `Grupo com maior potencial de evolução: ${GRUPO_LABEL[pf.grupo]} (tier ${pf.rank.tier.nome}).${proxPf} Foco de treino sugerido: ${pf.foco}`
+    );
+  }
+
+  return linhas.join("\n");
+}
+
 /**
  * Monta o bloco de CONTEXTO do usuário pro prompt do sistema do coach.
  * Inclui só o que existe — campos vazios são omitidos.
@@ -148,6 +195,15 @@ export function montarContextoCoach(input: ContextoCoachInput): string {
           input.analise
         )}`
       : "ÚLTIMA ANÁLISE: o usuário ainda não gerou nenhuma análise. Incentive-o a fazer uma em 'Nova análise' para você ter um plano de referência."
+  );
+
+  const rankingGrupos = input.analise?.ranking?.grupos;
+  blocos.push(
+    rankingGrupos && rankingGrupos.length
+      ? `RANKING DE SHAPE DO USUÁRIO (tiers do app — use pra responder sobre subir de nível):\n${formatarRanking(
+          rankingGrupos
+        )}`
+      : "RANKING DE SHAPE: o usuário ainda não tem ranking. Ele desbloqueia gerando uma análise COM foto do corpo."
   );
 
   blocos.push(

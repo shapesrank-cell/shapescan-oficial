@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function mudarSenha(
   formData: FormData
@@ -39,9 +40,11 @@ export async function deletarConta(): Promise<{ erro?: string } | void> {
   } = await supabase.auth.getUser();
   if (!user) return { erro: "Você precisa estar logado." };
 
+  const admin = createAdminClient();
+
   // Remove as fotos de progresso do storage (não são apagadas em cascata
   // quando o perfil/check-ins são deletados — precisam ser removidas à mão).
-  const { data: checkins } = await supabase
+  const { data: checkins } = await admin
     .from("checkins")
     .select("foto_path")
     .eq("user_id", user.id);
@@ -49,15 +52,23 @@ export async function deletarConta(): Promise<{ erro?: string } | void> {
     .map((c) => c.foto_path)
     .filter((p): p is string => Boolean(p));
   if (fotos.length > 0) {
-    await supabase.storage.from("checkins").remove(fotos);
+    await admin.storage.from("checkins").remove(fotos);
   }
 
-  // Deleta dados do usuário (RLS exige ownership)
-  await supabase.from("coach_messages").delete().eq("user_id", user.id);
-  await supabase.from("checkins").delete().eq("user_id", user.id);
-  await supabase.from("analyses").delete().eq("user_id", user.id);
-  await supabase.from("profiles").delete().eq("id", user.id);
-  // Faz logout (não conseguimos deletar o auth.user no client — fica órfão mas dados foram removidos)
+  // Deleta dados do usuário
+  await admin.from("coach_messages").delete().eq("user_id", user.id);
+  await admin.from("checkins").delete().eq("user_id", user.id);
+  await admin.from("analyses").delete().eq("user_id", user.id);
+  await admin.from("profiles").delete().eq("id", user.id);
+
+  // Deleta o auth.user completamente (agora possível com admin client)
+  const { error: authErr } = await admin.auth.admin.deleteUser(user.id);
+  if (authErr) {
+    console.error("Erro ao deletar auth.user:", authErr);
+    return { erro: "Erro ao deletar conta de autenticação. Tente novamente." };
+  }
+
+  // Faz logout e redireciona
   await supabase.auth.signOut();
 
   revalidatePath("/", "layout");

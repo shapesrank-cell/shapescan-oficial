@@ -9,6 +9,9 @@ import {
   LineChart,
   Sparkles,
   Plus,
+  Trophy,
+  ClipboardList,
+  Camera,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -18,6 +21,7 @@ import {
   INSPIRACOES,
 } from "@/lib/motivacao";
 import { calcularStreak, diaDeHojeSP } from "@/lib/streak";
+import { TIERS } from "@/lib/ranking";
 import { StreakCard } from "./StreakCard";
 
 const BIOTIPO_LABEL: Record<string, string> = {
@@ -36,21 +40,32 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   // Queries em paralelo (antes rodavam em série, somando latência)
-  const [{ data: perfil }, { data: analises }, { data: diasHabito }] =
-    await Promise.all([
-      supabase.from("profiles").select("nome").eq("id", user.id).single(),
-      supabase
-        .from("analyses")
-        .select("id, criado_em, dados_entrada, resultado")
-        .eq("user_id", user.id)
-        .order("criado_em", { ascending: false }),
-      supabase
-        .from("habit_log")
-        .select("dia")
-        .eq("user_id", user.id)
-        .order("dia", { ascending: false })
-        .limit(400),
-    ]);
+  const [
+    { data: perfil },
+    { data: analises },
+    { data: diasHabito },
+    { data: ultimoCheckin },
+  ] = await Promise.all([
+    supabase.from("profiles").select("nome, altura").eq("id", user.id).single(),
+    supabase
+      .from("analyses")
+      .select("id, criado_em, dados_entrada, resultado")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false }),
+    supabase
+      .from("habit_log")
+      .select("dia")
+      .eq("user_id", user.id)
+      .order("dia", { ascending: false })
+      .limit(400),
+    supabase
+      .from("checkins")
+      .select("peso")
+      .eq("user_id", user.id)
+      .order("criado_em", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   const streak = calcularStreak(
     (diasHabito ?? []).map((d) => d.dia as string),
@@ -69,14 +84,22 @@ export default async function DashboardPage() {
     | { biotipo?: string }
     | undefined;
 
-  const peso = Number(ultimaDados?.peso ?? 0);
-  const altura = Number(ultimaDados?.altura ?? 0);
+  // IMC com o dado mais atual: peso do último check-in (se houver), senão o da
+  // última análise. Altura sempre do perfil (mais confiável), com fallback.
+  const peso = ultimoCheckin?.peso ?? Number(ultimaDados?.peso ?? 0);
+  const altura = perfil?.altura ?? Number(ultimaDados?.altura ?? 0);
   const imc =
     peso && altura ? (peso / Math.pow(altura / 100, 2)).toFixed(1) : null;
 
   const biotipoLabel = ultimoResultado?.biotipo
     ? BIOTIPO_LABEL[ultimoResultado.biotipo] ?? "—"
     : null;
+
+  // Já tem algum ranking gerado? (decide se mostra o teaser do rank)
+  const temRanking = (analises ?? []).some((a) => {
+    const r = (a.resultado as { ranking?: { grupos?: unknown[] } })?.ranking;
+    return Array.isArray(r?.grupos) && r.grupos.length > 0;
+  });
 
   const diasDesdeUltima = ultimaAnalise
     ? Math.floor(
@@ -169,21 +192,42 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Atalhos pros setores */}
-        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-          <AtalhoCard
-            href="/dashboard/evolucao"
-            icon={<LineChart size={20} />}
-            titulo="Evolução do corpo"
-            descricao="Peso, medidas e fotos pra acompanhar seu progresso."
-          />
-          <AtalhoCard
-            href="/dashboard/coach"
-            icon={<Sparkles size={20} />}
-            titulo="Coach IA"
-            descricao="Tire dúvidas sobre treino, dieta e sua evolução."
-          />
-        </div>
+        {/* Teaser do Ranking — só pra quem ainda não desbloqueou o rank */}
+        {!temRanking && <RankingTeaser />}
+
+        {/* Hub: TODAS as funcionalidades à mão */}
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
+            Explore o app
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <AtalhoCard
+              href="/dashboard/ranking"
+              icon={<Trophy size={20} />}
+              titulo="Ranking de shape"
+              descricao="Seu ELO por grupo muscular, de Ferro a Desafiante."
+              destaque
+            />
+            <AtalhoCard
+              href="/dashboard/plano"
+              icon={<ClipboardList size={20} />}
+              titulo="Meu plano"
+              descricao="Seu protocolo de treino e dieta num só lugar."
+            />
+            <AtalhoCard
+              href="/dashboard/evolucao"
+              icon={<LineChart size={20} />}
+              titulo="Evolução do corpo"
+              descricao="Peso, medidas e fotos pra acompanhar seu progresso."
+            />
+            <AtalhoCard
+              href="/dashboard/coach"
+              icon={<Sparkles size={20} />}
+              titulo="Coach IA"
+              descricao="Tire dúvidas sobre treino, dieta e sua evolução."
+            />
+          </div>
+        </section>
 
         {/* Galeria de inspiração */}
         <section className="flex flex-col gap-3">
@@ -232,15 +276,28 @@ export default async function DashboardPage() {
           </div>
 
           {totalAnalises === 0 ? (
-            <div className="bg-white/[0.05] border border-dashed border-white/[0.12] rounded-2xl p-10 text-center flex flex-col items-center gap-3">
+            <div className="bg-white/[0.05] border border-dashed border-white/[0.12] rounded-2xl p-8 sm:p-10 text-center flex flex-col items-center gap-3">
               <div className="h-12 w-12 rounded-xl bg-white/[0.08] flex items-center justify-center text-white/30">
                 <BarChart3 size={24} />
               </div>
               <p className="font-medium text-white/60">Nenhuma análise ainda</p>
-              <p className="text-sm text-white/30">
-                Toque em &quot;Nova análise&quot; pra descobrir seu biotipo,
-                dieta e treino.
+              <p className="text-sm text-white/40 max-w-xs">
+                Faça sua primeira análise e desbloqueie:
               </p>
+              <ul className="flex flex-col gap-1.5 text-sm text-white/60 text-left">
+                <li className="flex items-center gap-2">
+                  <Trophy size={14} className="text-orange-400 shrink-0" /> Seu
+                  rank de shape (Ferro → Desafiante)
+                </li>
+                <li className="flex items-center gap-2">
+                  <ClipboardList size={14} className="text-orange-400 shrink-0" />{" "}
+                  Plano de treino + dieta personalizados
+                </li>
+                <li className="flex items-center gap-2">
+                  <Sparkles size={14} className="text-orange-400 shrink-0" /> Coach
+                  IA pra tirar suas dúvidas
+                </li>
+              </ul>
             </div>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -333,16 +390,22 @@ function AtalhoCard({
   icon,
   titulo,
   descricao,
+  destaque,
 }: {
   href: string;
   icon: React.ReactNode;
   titulo: string;
   descricao: string;
+  destaque?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 p-5 bg-white/[0.05] border border-white/[0.10] rounded-2xl hover:border-orange-400/30 hover:bg-white/[0.08] active:scale-[0.99] transition-all"
+      className={`group flex items-center gap-4 p-5 rounded-2xl active:scale-[0.99] transition-all ${
+        destaque
+          ? "bg-orange-400/[0.08] border border-orange-400/30 hover:border-orange-400/50 hover:bg-orange-400/[0.12]"
+          : "bg-white/[0.05] border border-white/[0.10] hover:border-orange-400/30 hover:bg-white/[0.08]"
+      }`}
     >
       <div className="h-11 w-11 rounded-xl bg-orange-400/10 border border-orange-400/20 flex items-center justify-center flex-shrink-0 text-orange-400">
         {icon}
@@ -357,5 +420,58 @@ function AtalhoCard({
         →
       </span>
     </Link>
+  );
+}
+
+/**
+ * Teaser do Ranking pra quem ainda não tem rank: mostra a escada de tiers e
+ * convida pra fazer uma análise com foto. Desperta a curiosidade do recurso
+ * mais "jogável" do app antes do usuário desbloqueá-lo.
+ */
+function RankingTeaser() {
+  return (
+    <section className="relative overflow-hidden rounded-3xl border border-orange-400/25 bg-gradient-to-br from-orange-400/[0.10] to-white/[0.02] p-5 sm:p-6 flex flex-col gap-4">
+      <div className="flex items-center gap-2 text-orange-400">
+        <Trophy size={18} />
+        <span className="text-[11px] font-bold uppercase tracking-widest">
+          Novo · Ranking de shape
+        </span>
+      </div>
+      <div className="flex flex-col gap-1">
+        <h2 className="text-2xl sm:text-3xl font-[family-name:var(--font-bebas)] tracking-wide text-white leading-none">
+          Qual é o seu rank?
+        </h2>
+        <p className="text-sm text-white/55 max-w-md">
+          A IA avalia seu shape por grupo muscular e te dá um nível — de{" "}
+          <strong className="text-white/80">Ferro</strong> a{" "}
+          <strong className="text-white/80">Desafiante</strong>. Treine, evolua e
+          veja seu rank subir.
+        </p>
+      </div>
+
+      {/* Escada de tiers */}
+      <div className="flex flex-wrap gap-1.5">
+        {TIERS.map((t) => (
+          <span
+            key={t.id}
+            className="text-[11px] font-semibold px-2 py-1 rounded-full border"
+            style={{
+              color: t.cor,
+              borderColor: `${t.cor}40`,
+              backgroundColor: `${t.cor}14`,
+            }}
+          >
+            {t.nome}
+          </span>
+        ))}
+      </div>
+
+      <Link
+        href="/analise/nova"
+        className="self-start inline-flex items-center gap-2 h-11 px-5 rounded-full bg-orange-400 text-black font-semibold text-sm hover:bg-orange-300 active:scale-95 transition-all"
+      >
+        <Camera size={18} /> Descobrir meu rank
+      </Link>
+    </section>
   );
 }

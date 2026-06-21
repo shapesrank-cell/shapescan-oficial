@@ -21,7 +21,7 @@ export function PontoFracoCard({ pontoFraco }: { pontoFraco: PontoFraco }) {
       <div className="flex items-center gap-3 mb-3">
         <TierBadge tier={rank.tier} size={40} className="shrink-0" />
         <div>
-          <p className="text-sm text-white/50">Seu grupo mais atrasado é</p>
+          <p className="text-sm text-white/50">Seu maior potencial de evolução está em</p>
           <p className="text-lg font-bold text-white leading-tight">
             {GRUPO_LABEL[grupo]}{" "}
             <span

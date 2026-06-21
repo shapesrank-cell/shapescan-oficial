@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Trophy, Camera } from "lucide-react";
+import { Trophy, Camera, Ruler, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { RankingCard } from "@/app/onboarding/RankingCard";
 import { TierBadge } from "@/app/onboarding/TierBadge";
 import { RankingIntroModal } from "./RankingIntroModal";
-import { MedidasForm, type MedidasIniciais } from "./MedidasForm";
+import { RankingTabs } from "./RankingTabs";
 import { EvolucaoRank } from "./EvolucaoRank";
 import { PontoFracoCard } from "./PontoFracoCard";
 import { ProporcoesCard } from "./ProporcoesCard";
@@ -60,20 +60,8 @@ export default async function RankingPage() {
         .single(),
     ]);
 
-  const medidasIniciais: MedidasIniciais = {
-    altura: perfil?.altura ?? null,
-    idade: perfil?.idade ?? null,
-    peso: ultimoCheckin?.peso ?? null,
-    peito: ultimoCheckin?.peito ?? null,
-    ombros: ultimoCheckin?.ombros ?? null,
-    braco: ultimoCheckin?.braco ?? null,
-    antebraco: ultimoCheckin?.antebraco ?? null,
-    cintura: ultimoCheckin?.cintura ?? null,
-    quadril: ultimoCheckin?.quadril ?? null,
-    coxa: ultimoCheckin?.coxa ?? null,
-    panturrilha: ultimoCheckin?.panturrilha ?? null,
-    pescoco: ultimoCheckin?.pescoco ?? null,
-  };
+  // Tem alguma medida registrada? (decide o texto do CTA de medidas)
+  const temMedidas = Boolean(ultimoCheckin);
 
   const comRank = (analises ?? []).find((a) => {
     const r = (a.resultado as AnaliseBiotipo)?.ranking;
@@ -133,145 +121,175 @@ export default async function RankingPage() {
           </div>
         </div>
 
-        {/* Estado: tem ranking */}
-        {ranking ? (
-          <>
-            <RankingCard grupos={ranking.grupos} />
-            <div className="flex items-center justify-between gap-2 text-xs text-white/40 -mt-2">
-              <span>Baseado na sua análise de {dataRanking}.</span>
-              {comRank && (
-                <Link
-                  href={`/dashboard/analise/${comRank.id}`}
-                  className="text-orange-400 hover:text-orange-300 transition-colors"
-                >
-                  Ver análise completa →
-                </Link>
-              )}
-            </div>
-
-            {/* Botão de compartilhar o rank (imagem) */}
-            <CompartilharRank />
-
-            {/* Foco da vez (ponto fraco + como subir) */}
-            {pf && <PontoFracoCard pontoFraco={pf} />}
-
-            {/* Evolução do rank no tempo */}
-            <EvolucaoRank evolucao={evolucao} />
-          </>
-        ) : (
-          /* Estado: ainda sem ranking */
-          <div className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-6 sm:p-8 text-center">
-            <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] text-white/40">
-              <Camera size={26} />
-            </span>
-            <h2 className="text-lg font-semibold text-white mb-1">
-              Você ainda não tem um ranking
-            </h2>
-            <p className="text-sm text-white/60 leading-relaxed max-w-sm mx-auto mb-5">
-              O ranking é calculado a partir de uma{" "}
-              <strong className="text-white">foto do seu corpo</strong> na
-              análise. Faça uma nova análise com foto pra desbloquear seu ELO.
-            </p>
-            <Link
-              href="/analise/nova"
-              className="inline-flex items-center gap-2 h-11 px-5 rounded-full bg-orange-400 text-black font-semibold text-sm hover:bg-orange-300 active:scale-[0.98] transition-all"
-            >
-              <Camera size={18} /> Fazer análise com foto
-            </Link>
-          </div>
-        )}
-
-        {/* Form de medidas — alimenta o ranking */}
-        <MedidasForm iniciais={medidasIniciais} />
-
-        {/* Proporção & simetria (a partir das medidas) */}
-        <ProporcoesCard proporcoes={proporcoes} />
-
-        {/* Explicação: como funciona */}
-        <section className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-5 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white mb-3">
-            Como funciona
-          </h2>
-          <ul className="flex flex-col gap-2.5 text-sm text-white/70 leading-relaxed">
-            <li className="flex gap-2">
-              <span className="text-orange-400">•</span>
-              <span>
-                A cada análise <strong className="text-white">com foto</strong>, a
-                IA avalia o nível de desenvolvimento de treino de{" "}
-                <strong className="text-white">{GRUPOS_ORDEM.length} grupos</strong>:{" "}
-                {GRUPOS_ORDEM.map((g) => GRUPO_LABEL[g]).join(", ")}.
-              </span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-orange-400">•</span>
-              <span>
-                Cada grupo recebe pontos de{" "}
-                <strong className="text-white">ELO (0 a {formatarElo(3000)})</strong>{" "}
-                e um tier. O <strong className="text-white">Rank Geral</strong> é a
-                média dos grupos.
-              </span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-orange-400">•</span>
-              <span>
-                Treinou e evoluiu? Faça uma nova análise e veja seu rank{" "}
-                <strong className="text-white">subir</strong>.
-              </span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-orange-400">•</span>
-              <span>
-                É sobre <strong className="text-white">você vs. você de ontem</strong>{" "}
-                — não é comparação com outras pessoas.
-              </span>
-            </li>
-          </ul>
-        </section>
-
-        {/* Explicação: escada de tiers */}
-        <section className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-5 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white mb-1">
-            Os tiers
-          </h2>
-          <p className="text-xs text-white/40 mb-4">
-            Do início da jornada ao topo. Cada tier é uma faixa de pontos.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {TIERS.map((t) => (
-              <div
-                key={t.id}
-                className="flex items-start gap-3 rounded-xl px-3 py-3 border"
-                style={{
-                  borderColor: `${t.cor}33`,
-                  background: `linear-gradient(90deg, ${t.cor}1a, transparent 80%)`,
-                }}
-              >
-                <TierBadge tier={t} size={34} className="shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <p
-                      className="font-semibold text-sm leading-tight"
-                      style={{ color: t.cor }}
+        <RankingTabs
+          rank={
+            ranking ? (
+              <>
+                <RankingCard grupos={ranking.grupos} />
+                <div className="flex items-center justify-between gap-2 text-xs text-white/40 -mt-2">
+                  <span>Baseado na sua análise de {dataRanking}.</span>
+                  {comRank && (
+                    <Link
+                      href={`/dashboard/analise/${comRank.id}`}
+                      className="text-orange-400 hover:text-orange-300 transition-colors"
                     >
-                      {t.nome}
-                    </p>
-                    <p className="text-[11px] text-white/40">
-                      {formatarElo(t.min)}–{formatarElo(t.max)} pts
-                    </p>
-                  </div>
-                  <p className="text-[11px] text-white/50 leading-snug mt-0.5">
-                    {t.descricao}
-                  </p>
+                      Ver análise completa →
+                    </Link>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
-        <p className="text-xs text-white/30 text-center px-4">
-          O ranking é uma estimativa da IA a partir da sua foto, para fins de
-          motivação. Não é uma medição clínica.
-        </p>
+                {/* Botão de compartilhar o rank (imagem) */}
+                <CompartilharRank />
+
+                {/* Foco da vez (ponto fraco + como subir) */}
+                {pf && <PontoFracoCard pontoFraco={pf} />}
+
+                {/* Evolução do rank no tempo */}
+                <EvolucaoRank evolucao={evolucao} />
+              </>
+            ) : (
+              /* Estado: ainda sem ranking */
+              <div className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-6 sm:p-8 text-center">
+                <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/[0.06] text-white/40">
+                  <Camera size={26} />
+                </span>
+                <h2 className="text-lg font-semibold text-white mb-1">
+                  Você ainda não tem um ranking
+                </h2>
+                <p className="text-sm text-white/60 leading-relaxed max-w-sm mx-auto mb-5">
+                  O ranking é calculado a partir de uma{" "}
+                  <strong className="text-white">foto do seu corpo</strong> na
+                  análise. Faça uma nova análise com foto pra desbloquear seu ELO.
+                </p>
+                <Link
+                  href="/analise/nova"
+                  className="inline-flex items-center gap-2 h-11 px-5 rounded-full bg-orange-400 text-black font-semibold text-sm hover:bg-orange-300 active:scale-[0.98] transition-all"
+                >
+                  <Camera size={18} /> Fazer análise com foto
+                </Link>
+              </div>
+            )
+          }
+          medidas={
+            <>
+              {/* CTA pro check-in (fonte única de medidas — sem form duplicado) */}
+              <section className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-5 sm:p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Ruler size={18} className="text-orange-400" />
+                  <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white">
+                    Suas medidas
+                  </h2>
+                </div>
+                <p className="text-xs text-white/40 mb-4">
+                  Quanto mais medidas você registra, mais preciso fica o ranking e
+                  a análise de proporção. Suas medidas ficam na{" "}
+                  <strong className="text-white/60">Evolução</strong> e alimentam
+                  a próxima análise.
+                </p>
+                <Link
+                  href="/dashboard/evolucao/novo"
+                  className="inline-flex items-center gap-2 h-11 px-5 rounded-full bg-orange-400 text-black font-semibold text-sm hover:bg-orange-300 active:scale-[0.98] transition-all"
+                >
+                  <Plus size={18} />
+                  {temMedidas ? "Atualizar medidas" : "Registrar medidas"}
+                </Link>
+              </section>
+
+              {/* Proporção & simetria (a partir das medidas) */}
+              <ProporcoesCard proporcoes={proporcoes} />
+            </>
+          }
+          guia={
+            <>
+              {/* Explicação: como funciona */}
+              <section className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-5 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white mb-3">
+                  Como funciona
+                </h2>
+                <ul className="flex flex-col gap-2.5 text-sm text-white/70 leading-relaxed">
+                  <li className="flex gap-2">
+                    <span className="text-orange-400">•</span>
+                    <span>
+                      A cada análise <strong className="text-white">com foto</strong>,
+                      a IA avalia o nível de desenvolvimento de treino de{" "}
+                      <strong className="text-white">{GRUPOS_ORDEM.length} grupos</strong>:{" "}
+                      {GRUPOS_ORDEM.map((g) => GRUPO_LABEL[g]).join(", ")}.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-orange-400">•</span>
+                    <span>
+                      Cada grupo recebe pontos de{" "}
+                      <strong className="text-white">ELO (0 a {formatarElo(3000)})</strong>{" "}
+                      e um tier. O <strong className="text-white">Rank Geral</strong> é
+                      a média dos grupos.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-orange-400">•</span>
+                    <span>
+                      Treinou e evoluiu? Faça uma nova análise e veja seu rank{" "}
+                      <strong className="text-white">subir</strong>.
+                    </span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-orange-400">•</span>
+                    <span>
+                      É sobre{" "}
+                      <strong className="text-white">você vs. você de ontem</strong> —
+                      não é comparação com outras pessoas.
+                    </span>
+                  </li>
+                </ul>
+              </section>
+
+              {/* Explicação: escada de tiers */}
+              <section className="rounded-2xl border border-white/[0.10] bg-white/[0.04] p-5 sm:p-6">
+                <h2 className="text-lg sm:text-xl font-[family-name:var(--font-bebas)] tracking-wide text-white mb-1">
+                  Os tiers
+                </h2>
+                <p className="text-xs text-white/40 mb-4">
+                  Do início da jornada ao topo. Cada tier é uma faixa de pontos.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {TIERS.map((t) => (
+                    <div
+                      key={t.id}
+                      className="flex items-start gap-3 rounded-xl px-3 py-3 border"
+                      style={{
+                        borderColor: `${t.cor}33`,
+                        background: `linear-gradient(90deg, ${t.cor}1a, transparent 80%)`,
+                      }}
+                    >
+                      <TierBadge tier={t} size={34} className="shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <p
+                            className="font-semibold text-sm leading-tight"
+                            style={{ color: t.cor }}
+                          >
+                            {t.nome}
+                          </p>
+                          <p className="text-[11px] text-white/40">
+                            {formatarElo(t.min)}–{formatarElo(t.max)} pts
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-white/50 leading-snug mt-0.5">
+                          {t.descricao}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <p className="text-xs text-white/30 text-center px-4">
+                O ranking é uma estimativa da IA a partir da sua foto, para fins de
+                motivação. Não é uma medição clínica.
+              </p>
+            </>
+          }
+        />
       </div>
     </div>
   );

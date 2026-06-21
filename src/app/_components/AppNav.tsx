@@ -17,6 +17,7 @@ import {
   User,
   Plus,
   Trophy,
+  ClipboardList,
   LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -43,6 +44,12 @@ const ITENS: Item[] = [
     label: "Ranking",
     icon: Trophy,
     match: (p) => p.startsWith("/dashboard/ranking"),
+  },
+  {
+    href: "/dashboard/plano",
+    label: "Plano",
+    icon: ClipboardList,
+    match: (p) => p.startsWith("/dashboard/plano"),
   },
   {
     href: "/analise/nova",
@@ -79,8 +86,9 @@ export function AppNav() {
   // dois lados, pra o "+" ficar flutuando no centro EXATO da barra.
   const itensNormais = ITENS.filter((i) => !i.destaque);
   const destaque = ITENS.find((i) => i.destaque);
-  const esquerda = itensNormais.slice(0, 2);
-  const direita = itensNormais.slice(2);
+  const meio = Math.ceil(itensNormais.length / 2);
+  const esquerda = itensNormais.slice(0, meio);
+  const direita = itensNormais.slice(meio);
 
   return (
     <>

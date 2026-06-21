@@ -11,8 +11,8 @@ import {
   Target,
   Dumbbell,
   Utensils,
-  ArrowLeft,
-  ArrowRight,
+  ChevronDown,
+  Plus,
 } from "lucide-react";
 
 type Perfil = {
@@ -143,12 +143,6 @@ const FOTOS_CORPO: {
   { angulo: "lado", rotulo: "Lado", badge: "Opcional", dica: "De perfil, postura neutra" },
 ];
 
-const PASSOS = [
-  { titulo: "Meta", icone: Target },
-  { titulo: "Treino", icone: Dumbbell },
-  { titulo: "Dieta", icone: Utensils },
-];
-
 export function AnaliseNovaClient({
   perfil,
   preferenciasIniciais,
@@ -158,7 +152,9 @@ export function AnaliseNovaClient({
 }) {
   const router = useRouter();
 
-  const [passo, setPasso] = useState(0);
+  // Seções opcionais colapsadas (foto primeiro: tudo o resto começa fechado)
+  const [mostrarAngulos, setMostrarAngulos] = useState(false);
+  const [mostrarPlano, setMostrarPlano] = useState(false);
 
   // Fotos do corpo atual (até 3 ângulos) + foto de referência
   const [fotosCorpo, setFotosCorpo] = useState<Record<AnguloFoto, Foto | null>>(
@@ -203,12 +199,12 @@ export function AnaliseNovaClient({
 
   const temPrefill = Boolean(preferenciasIniciais);
 
-  async function handleFile(
-    e: React.ChangeEvent<HTMLInputElement>,
-    qual: AnguloFoto | "ref"
-  ) {
-    const file = e.target.files?.[0];
+  async function handleFile(file: File | undefined, qual: AnguloFoto | "ref") {
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErro("Arraste um arquivo de imagem (JPG, PNG ou WebP).");
+      return;
+    }
     setProcessando(qual);
     setErro(null);
     try {
@@ -317,258 +313,67 @@ export function AnaliseNovaClient({
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Summary do perfil */}
-      <div className="bg-white/[0.04] border border-white/[0.10] rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white/70 uppercase tracking-wider">
-            Seus dados salvos
-          </h2>
-          <Link
-            href="/onboarding"
-            className="text-xs text-orange-400 hover:underline inline-flex items-center gap-1"
-          >
-            <Settings size={11} /> Editar
-          </Link>
+      {/* ========== HERÓI: FOTO DO CORPO ========== */}
+      <div className="bg-gradient-to-b from-orange-400/[0.10] to-white/[0.02] border border-orange-400/25 rounded-3xl p-5 sm:p-6 flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2 text-orange-400">
+            <Camera size={18} />
+            <h2 className="text-sm font-bold uppercase tracking-wider">
+              Sua foto
+            </h2>
+          </div>
+          <p className="text-sm text-white/55 leading-relaxed">
+            Tire uma foto <strong className="text-white/85">de frente</strong> e
+            receba seu ranking na hora. Tudo o resto é opcional.
+          </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-          <Info label="Sexo" valor={capitalizar(perfil.sexo)} />
-          <Info label="Idade" valor={`${perfil.idade} anos`} />
-          <Info label="Peso" valor={`${perfil.peso} kg`} />
-          <Info label="Altura" valor={`${perfil.altura} cm`} />
-          <Info label="Atividade" valor={ATIVIDADE_LABEL[perfil.nivelAtividade]} />
-          <Info label="Objetivo" valor={OBJETIVO_LABEL[perfil.objetivo]} />
-        </div>
-      </div>
 
-      {/* Indicador de passos */}
-      <div className="flex items-center gap-2">
-        {PASSOS.map((p, i) => {
-          const Icone = p.icone;
-          const ativo = i === passo;
-          const concluido = i < passo;
-          return (
-            <button
-              key={p.titulo}
-              type="button"
-              onClick={() => setPasso(i)}
-              className={`flex-1 flex items-center justify-center gap-1.5 h-10 rounded-xl border text-xs font-semibold transition-all ${
-                ativo
-                  ? "bg-orange-400 text-black border-orange-400"
-                  : concluido
-                    ? "bg-orange-400/10 text-orange-400 border-orange-400/30"
-                    : "bg-white/[0.04] text-white/40 border-white/[0.10]"
-              }`}
-            >
-              <Icone size={14} />
-              <span className="hidden sm:inline">{p.titulo}</span>
-            </button>
-          );
-        })}
-      </div>
+        {/* Foto de frente — protagonista */}
+        <UploadFoto
+          preview={previewsCorpo.frente}
+          processando={processando === "frente"}
+          onFile={(f) => handleFile(f, "frente")}
+          onRemove={() => removerFotoCorpo("frente")}
+          textoVazio="Tirar ou enviar foto de frente"
+        />
 
-      {temPrefill && (
-        <p className="text-xs text-white/40 -mt-2 px-1">
-          Preenchemos com as respostas da sua última análise. Mude só o que
-          mudou na sua rotina.
-        </p>
-      )}
-
-      {/* ---------- PASSO 1: META + FOTOS ---------- */}
-      {passo === 0 && (
-        <div className="flex flex-col gap-5 animate-[fadeIn_0.3s_ease-out]">
-          <Secao icone={<Target size={16} />} titulo="Meta desta análise">
-            <div className="flex flex-col gap-4">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
-                  Peso-alvo (opcional)
-                </span>
-                <div className="relative max-w-[160px]">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={pesoAlvo}
-                    onChange={(e) =>
-                      setPesoAlvo(
-                        e.target.value.replace(",", ".").replace(/[^0-9.]/g, "")
-                      )
-                    }
-                    placeholder="Ex: 75"
-                    className="w-full h-11 pl-3 pr-10 rounded-xl bg-white/[0.05] border border-white/[0.12] text-white placeholder:text-white/25 focus:border-orange-400/50 focus:outline-none transition-colors"
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/30">
-                    kg
-                  </span>
-                </div>
-              </label>
-
-              <CampoChips
-                rotulo="Em quanto tempo?"
-                opcoes={PRAZO_OPCOES}
-                valor={prazo}
-                onSelect={(v) => setPrazo(prazo === v ? "" : v)}
-              />
-            </div>
-          </Secao>
-
-          <Secao
-            icone={<Camera size={16} />}
-            titulo="Foto do shape de referência (opcional)"
+        {/* Ângulos extras (colapsado) */}
+        <div className="flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => setMostrarAngulos((v) => !v)}
+            className="self-start inline-flex items-center gap-1.5 text-xs font-medium text-white/55 hover:text-white transition-colors"
           >
-            <p className="text-xs text-white/40 mb-3">
-              Mande a foto de um físico que você quer alcançar. A IA usa como{" "}
-              <strong className="text-white/60">direção</strong> do plano (estilo
-              de treino e dieta) — sempre com metas realistas pro seu corpo.
-            </p>
-            <UploadFoto
-              preview={fotoRefPreview}
-              processando={processando === "ref"}
-              onChange={(e) => handleFile(e, "ref")}
-              onRemove={() => {
-                setFotoRef(null);
-                setFotoRefPreview("");
-              }}
-              textoVazio="Escolher foto de referência"
-            />
-          </Secao>
+            <Plus size={13} className={mostrarAngulos ? "rotate-45 transition-transform" : "transition-transform"} />
+            Adicionar costas e lado
+            <span className="text-white/30">(ranking ainda mais preciso)</span>
+          </button>
 
-          <Secao
-            icone={<Camera size={16} />}
-            titulo="Fotos do seu corpo (pra ranking preciso)"
-          >
-            <p className="text-xs text-white/40 mb-4">
-              Mande até 3 ângulos com{" "}
-              <strong className="text-white/60">
-                braços levemente abertos (~30°)
-              </strong>
-              , postura neutra e boa luz. Quanto mais ângulos, mais preciso o
-              ranking por grupo. Processadas e descartadas — não ficam salvas.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {FOTOS_CORPO.map((f) => (
+          {mostrarAngulos && (
+            <div className="grid grid-cols-2 gap-3 animate-[fadeIn_0.25s_ease-out]">
+              {FOTOS_CORPO.filter((f) => f.angulo !== "frente").map((f) => (
                 <div key={f.angulo} className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-white/60 uppercase tracking-wider font-semibold">
-                      {f.rotulo}
-                    </span>
-                    <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                        f.badge === "Recomendada"
-                          ? "bg-orange-400/15 text-orange-400"
-                          : "bg-white/[0.06] text-white/40"
-                      }`}
-                    >
-                      {f.badge}
-                    </span>
-                  </div>
+                  <span className="text-[11px] text-white/60 uppercase tracking-wider font-semibold">
+                    {f.rotulo}
+                  </span>
                   <UploadFoto
                     preview={previewsCorpo[f.angulo]}
                     processando={processando === f.angulo}
-                    onChange={(e) => handleFile(e, f.angulo)}
+                    onFile={(file) => handleFile(file, f.angulo)}
                     onRemove={() => removerFotoCorpo(f.angulo)}
                     textoVazio={f.dica}
                   />
                 </div>
               ))}
             </div>
-          </Secao>
+          )}
         </div>
-      )}
 
-      {/* ---------- PASSO 2: TREINO ---------- */}
-      {passo === 1 && (
-        <div className="flex flex-col gap-5 animate-[fadeIn_0.3s_ease-out]">
-          <Secao icone={<Dumbbell size={16} />} titulo="Sua rotina de treino">
-            <div className="flex flex-col gap-4">
-              <CampoChips
-                rotulo="Dias por semana que pode treinar"
-                opcoes={[2, 3, 4, 5, 6].map((n) => ({
-                  v: n,
-                  l: `${n}x`,
-                }))}
-                valor={diasSemana}
-                onSelect={(v) => setDiasSemana(diasSemana === v ? null : v)}
-              />
-              <CampoChips
-                rotulo="Onde você treina"
-                opcoes={LOCAL_OPCOES}
-                valor={local}
-                onSelect={(v) => setLocal(local === v ? "" : v)}
-              />
-              <CampoChips
-                rotulo="Sua experiência"
-                opcoes={EXPERIENCIA_OPCOES}
-                valor={experiencia}
-                onSelect={(v) => setExperiencia(experiencia === v ? "" : v)}
-              />
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
-                  Lesões ou limitações (opcional)
-                </span>
-                <input
-                  type="text"
-                  value={lesoes}
-                  onChange={(e) => setLesoes(e.target.value.slice(0, 200))}
-                  placeholder="Ex: dor no joelho, hérnia de disco..."
-                  className="w-full h-11 px-3 rounded-xl bg-white/[0.05] border border-white/[0.12] text-white placeholder:text-white/25 focus:border-orange-400/50 focus:outline-none transition-colors text-sm"
-                />
-              </label>
-            </div>
-          </Secao>
-        </div>
-      )}
-
-      {/* ---------- PASSO 3: DIETA ---------- */}
-      {passo === 2 && (
-        <div className="flex flex-col gap-5 animate-[fadeIn_0.3s_ease-out]">
-          <Secao icone={<Utensils size={16} />} titulo="Sua alimentação">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
-                  Restrições (pode marcar mais de uma)
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {RESTRICAO_OPCOES.map((o) => (
-                    <Chip
-                      key={o.v}
-                      ativo={restricoes.includes(o.v)}
-                      onClick={() => toggleRestricao(o.v)}
-                    >
-                      {o.l}
-                    </Chip>
-                  ))}
-                </div>
-              </div>
-
-              <label className="flex flex-col gap-1.5">
-                <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
-                  Alimentos que você NÃO gosta (opcional)
-                </span>
-                <input
-                  type="text"
-                  value={evita}
-                  onChange={(e) => setEvita(e.target.value.slice(0, 200))}
-                  placeholder="Ex: peixe, fígado, brócolis..."
-                  className="w-full h-11 px-3 rounded-xl bg-white/[0.05] border border-white/[0.12] text-white placeholder:text-white/25 focus:border-orange-400/50 focus:outline-none transition-colors text-sm"
-                />
-              </label>
-
-              <CampoChips
-                rotulo="Refeições por dia"
-                opcoes={[3, 4, 5, 6].map((n) => ({ v: n, l: String(n) }))}
-                valor={refeicoesDia}
-                onSelect={(v) => setRefeicoesDia(refeicoesDia === v ? null : v)}
-              />
-
-              <CampoChips
-                rotulo="Orçamento pra comida"
-                opcoes={ORCAMENTO_OPCOES}
-                valor={orcamento}
-                onSelect={(v) => setOrcamento(orcamento === v ? "" : v)}
-              />
-            </div>
-          </Secao>
-        </div>
-      )}
+        <p className="text-[10px] text-white/30">
+          Braços levemente abertos (~30°), postura neutra e boa luz. As fotos são
+          processadas e descartadas — não ficam salvas.
+        </p>
+      </div>
 
       {erro && (
         <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30">
@@ -578,50 +383,223 @@ export function AnaliseNovaClient({
         </div>
       )}
 
-      {/* Navegação */}
-      <div className="flex items-center gap-3">
-        {passo > 0 && (
-          <button
-            type="button"
-            onClick={() => setPasso((p) => p - 1)}
-            className="h-12 px-5 rounded-full border border-white/20 text-white/70 hover:border-white/40 hover:text-white transition-all inline-flex items-center gap-2"
-          >
-            <ArrowLeft size={16} /> Voltar
-          </button>
-        )}
-
-        {passo < PASSOS.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => setPasso((p) => p + 1)}
-            className="flex-1 h-12 rounded-full bg-white/[0.08] border border-white/[0.15] text-white font-semibold hover:bg-white/[0.12] active:scale-[0.99] transition-all inline-flex items-center justify-center gap-2"
-          >
-            Continuar <ArrowRight size={16} />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={gerarAnalise}
-            disabled={enviando || processando !== null}
-            className="flex-1 h-12 rounded-full bg-orange-400 text-black font-semibold hover:bg-orange-300 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
-          >
-            <Sparkles size={18} />
-            Gerar análise
-          </button>
-        )}
-      </div>
-
-      {/* Atalho: pular direto pra gerar (todos os campos são opcionais) */}
-      {passo < PASSOS.length - 1 && (
+      {/* ========== CTA PRINCIPAL: GERAR ========== */}
+      <div className="flex flex-col gap-2">
         <button
           type="button"
           onClick={gerarAnalise}
           disabled={enviando || processando !== null}
-          className="text-xs text-white/40 hover:text-white/70 transition-colors self-center disabled:opacity-50"
+          className="h-14 rounded-full bg-orange-400 text-black font-bold text-base hover:bg-orange-300 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
         >
-          Pular e gerar agora →
+          <Sparkles size={20} />
+          Gerar minha análise
         </button>
-      )}
+        <p className="text-center text-xs text-white/40">
+          {algumaFotoCorpo
+            ? "Pronto! A IA vai analisar sua foto e montar seu ranking."
+            : "Pode gerar sem foto — mas com foto o ranking fica muito melhor."}
+        </p>
+      </div>
+
+      {/* ========== PERSONALIZAR PLANO (colapsado) ========== */}
+      <div className="border border-white/[0.10] rounded-2xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setMostrarPlano((v) => !v)}
+          className="w-full flex items-center justify-between p-4 hover:bg-white/[0.03] transition-colors"
+        >
+          <span className="flex items-center gap-2 text-sm font-semibold text-white/80">
+            <Settings size={16} className="text-orange-400" />
+            Personalizar treino e dieta
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/[0.06] text-white/40 font-medium">
+              opcional
+            </span>
+          </span>
+          <ChevronDown
+            size={18}
+            className={`text-white/40 transition-transform ${mostrarPlano ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {mostrarPlano && (
+          <div className="px-4 pb-4 flex flex-col gap-5 animate-[fadeIn_0.25s_ease-out]">
+            <p className="text-xs text-white/40">
+              Quanto mais você conta, mais personalizado fica o treino e a dieta
+              do seu plano.
+            </p>
+
+            {temPrefill && (
+              <p className="text-xs text-white/40 -mt-2">
+                Preenchemos com as respostas da sua última análise. Mude só o que
+                mudou na sua rotina.
+              </p>
+            )}
+
+            {/* Meta */}
+            <Secao icone={<Target size={16} />} titulo="Meta desta análise">
+              <div className="flex flex-col gap-4">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
+                    Peso-alvo (opcional)
+                  </span>
+                  <div className="relative max-w-[160px]">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={pesoAlvo}
+                      onChange={(e) =>
+                        setPesoAlvo(
+                          e.target.value.replace(",", ".").replace(/[^0-9.]/g, "")
+                        )
+                      }
+                      placeholder="Ex: 75"
+                      className="w-full h-11 pl-3 pr-10 rounded-xl bg-white/[0.05] border border-white/[0.12] text-white placeholder:text-white/25 focus:border-orange-400/50 focus:outline-none transition-colors"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/30">
+                      kg
+                    </span>
+                  </div>
+                </label>
+
+                <CampoChips
+                  rotulo="Em quanto tempo?"
+                  opcoes={PRAZO_OPCOES}
+                  valor={prazo}
+                  onSelect={(v) => setPrazo(prazo === v ? "" : v)}
+                />
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
+                    Foto de shape de referência (opcional)
+                  </span>
+                  <p className="text-[11px] text-white/35">
+                    Um físico que você quer alcançar — a IA usa como direção do
+                    plano, com metas realistas pro seu corpo.
+                  </p>
+                  <UploadFoto
+                    preview={fotoRefPreview}
+                    processando={processando === "ref"}
+                    onFile={(f) => handleFile(f, "ref")}
+                    onRemove={() => {
+                      setFotoRef(null);
+                      setFotoRefPreview("");
+                    }}
+                    textoVazio="Escolher foto de referência"
+                  />
+                </div>
+              </div>
+            </Secao>
+
+            {/* Treino */}
+            <Secao icone={<Dumbbell size={16} />} titulo="Sua rotina de treino">
+              <div className="flex flex-col gap-4">
+                <CampoChips
+                  rotulo="Dias por semana que pode treinar"
+                  opcoes={[2, 3, 4, 5, 6].map((n) => ({ v: n, l: `${n}x` }))}
+                  valor={diasSemana}
+                  onSelect={(v) => setDiasSemana(diasSemana === v ? null : v)}
+                />
+                <CampoChips
+                  rotulo="Onde você treina"
+                  opcoes={LOCAL_OPCOES}
+                  valor={local}
+                  onSelect={(v) => setLocal(local === v ? "" : v)}
+                />
+                <CampoChips
+                  rotulo="Sua experiência"
+                  opcoes={EXPERIENCIA_OPCOES}
+                  valor={experiencia}
+                  onSelect={(v) => setExperiencia(experiencia === v ? "" : v)}
+                />
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
+                    Lesões ou limitações (opcional)
+                  </span>
+                  <input
+                    type="text"
+                    value={lesoes}
+                    onChange={(e) => setLesoes(e.target.value.slice(0, 200))}
+                    placeholder="Ex: dor no joelho, hérnia de disco..."
+                    className="w-full h-11 px-3 rounded-xl bg-white/[0.05] border border-white/[0.12] text-white placeholder:text-white/25 focus:border-orange-400/50 focus:outline-none transition-colors text-sm"
+                  />
+                </label>
+              </div>
+            </Secao>
+
+            {/* Dieta */}
+            <Secao icone={<Utensils size={16} />} titulo="Sua alimentação">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
+                    Restrições (pode marcar mais de uma)
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {RESTRICAO_OPCOES.map((o) => (
+                      <Chip
+                        key={o.v}
+                        ativo={restricoes.includes(o.v)}
+                        onClick={() => toggleRestricao(o.v)}
+                      >
+                        {o.l}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] text-white/50 uppercase tracking-wider font-medium">
+                    Alimentos que você NÃO gosta (opcional)
+                  </span>
+                  <input
+                    type="text"
+                    value={evita}
+                    onChange={(e) => setEvita(e.target.value.slice(0, 200))}
+                    placeholder="Ex: peixe, fígado, brócolis..."
+                    className="w-full h-11 px-3 rounded-xl bg-white/[0.05] border border-white/[0.12] text-white placeholder:text-white/25 focus:border-orange-400/50 focus:outline-none transition-colors text-sm"
+                  />
+                </label>
+
+                <CampoChips
+                  rotulo="Refeições por dia"
+                  opcoes={[3, 4, 5, 6].map((n) => ({ v: n, l: String(n) }))}
+                  valor={refeicoesDia}
+                  onSelect={(v) => setRefeicoesDia(refeicoesDia === v ? null : v)}
+                />
+
+                <CampoChips
+                  rotulo="Orçamento pra comida"
+                  opcoes={ORCAMENTO_OPCOES}
+                  valor={orcamento}
+                  onSelect={(v) => setOrcamento(orcamento === v ? "" : v)}
+                />
+              </div>
+            </Secao>
+          </div>
+        )}
+      </div>
+
+      {/* Dados salvos do perfil — rodapé discreto */}
+      <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[11px] font-bold text-white/40 uppercase tracking-wider">
+            Seus dados salvos
+          </h2>
+          <Link
+            href="/perfil"
+            className="text-xs text-orange-400/80 hover:text-orange-400 hover:underline inline-flex items-center gap-1"
+          >
+            <Settings size={11} /> Editar
+          </Link>
+        </div>
+        <div className="grid grid-cols-3 gap-3 text-sm">
+          <Info label="Sexo" valor={capitalizar(perfil.sexo)} />
+          <Info label="Idade" valor={`${perfil.idade} anos`} />
+          <Info label="Peso" valor={`${perfil.peso} kg`} />
+          <Info label="Altura" valor={`${perfil.altura} cm`} />
+          <Info label="Atividade" valor={ATIVIDADE_LABEL[perfil.nivelAtividade]} />
+          <Info label="Objetivo" valor={OBJETIVO_LABEL[perfil.objetivo]} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -708,16 +686,18 @@ function Chip({
 function UploadFoto({
   preview,
   processando,
-  onChange,
+  onFile,
   onRemove,
   textoVazio,
 }: {
   preview: string;
   processando: boolean;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFile: (file: File | undefined) => void;
   onRemove: () => void;
   textoVazio: string;
 }) {
+  const [arrastando, setArrastando] = useState(false);
+
   if (preview) {
     return (
       <div className="flex flex-col items-center gap-3">
@@ -739,18 +719,44 @@ function UploadFoto({
   }
 
   return (
-    <label className="flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed border-white/[0.15] bg-white/[0.04] hover:border-orange-400/40 hover:bg-white/[0.06] transition-colors cursor-pointer">
+    <label
+      onDragOver={(e) => {
+        e.preventDefault();
+        if (!processando) setArrastando(true);
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        setArrastando(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setArrastando(false);
+        if (processando) return;
+        onFile(e.dataTransfer.files?.[0]);
+      }}
+      className={`flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
+        arrastando
+          ? "border-orange-400 bg-orange-400/[0.10]"
+          : "border-white/[0.15] bg-white/[0.04] hover:border-orange-400/40 hover:bg-white/[0.06]"
+      }`}
+    >
       <div className="w-10 h-10 rounded-lg bg-white/[0.08] flex items-center justify-center text-white/40">
         <Camera size={18} />
       </div>
-      <p className="text-sm font-medium text-white/60">
-        {processando ? "Processando..." : textoVazio}
+      <p className="text-sm font-medium text-white/60 text-center">
+        {processando
+          ? "Processando..."
+          : arrastando
+            ? "Solte a imagem aqui"
+            : textoVazio}
       </p>
-      <p className="text-[10px] text-white/30">JPG, PNG, WebP — máx. 5MB</p>
+      <p className="text-[10px] text-white/30">
+        Arraste e solte ou clique · JPG, PNG, WebP — máx. 5MB
+      </p>
       <input
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        onChange={onChange}
+        onChange={(e) => onFile(e.target.files?.[0])}
         className="hidden"
         disabled={processando}
       />

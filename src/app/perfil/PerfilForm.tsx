@@ -32,9 +32,9 @@ export function PerfilForm(props: PerfilFormProps) {
   }
 
   return (
-    <form action={handleSubmit} className="flex flex-col gap-5">
+    <form action={handleSubmit} className="flex flex-col gap-6">
 
-      {/* Nome */}
+      {/* ---------- Identidade ---------- */}
       <Field label="Nome de exibição" hint="Como você quer ser chamado nas análises.">
         <input
           id="nome" name="nome" type="text" required
@@ -44,97 +44,99 @@ export function PerfilForm(props: PerfilFormProps) {
         />
       </Field>
 
-      {/* Sexo biológico */}
-      <Field label="Sexo biológico" hint="Influencia no cálculo de calorias.">
-        <div className="grid grid-cols-3 gap-2">
-          {([
-            { val: "masculino", label: "Masculino" },
-            { val: "feminino",  label: "Feminino" },
-            { val: "outro",     label: "Outro" },
-          ] as const).map(({ val, label }) => (
-            <RadioCard
-              key={val}
-              name="sexo"
-              value={val}
-              label={label}
-              defaultChecked={props.sexo === val}
-            />
-          ))}
-        </div>
-      </Field>
-
-      {/* Idade + Peso + Altura */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Field label="Idade (anos)">
-          <input
-            id="idade" name="idade" type="number"
-            min="10" max="110" step="1"
-            defaultValue={props.idade ?? ""}
-            placeholder="Ex: 25"
-            className="input"
-          />
+      {/* ---------- Dados corporais ---------- */}
+      <Grupo titulo="Dados corporais" hint="Usados pra calcular suas calorias e metas.">
+        <Field label="Sexo biológico">
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { val: "masculino", label: "Masculino" },
+              { val: "feminino",  label: "Feminino" },
+              { val: "outro",     label: "Outro" },
+            ] as const).map(({ val, label }) => (
+              <RadioCard
+                key={val}
+                name="sexo"
+                value={val}
+                label={label}
+                defaultChecked={props.sexo === val}
+              />
+            ))}
+          </div>
         </Field>
-        <Field label="Peso (kg)">
-          <input
-            id="peso" name="peso" type="number"
-            min="20" max="500" step="0.1"
-            defaultValue={props.peso ?? ""}
-            placeholder="Ex: 70.5"
-            className="input"
-          />
-        </Field>
-        <Field label="Altura (cm)">
-          <input
-            id="altura" name="altura" type="number"
-            min="50" max="300" step="1"
-            defaultValue={props.altura ?? ""}
-            placeholder="Ex: 175"
-            className="input"
-          />
-        </Field>
-      </div>
 
-      {/* Nível de atividade */}
-      <Field label="Nível de atividade">
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { val: "sedentario", label: "Sedentário",  desc: "Sem exercícios" },
-            { val: "leve",       label: "Leve",        desc: "1–2x/semana" },
-            { val: "moderado",   label: "Moderado",    desc: "3–4x/semana" },
-            { val: "intenso",    label: "Intenso",     desc: "5+x/semana" },
-          ] as const).map(({ val, label, desc }) => (
-            <RadioCard
-              key={val}
-              name="nivel_atividade"
-              value={val}
-              label={label}
-              desc={desc}
-              defaultChecked={props.nivelAtividade === val}
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Idade">
+            <input
+              id="idade" name="idade" type="number"
+              min="10" max="110" step="1"
+              defaultValue={props.idade ?? ""}
+              placeholder="25"
+              className="input"
             />
-          ))}
+          </Field>
+          <Field label="Peso (kg)">
+            <input
+              id="peso" name="peso" type="number"
+              min="20" max="500" step="0.1"
+              defaultValue={props.peso ?? ""}
+              placeholder="70.5"
+              className="input"
+            />
+          </Field>
+          <Field label="Altura (cm)">
+            <input
+              id="altura" name="altura" type="number"
+              min="50" max="300" step="1"
+              defaultValue={props.altura ?? ""}
+              placeholder="175"
+              className="input"
+            />
+          </Field>
         </div>
-      </Field>
+      </Grupo>
 
-      {/* Objetivo */}
-      <Field label="Objetivo principal">
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { val: "emagrecer",    label: "Emagrecer",     desc: "Perder gordura" },
-            { val: "ganhar_massa", label: "Ganhar massa",  desc: "Aumentar músculo" },
-            { val: "definir",      label: "Definir",       desc: "Marcar o corpo" },
-            { val: "saude_geral",  label: "Saúde geral",   desc: "Bem-estar" },
-          ] as const).map(({ val, label, desc }) => (
-            <RadioCard
-              key={val}
-              name="objetivo"
-              value={val}
-              label={label}
-              desc={desc}
-              defaultChecked={props.objetivo === val}
-            />
-          ))}
-        </div>
-      </Field>
+      {/* ---------- Rotina & objetivo ---------- */}
+      <Grupo titulo="Rotina & objetivo" hint="Direcionam o seu treino e a sua dieta.">
+        <Field label="Nível de atividade">
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { val: "sedentario", label: "Sedentário",  desc: "Sem exercícios" },
+              { val: "leve",       label: "Leve",        desc: "1–2x/semana" },
+              { val: "moderado",   label: "Moderado",    desc: "3–4x/semana" },
+              { val: "intenso",    label: "Intenso",     desc: "5+x/semana" },
+            ] as const).map(({ val, label, desc }) => (
+              <RadioCard
+                key={val}
+                name="nivel_atividade"
+                value={val}
+                label={label}
+                desc={desc}
+                defaultChecked={props.nivelAtividade === val}
+              />
+            ))}
+          </div>
+        </Field>
+
+        <Field label="Objetivo principal">
+          <div className="grid grid-cols-2 gap-2">
+            {([
+              { val: "emagrecer",    label: "Emagrecer",     desc: "Perder gordura" },
+              { val: "ganhar_massa", label: "Ganhar massa",  desc: "Aumentar músculo" },
+              { val: "definir",      label: "Definir",       desc: "Marcar o corpo" },
+              { val: "saude_geral",  label: "Saúde geral",   desc: "Bem-estar" },
+            ] as const).map(({ val, label, desc }) => (
+              <RadioCard
+                key={val}
+                name="objetivo"
+                value={val}
+                label={label}
+                desc={desc}
+                defaultChecked={props.objetivo === val}
+              />
+            ))}
+          </div>
+        </Field>
+      </Grupo>
 
       {erro && (
         <div role="alert" className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-2xl px-4 py-3">
@@ -155,6 +157,26 @@ export function PerfilForm(props: PerfilFormProps) {
         {carregando ? "Salvando..." : "Salvar alterações"}
       </button>
     </form>
+  );
+}
+
+function Grupo({
+  titulo,
+  hint,
+  children,
+}: {
+  titulo: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+      <legend className="px-1.5 -ml-1.5 text-[11px] font-bold uppercase tracking-wider text-orange-400/90">
+        {titulo}
+      </legend>
+      {children}
+      {hint && <p className="text-xs text-white/30 -mt-1">{hint}</p>}
+    </fieldset>
   );
 }
 

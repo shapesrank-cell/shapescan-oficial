@@ -100,6 +100,7 @@ export function NovoCheckinForm({
   );
   const [fotoPreview, setFotoPreview] = useState("");
   const [processandoFoto, setProcessandoFoto] = useState(false);
+  const [arrastandoFoto, setArrastandoFoto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -109,9 +110,12 @@ export function NovoCheckinForm({
     setValores((v) => ({ ...v, [chave]: limpo }));
   }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function handleFile(file: File | undefined) {
     if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setErro("Arraste um arquivo de imagem (JPG, PNG ou WebP).");
+      return;
+    }
     setProcessandoFoto(true);
     setErro(null);
     try {
@@ -248,21 +252,45 @@ export function NovoCheckinForm({
             </button>
           </div>
         ) : (
-          <label className="flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed border-white/[0.15] bg-white/[0.04] hover:border-orange-400/40 hover:bg-white/[0.06] transition-colors cursor-pointer">
+          <label
+            onDragOver={(e) => {
+              e.preventDefault();
+              if (!processandoFoto) setArrastandoFoto(true);
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+              setArrastandoFoto(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              setArrastandoFoto(false);
+              if (processandoFoto) return;
+              handleFile(e.dataTransfer.files?.[0]);
+            }}
+            className={`flex flex-col items-center gap-2 p-6 rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
+              arrastandoFoto
+                ? "border-orange-400 bg-orange-400/[0.10]"
+                : "border-white/[0.15] bg-white/[0.04] hover:border-orange-400/40 hover:bg-white/[0.06]"
+            }`}
+          >
             <div className="w-10 h-10 rounded-lg bg-white/[0.08] flex items-center justify-center text-white/40">
               <Camera size={18} />
             </div>
-            <p className="text-sm font-medium text-white/60">
+            <p className="text-sm font-medium text-white/60 text-center">
               {processandoFoto
                 ? "Processando..."
-                : "Tirar foto ou escolher da galeria"}
+                : arrastandoFoto
+                  ? "Solte a imagem aqui"
+                  : "Tirar foto ou escolher da galeria"}
             </p>
-            <p className="text-[10px] text-white/30">JPG, PNG, WebP — máx. 5MB</p>
+            <p className="text-[10px] text-white/30">
+              Arraste e solte ou clique · JPG, PNG, WebP — máx. 5MB
+            </p>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
               capture="environment"
-              onChange={handleFile}
+              onChange={(e) => handleFile(e.target.files?.[0])}
               className="hidden"
               disabled={processandoFoto}
             />
